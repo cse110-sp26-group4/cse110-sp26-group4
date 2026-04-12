@@ -1,7 +1,6 @@
 body {
-    font-family: 'Courier New', Courier, monospace;
-    background-color: #1a1a1a;
-    color: #00ff00;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f0f2f5;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -9,81 +8,118 @@ body {
     margin: 0;
 }
 
-#slot-machine {
-    background-color: #333;
-    border: 2px solid #00ff00;
-    border-radius: 15px;
-    padding: 20px;
+#app {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     text-align: center;
-    box-shadow: 0 0 20px #00ff00;
 }
 
 h1 {
-    margin-top: 0;
-    text-transform: uppercase;
+    color: #333;
+    margin-bottom: 1.5rem;
 }
 
-.subtitle {
-    font-size: 0.9em;
-    color: #888;
-    margin-bottom: 20px;
-}
-
-#reels {
+.machine {
     display: flex;
     justify-content: center;
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.reels {
+    display: flex;
+    gap: 1rem;
+    border: 2px solid #ddd;
+    padding: 1rem;
+    background: #f9f9f9;
+    border-radius: 10px;
 }
 
 .reel {
-    width: 100px;
-    height: 100px;
-    border: 2px solid #00ff00;
-    background-color: #222;
+    width: 80px;
+    height: 80px;
+    border: 2px solid #ccc;
+    background-color: #fff;
+    border-radius: 10px;
     font-size: 50px;
     display: flex;
     justify-content: center;
     align-items: center;
-    border-radius: 10px;
     overflow: hidden;
+}
+
+.payout-table {
+    text-align: left;
+    border: 2px solid #ddd;
+    padding: 1rem;
+    border-radius: 10px;
+}
+
+.payout-table h2 {
+    margin-top: 0;
+    text-align: center;
+}
+
+.payout-table ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.balance-container, .bet-container {
+    font-size: 1.2rem;
+}
+
+#bet-amount {
+    width: 60px;
+    padding: 0.5rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+
+button {
+    padding: 0.8rem 1.5rem;
+    font-size: 1.2rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    background-color: #007bff;
     transition: background-color 0.3s;
 }
 
-.reel.spinning {
-    background-color: #111;
-}
-
-#controls button {
-    background-color: #00ff00;
-    color: #1a1a1a;
-    border: none;
-    padding: 15px 30px;
-    font-size: 1.2em;
-    text-transform: uppercase;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s, box-shadow 0.3s;
-}
-
-#controls button:disabled {
-    background-color: #555;
-    color: #888;
+button:disabled {
+    background-color: #ccc;
     cursor: not-allowed;
 }
 
-#controls button:hover:not(:disabled) {
-    background-color: #33ff33;
-    box-shadow: 0 0 15px #33ff33;
-}
-
-#info {
-    margin-top: 20px;
+button:hover:not(:disabled) {
+    background-color: #0056b3;
 }
 
 #message {
-    margin-top: 10px;
-    min-height: 1.2em;
-    font-style: italic;
-    color: #aaa;
+    margin-top: 1rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    min-height: 25px;
+}
+
+.spinning {
+    animation: spin 0.1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: translateY(-20px); }
+    to { transform: translateY(20px); }
 }

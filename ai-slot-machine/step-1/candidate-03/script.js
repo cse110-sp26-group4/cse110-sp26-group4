@@ -1,97 +1,90 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const tokenCountElement = document.getElementById('token-count');
     const reels = document.querySelectorAll('.reel');
-    const balanceElement = document.getElementById('balance');
-    const betAmountElement = document.getElementById('bet-amount');
     const spinButton = document.getElementById('spin-button');
-    const gambleButton = document.getElementById('gamble-button');
     const messageElement = document.getElementById('message');
 
-    const symbols = ['🤖', '🧠', '🚀', '💻', '🪙'];
-    let balance = 1000;
-    let lastWinnings = 0;
+    const symbols = ['🤖', '🧠', '⚡️', '💰', '🚀', '📉', '🧐'];
+    const spinCost = 5;
+    const payouts = {
+        '🤖': 50,
+        '🧠': 40,
+        '⚡️': 30,
+        '💰': 100,
+        '🚀': 75,
+        '📉': 2, // Low payout for a "bad" symbol
+        '🧐': 60
+    };
 
-    const spin = () => {
-        const betAmount = parseInt(betAmountElement.value);
-        if (balance < betAmount) {
+    let tokens = 100;
+
+    function updateTokenCount(amount) {
+        tokens = amount;
+        tokenCountElement.textContent = tokens;
+    }
+
+    function getRandomSymbol() {
+        return symbols[Math.floor(Math.random() * symbols.length)];
+    }
+
+    function spin() {
+        if (tokens < spinCost) {
             messageElement.textContent = "Not enough tokens to spin!";
             return;
         }
 
-        balance -= betAmount;
-        updateBalance();
-        messageElement.textContent = "";
-        lastWinnings = 0;
-        gambleButton.disabled = true;
+        updateTokenCount(tokens - spinCost);
+        messageElement.textContent = "Spinning...";
+        spinButton.disabled = true;
 
-        let spinCount = 0;
-        const spinInterval = setInterval(() => {
-            spinCount++;
-            reels.forEach(reel => {
-                reel.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-                reel.classList.add('spinning');
-            });
+        const results = [];
+        let completedReels = 0;
 
-            if (spinCount > 20) {
-                clearInterval(spinInterval);
-                const finalSymbols = Array.from(reels).map(() => symbols[Math.floor(Math.random() * symbols.length)]);
-                reels.forEach((reel, index) => {
-                    reel.textContent = finalSymbols[index];
-                    reel.classList.remove('spinning');
-                });
-                checkWin(finalSymbols, betAmount);
-            }
-        }, 100);
-    };
+        reels.forEach((reel, index) => {
+            reel.classList.add('spinning');
+            const interval = setInterval(() => {
+                reel.textContent = getRandomSymbol();
+            }, 100);
 
-    const checkWin = (finalSymbols, betAmount) => {
-        const [s1, s2, s3] = finalSymbols;
-        let winMultiplier = 0;
+            setTimeout(() => {
+                clearInterval(interval);
+                reel.classList.remove('spinning');
+                const finalSymbol = getRandomSymbol();
+                reel.textContent = finalSymbol;
+                results[index] = finalSymbol;
+                completedReels++;
 
-        if (s1 === s2 && s2 === s3) {
-            if (s1 === '🤖') winMultiplier = 50;
-            else if (s1 === '🧠') winMultiplier = 20;
-            else if (s1 === '🚀') winMultiplier = 15;
-            else if (s1 === '💻') winMultiplier = 10;
-            else if (s1 === '🪙') winMultiplier = 5;
-        } else if ((s1 === s2 || s1 === s3 || s2 === s3)) {
-            const twoOfAKindSymbol = [s1, s2, s3].sort()[1];
-            if (twoOfAKindSymbol === '🤖') winMultiplier = 3;
-            else if (twoOfAKindSymbol === '🧠') winMultiplier = 2;
-        }
+                if (completedReels === reels.length) {
+                    checkWin(results);
+                    spinButton.disabled = false;
+                }
+            }, 1000 + (index * 500)); // Stagger the stop time
+        });
+    }
 
+    function checkWin(results) {
+        // For this version, we'll just check if all three are the same
+        const allSame = results.every(symbol => symbol === results[0]);
 
-        if (winMultiplier > 0) {
-            lastWinnings = betAmount * winMultiplier;
-            balance += lastWinnings;
-            messageElement.textContent = `You won ${lastWinnings} tokens!`;
-            gambleButton.disabled = false;
+        if (allSame) {
+            const symbol = results[0];
+            const winnings = payouts[symbol];
+            updateTokenCount(tokens + winnings);
+            messageElement.textContent = `You won ${winnings} tokens!`;
         } else {
-            messageElement.textContent = "You lost! Try again.";
+            messageElement.textContent = "Try again!";
         }
-        updateBalance();
-    };
 
-    const gamble = () => {
-        if (lastWinnings === 0) return;
-
-        const isWin = Math.random() > 0.5;
-        if (isWin) {
-            balance += lastWinnings;
-            messageElement.textContent = `Gamble won! You doubled your winnings to ${lastWinnings * 2} tokens!`;
-            lastWinnings *= 2; // Update lastWinnings for consecutive gambles
-        } else {
-            lastWinnings = 0;
-            messageElement.textContent = "Gamble lost! You lost your winnings.";
+        if (tokens < spinCost) {
+            spinButton.disabled = true;
+            messageElement.textContent = "Game Over! You've run out of tokens.";
         }
-        updateBalance();
-        gambleButton.disabled = true; // Disable after one gamble attempt per win
-    };
+    }
 
-
-    const updateBalance = () => {
-        balanceElement.textContent = balance;
-    };
+    // Initial setup
+    reels.forEach(reel => {
+        reel.textContent = getRandomSymbol();
+    });
 
     spinButton.addEventListener('click', spin);
-    gambleButton.addEventListener('click', gamble);
 });
