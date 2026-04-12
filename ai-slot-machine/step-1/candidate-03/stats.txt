@@ -1,0 +1,115 @@
+### BEFORE ###
+
+│  Session Stats                                                                                                                         │
+│                                                                                                                                        │
+│  Interaction Summary                                                                                                                   │
+│  Session ID:                 80dd64a5-079b-4c89-ad2a-8e2ceb8364d3                                                                      │
+│  Auth Method:                Signed in with Google (jackylx112358@gmail.com)                                                           │
+│  Tier:                       Gemini Code Assist in Google One AI Pro                                                                   │
+│  Tool Calls:                 7 ( ✓ 7 x 0 )                                                                                             │
+│  Success Rate:               100.0%                                                                                                    │
+│  User Agreement:             100.0% (7 reviewed)                                                                                       │
+│  Code Changes:               +268 -50                                                                                                  │
+│                                                                                                                                        │
+│  Performance                                                                                                                           │
+│  Wall Time:                  3m 52s                                                                                                    │
+│  Agent Active:               1m 43s                                                                                                    │
+│    » API Time:               1m 43s (99.5%)                                                                                            │
+│    » Tool Time:              536ms (0.5%)                                                                                              │
+│                                                                                                                                        │
+│  Model                   Reqs    Model usage                 Usage resets                                                              │
+│  ────────────────────────────────────────────────────────────────────────────────                                                      │
+│  gemini-2.5-pro             8    ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬   31%  4:27 PM (22h 9m)                                                          │
+│  gemini-2.5-flash           -    ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬    5%  4:27 PM (22h 9m)                                                          │
+│  gemini-2.5-flash-lite      -    ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬  0.1%  4:27 PM (22h 9m)                                                          │
+│  gemini-3-flash-preview     -    ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬    5%  4:27 PM (22h 9m)                                                          │
+│  gemini-3.1-flash-lite-…    -    ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬  0.1%  4:27 PM (22h 9m)                                                          │
+│  gemini-3.1-pro-preview     -    ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬   31%  4:27 PM (22h 9m)                                                          │
+│                                                                                    
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                                        │
+│  Model Stats For Nerds                                                                                                                 │
+│                                                                                                                                        │
+│  Auth Method:                Signed in with Google (jackylx112358@gmail.com)                                                           │
+│  Tier:                       Gemini Code Assist in Google One AI Pro                                                                   │
+│                                                                                                                                        │
+│  Metric                      gemini-2.5-pro                                                                                            │
+│  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  │
+│  API                                                                                                                                   │
+│  Requests                    8                                                                                                         │
+│  Errors                      0 (0.0%)                                                                                                  │
+│  Avg Latency                 12.9s                                                                                                     │
+│  Tokens                                                                                                                                │
+│  Total                       104,377                                                                                                   │
+│    ↳ Input                   38,882                                                                                                    │
+│    ↳ Cache Reads             51,606 (57.0%)                                                                                            │
+│    ↳ Thoughts                9,559                                                                                                     │
+│    ↳ Output                  4,330                                                                                                     │
+│  Roles                                                                                                                                 │
+│  main                                                                                                                                  │
+│    ↳ Requests                8                                                                                                         │
+│    ↳ Input                   38,882                                                                                                    │
+│    ↳ Output                  4,330                                                                                                     │
+│    ↳ Cache Reads             51,606                                                                                                    │
+╰────────────────────────────────────────────
+
+
+### AFTER ###
+
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                                        │
+│  Session Stats                                                                                                                         │
+│                                                                                                                                        │
+│  Interaction Summary                                                                                                                   │
+│  Session ID:                 af34df09-23a5-4e4b-bf61-976adad4ff0f                                                                      │
+│  Auth Method:                Signed in with Google (jackylx112358@gmail.com)                                                           │
+│  Tier:                       Gemini Code Assist in Google One AI Pro                                                                   │
+│  Tool Calls:                 10 ( ✓ 10 x 0 )                                                                                           │
+│  Success Rate:               100.0%                                                                                                    │
+│  User Agreement:             100.0% (10 reviewed)                                                                                      │
+│  Code Changes:               +293 -0                                                                                                   │
+│                                                                                                                                        │
+│  Performance                                                                                                                           │
+│  Wall Time:                  9m 23s                                                                                                    │
+│  Agent Active:               5m 56s                                                                                                    │
+│    » API Time:               1m 18s (22.1%)                                                                                            │
+│    » Tool Time:              4m 37s (77.9%)                                                                                            │
+│                                                                                                                                        │
+│  Model                   Reqs    Model usage                 Usage resets                                                              │
+│  ────────────────────────────────────────────────────────────────────────────────                                                      │
+│  gemini-2.5-pro            16    ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬   41%  4:27 PM (21h 53m)                                                         │
+│  gemini-2.5-flash           -    ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬    5%  4:27 PM (21h 53m)                                                         │
+│  gemini-2.5-flash-lite      -    ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬  0.1%  4:27 PM (21h 53m)                                                         │
+│  gemini-3-flash-preview     -    ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬    5%  4:27 PM (21h 53m)                                                         │
+│  gemini-3.1-flash-lite-…    -    ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬  0.1%  4:27 PM (21h 53m)                                                         │
+│  gemini-3.1-pro-preview     -    ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬   41%  4:27 PM (21h 53m)                                                         │
+│                                                                                                                                        │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                                        │
+│  Model Stats For Nerds                                                                                                                 │
+│                                                                                                                                        │
+│  Auth Method:                Signed in with Google (jackylx112358@gmail.com)                                                           │
+│  Tier:                       Gemini Code Assist in Google One AI Pro                                                                   │
+│                                                                                                                                        │
+│  Metric                      gemini-2.5-pro                                                                                            │
+│  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  │
+│  API                                                                                                                                   │
+│  Requests                    16                                                                                                        │
+│  Errors                      0 (0.0%)                                                                                                  │
+│  Avg Latency                 4.9s                                                                                                      │
+│  Tokens                                                                                                                                │
+│  Total                       161,100                                                                                                   │
+│    ↳ Input                   52,550                                                                                                    │
+│    ↳ Cache Reads             103,695 (66.4%)                                                                                           │
+│    ↳ Thoughts                1,642                                                                                                     │
+│    ↳ Output                  3,213                                                                                                     │
+│  Roles                                                                                                                                 │
+│  main                                                                                                                                  │
+│    ↳ Requests                16                                                                                                        │
+│    ↳ Input                   52,550                                                                                                    │
+│    ↳ Output                  3,213                                                                                                     │
+│    ↳ Cache Reads             103,695                                                                                                   │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
