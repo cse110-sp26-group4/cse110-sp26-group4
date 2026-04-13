@@ -1,7 +1,7 @@
 # CSE 110 Team Contract
 
 ## 1. Team Purpose and Objectives
-Our team’s purpose is to collaboratively design, develop, and deliver high-quality, well-documented software while strengthening both our technical and teamwork skills.
+To develop our teamwork and technical skills through creating quality, presentable software.
 
 Our objectives are to:
 - Build a functional and maintainable software product
