@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Slot Machine - Spin to Win!</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f0">
+</head>
+<body>
+    <div class="slot-machine">
+        <header>
+            <h1>AI Slot Machine</h1>
+            <p>Spin to win compute credits!</p>
+        </header>
+        <div class="reels">
+            <div class="reel"></div>
+            <div class="reel"></div>
+            <div class="reel"></div>
+        </div>
+        <div class="controls">
+            <button id="spin-button">Spin</button>
+            <button id="reset-button">Reset</button>
+            <button id="help-button">Help</button>
+            <button id="dark-mode-button">Toggle Dark Mode</button>
+            <button id="mute-button">Mute</button>
+            <button id="settings-button">Settings</button>
+            <p>Tokens: <span id="balance">100</span></p>
+        </div>
+        <div id="settings-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h2>Settings</h2>
+                <div class="setting">
+                    <label for="theme-color">Theme Color:</label>
+                    <input type="color" id="theme-color" value="#0f0">
+                </div>
+                <div class="setting">
+                    <label for="spin-speed">Spin Speed:</label>
+                    <input type="range" id="spin-speed" min="1" max="10" value="5">
+                </div>
+                <div class="setting">
+                    <label for="volume">Volume:</label>
+                    <input type="range" id="volume" min="0" max="1" step="0.1" value="1">
+                </div>
+            </div>
+        </div>
+        <div id="help-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h2>How to Play</h2>
+                <p>1. Click the "Spin" button to play.</p>
+                <p>2. Each spin costs 10 "compute credits".</p>
+                <p>3. Match three symbols in a row to win more credits.</p>
+                <p>4. The game is over when you run out of credits.</p>
+            </div>
+        </div>
+        <div class="message-container">
+            <p id="message"></p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <footer>
+        <p>
+            Created by <a href="https://github.com/your-username" target="_blank">Your Name</a> |
+            <a href="https://github.com/your-username/ai-slot-machine" target="_blank">Source Code</a>
+        </p>
+    </footer>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
