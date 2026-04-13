@@ -12,14 +12,13 @@ Our objectives are to:
 
 
 ## 2. Common Values and Standards
-We commit to the following core values:
 
-- **Clear Communication** – Share updates, blockers, and progress openly and promptly  
-- **Accountability** – Take ownership of assigned tasks and responsibilities  
-- **Respect & Support** – Foster a positive, inclusive, and supportive team environment  
-- **Reliability** – Meet deadlines and follow through on commitments  
-- **Growth Mindset** – Be open to learning, feedback, and improvement  
-- **Quality Work** – Strive for clean, efficient, and well-tested code  
+- **Clear Communication** – Keeping everyone updated on progress and any issues as they come up  
+- **Accountability** – Taking responsibility for our tasks and following through on what we commit to  
+- **Respect & Support** – Being respectful of each other’s ideas and helping teammates when needed  
+- **Reliability** – Showing up to meetings and completing work on time  
+- **Willingness to Learn** – Being open to feedback and trying to improve our skills throughout the project  
+- **Quality Work** – Putting effort into writing clean, understandable code and completing tasks properly  
 
 
 
@@ -37,7 +36,7 @@ Roles will be **flexible and may rotate** depending on the task and project phas
 - **Note-Taker (rotates)**  
   - Records meeting notes, documenting the conversation, and later uploads it to GitHub
 
-### Accountability Strcuture
+### Accountability Structure
 
 To Ensure Fair and Equal Contributions & Optimal Team Growth:
 
