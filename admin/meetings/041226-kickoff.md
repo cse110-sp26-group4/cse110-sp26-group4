@@ -39,7 +39,30 @@ Kick-off meeting
 
 ## Task Assignments
 Each person signs themselves up for tasks below.
-![Team assignment](/admin/misc/kickoff_teamassign.png)
+| Task | Deadline | Person(s) | Complete |
+|------|----------|-----------|----------|
+| **Kickoff** | | | |
+| Create Mascot | Sunday | Albert | Yes |
+| Logo | Sunday | Kalyssa | Yes |
+| Group Contract | Sunday | Anika | |
+| Sign individual contract | Sunday | All | |
+| Create Team Page markdown | Sunday | Jack | |
+| Team Page individual Roster | Sunday | All | |
+| Team Page Upload Video onto the repo | Sunday | Phuong | Yes |
+| Write meeting notes in .md format and upload, and have README.md | Sunday | Phuong | |
+| Submit link of Github on Canvas | Sunday | Kalyssa | Yes |
+| Upload Group Hangout Pictures | Sunday | Anika | |
+| **Slot Machine** | | | |
+| Complete 50 runs | Monday | Jack, Albert, Anika, Anish, Shermyn (10 each) | |
+| Create refinement prompts | Monday | Phuong | |
+| Refinement Round 1 (Select 5 runs) | Monday | | |
+| Refinement Round 2 (Select 3 runs) | Monday | Yifei Du | |
+| Refinement Round 3 (Select 2 runs) | Monday | | |
+| Refinement Round 4 (Select 1 run) | Monday | | |
+| Create Final Presentation Slides (4-7 slides) | Tuesday | Phuong | |
+| Create Demo Video (1-2 mins) | Tuesday | | |
+| Record final presentation | Tuesday | | |
+| Combine presentation + demo video and perform edits | Tuesday | | |
 
 ## Team Branding
 - Agreed to choose name “Fantastic Four” (utilizing the team number while making a fun reference to the comics/movies about Fantastic Four)
