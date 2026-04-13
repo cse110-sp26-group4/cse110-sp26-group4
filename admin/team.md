@@ -1,6 +1,20 @@
 # Team 4 - Fantastic Four
 
+The thing is ...
+
+![Image](/admin/branding/Thing.webp)
+
 # Important Values
+
+As mentioned in the team contract, these values are important to us: 
+
+- Common values and standards
+- Clear and timely communication
+- Accountability
+- Support and community 
+- Resilience
+- Learn and apply best practices
+
 
 # Team Roster
 
