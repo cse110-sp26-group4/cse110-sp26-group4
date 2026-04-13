@@ -37,7 +37,7 @@ Roles will be **flexible and may rotate** depending on the task and project phas
 - **Note-Taker (rotates)**  
   - Records meeting notes, documenting the conversation, and later uploads it to GitHub
 
-### Accountability Strcuture
+### Accountability Structure
 
 To Ensure Fair and Equal Contributions & Optimal Team Growth:
 
