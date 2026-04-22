@@ -18,7 +18,7 @@ Warmup II Plan - Discuss ai-plan.md, running prompts, and next steps
 
 ## Location and Time  
 - Zoom
-- Sunday, April 20, 2026 @ 10:00 am
+- Monday, April 20, 2026 @ 10:00 am
 - Meeting end time: 10:30 am
 
 ## Agenda  
