@@ -194,4 +194,4 @@ Non-functional requirements describe **how well the system performs.** The quali
 
 ---
 
-*Document owner: Zachary Huang | Last updated: May 10, 2026
+*Document owner: Zachary Huang | Last updated: May 17, 2026
