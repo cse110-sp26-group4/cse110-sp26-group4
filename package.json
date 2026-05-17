@@ -1,0 +1,21 @@
+{
+  "name": "agent-issue-tracker",
+  "version": "0.1.0",
+  "description": "A CLI issue tracker for AI agents",
+  "type": "module",
+  "bin": {
+    "agent": "./source/cli.js"
+  },
+  "scripts": {
+    "test": "node --test tests/",
+    "lint": "eslint source/",
+    "lint:fix": "eslint source/ --fix"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
