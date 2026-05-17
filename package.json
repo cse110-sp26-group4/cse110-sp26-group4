@@ -7,7 +7,7 @@
     "agent": "./source/cli.js"
   },
   "scripts": {
-    "test": "node --test --recursive tests/",
+    "test": "node --test tests/",
     "lint": "eslint source/",
     "lint:fix": "eslint source/ --fix"
   },
@@ -16,6 +16,6 @@
     "eslint": "^9.0.0"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   }
 }
