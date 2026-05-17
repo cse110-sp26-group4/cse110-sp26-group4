@@ -1,0 +1,8 @@
+Flask
+Flask-SQLAlchemy
+Flask-Migrate
+click
+gunicorn
+requests
+python-dotenv
+marshmallow-sqlalchemy
