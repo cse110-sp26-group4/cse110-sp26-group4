@@ -1,4 +1,5 @@
 // AI was consulted for some portions of this file.
+/* global process */
 
 import Database from "better-sqlite3";
 import fs from "fs";
