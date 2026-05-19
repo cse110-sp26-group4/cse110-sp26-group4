@@ -7,7 +7,7 @@
 | Field | Type | Required | Default | Description |
 | -------- | -------- | ------- | ----- | ------ |
 | ```title``` | string | Yes | "Issue #" | The name for the issue |
-| ```status```| enum | Yes | ```Open``` | Options: (Open/Closed) |
+| ```status```| enum | Yes | ```Open``` | Options: (Open/In-Progress/Closed) |
 | ```priority``` | enum | No | ```Low``` | Options: (Low/Medium/High) |
 | ```tokenLimit``` | int | No | N/A | Integer values that range from [0, INT_MAX] |
 | ```description``` | string | No | N/A | Text description of current issue + notes from attempts(if applicable) |
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS issues (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     attempt_num INTEGER DEFAULT 0 NOT NULL,
     title TEXT DEFAULT 'PENDING', -- Temporary placeholder
-    status TEXT NOT NULL DEFAULT 'Open' CHECK (status IN ('Open', 'Closed')),
+    status TEXT NOT NULL DEFAULT 'Open' CHECK (status IN ('Open', 'In-Progress', 'Closed')),
     priority TEXT DEFAULT 'Low' CHECK (priority IN ('Low', 'Medium', 'High')),
     token_limit INTEGER CHECK (token_limit >= 0),
     description TEXT
