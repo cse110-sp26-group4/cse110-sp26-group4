@@ -18,6 +18,7 @@ import { run as runInit } from './commands/init.js';
 import { run as runNext } from './commands/next.js';
 import { run as runLoop } from './commands/loop.js';
 import { run as runStatus } from './commands/status.js';
+import { wantsHelp } from './util.js';
 
 const HELP = `baton — AI agent issue tracker CLI
 
@@ -49,15 +50,6 @@ Examples:
 `;
 
 /**
- * Parses the command line arguments to check if the user wants to see the help menu.
- * @param {string[]} args - The command line arguments
- * @returns {boolean} true if the user wants to see the help menu, false otherwise
- */
-function wantsHelp(args) {
-  return args.includes('--help') || args.includes('-h');
-}
-
-/**
  * Main function that runs the CLI.
  * @returns {Promise<void>} The exit code: 0 is success, 1 is error, 2 is invalid input.
  */
@@ -80,7 +72,7 @@ async function main() {
   const handler = handlers[command];
   if (!handler) {
     console.error(`Error: Unknown command "${command}".`);
-    console.error('Run `agent --help` for usage.');
+    console.error('Run `baton --help` for usage.');
     process.exit(1);
     return;
   }

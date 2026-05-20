@@ -5,20 +5,20 @@
 
 /* global console */
 
-/**
- * Imports neccessary functions from init.js to return issue stats.
- * Important import: isTrackerReady is needed to check if the tracker is ready.
- */
-import { isTrackerReady, getIssueStats, getAllIssues } from './init.js';
+import {
+  isTrackerReady,
+  getIssueStats,
+  getAllIssues,
+} from '../services/issuesService.js';
+import { reportTrackerNotReady } from '../util.js';
 
 /**
  * Main function that runs the status command.
- * @returns {number} The exit code: 0 is success, 1 is error.
+ * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run() {
   if (!isTrackerReady()) {
-    console.error('Error: No tracker found in this directory.');
-    console.error('Run `agent init` first.');
+    reportTrackerNotReady();
     return 1;
   }
 
