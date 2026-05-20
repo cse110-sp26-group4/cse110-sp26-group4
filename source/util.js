@@ -61,22 +61,34 @@ export function getFlagValue(args, flag) {
 }
 
 /**
- * Gets the value of a specific flag in the command line arguments and converts it to a number.
+ * Gets a positive integer flag value from the command line arguments.
  * @param {string[]} args
  * @param {string} flag
- * @returns {number | null}
+ * @returns {number | null} The parsed value, or null if the flag is not present
+ * @throws {Error} If the flag is present without a following value or the value is invalid
  */
 export function getNumericFlag(args, flag) {
   const index = args.indexOf(flag);
-  if (index === -1 || index === args.length - 1) {
+  if (index === -1) {
     return null;
   }
-  const value = Number.parseInt(args[index + 1], 10);
-  return Number.isFinite(value) && value > 0 ? value : null;
+  if (index === args.length - 1) {
+    throw new Error(`Missing value for ${flag}.`);
+  }
+
+  const raw = args[index + 1];
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error(
+      `Invalid value for ${flag}: expected a positive integer, got "${raw}".`,
+    );
+  }
+
+  return value;
 }
 
 /**
- * First positional argument, skipping values consumed by flags.
+ * First positional argument, skipping flag tokens and values consumed by value flags.
  * @param {string[]} args
  * @param {{ valueFlags?: string[], ignoreFlags?: string[] }} [options]
  * @returns {string | null}
@@ -99,7 +111,7 @@ export function getFirstPositionalArg(
   }
 
   for (let i = 0; i < args.length; i += 1) {
-    if (skipIndices.has(i) || args[i].startsWith('--')) {
+    if (skipIndices.has(i) || args[i].startsWith('-')) {
       continue;
     }
     return args[i];
