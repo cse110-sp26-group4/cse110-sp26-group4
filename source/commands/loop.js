@@ -10,6 +10,8 @@
 //  baton loop --steps 5
 //  baton loop -n 5
 
+/* global console */
+
 /**
  * Important import: isTrackerReady is needed to check if the tracker is ready.
  */

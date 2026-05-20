@@ -3,6 +3,8 @@
 // status command for the issue tracker which allows the user to see the status of the tracker.
 // usage: baton status
 
+/* global console */
+
 /**
  * Imports neccessary functions from init.js to return issue stats.
  * Important import: isTrackerReady is needed to check if the tracker is ready.
