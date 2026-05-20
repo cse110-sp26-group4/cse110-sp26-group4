@@ -1,4 +1,4 @@
-import { getDb } from "../db.js";
+import { getDB } from '../db.js';
 import {
   Issue,
   ActivityLog,
@@ -72,7 +72,7 @@ export function createIssue({
 } = {}) {
   Issue.validate({ title, priority, tokenLimit });
 
-  const db = getDb();
+  const db = getDB();
   const result = db
     .prepare(
       `
@@ -101,7 +101,7 @@ export function createIssue({
  * @returns {Issue}
  */
 export function getIssue(id) {
-  const db = getDb();
+  const db = getDB();
   const issue = rowToIssue(findById(db, id));
   logActivity(db, id, Action.READ, `Issue #${id} was accessed.`);
   return issue;
@@ -163,7 +163,7 @@ export function incrementAttempt(id) {}
  * @returns {boolean}
  */
 export function deleteIssue(id) {
-  const db = getDb();
+  const db = getDB();
   const existing = findById(db, id);
 
   logActivity(db, id, Action.DELETION, `"${existing.title}" was deleted.`);
@@ -185,3 +185,135 @@ export function getActivityLog(issueId) {}
  * @returns {ActivityLog[]}
  */
 export function getRecentActivity({ limit = 20 } = {}) {}
+
+// =============================================================================
+// Tracker operations (CLI: init / next / status / loop)
+// To be edited later if needed.
+// =============================================================================
+
+/** Lazily prepared statements used only by the CLI-facing exports below. */
+let _trackerStmts = null;
+
+function trackerStmts() {
+  const db = getDB();
+  if (!_trackerStmts) {
+    _trackerStmts = {
+      schemaReady: db.prepare(`
+        SELECT COUNT(*) AS table_count
+        FROM sqlite_master
+        WHERE type = 'table' AND name IN ('issues', 'activity')
+      `),
+      issueStats: db.prepare(`
+        SELECT
+          COUNT(*) AS total,
+          COALESCE(SUM(CASE WHEN status = 'Open' THEN 1 ELSE 0 END), 0) AS open_count,
+          COALESCE(SUM(CASE WHEN status = 'In-Progress' THEN 1 ELSE 0 END), 0) AS in_progress_count,
+          COALESCE(SUM(CASE WHEN status = 'Closed' THEN 1 ELSE 0 END), 0) AS closed_count
+        FROM issues
+      `),
+      allIssues: db.prepare('SELECT * FROM issues ORDER BY id ASC'),
+      nextOpenIssue: db.prepare(`
+        SELECT *
+        FROM issues
+        WHERE status = 'Open'
+        ORDER BY
+          CASE priority
+            WHEN 'High' THEN 0
+            WHEN 'Medium' THEN 1
+            WHEN 'Low' THEN 2
+            ELSE 3
+          END,
+          id ASC
+        LIMIT 1
+      `),
+      updateWorkOnIssue: db.prepare(`
+        UPDATE issues
+        SET status = ?, attempt_num = attempt_num + 1
+        WHERE id = ?
+      `),
+      clearAllIssues: db.prepare('DELETE FROM issues'),
+    };
+  }
+  return _trackerStmts;
+}
+
+/**
+ * True when both `issues` and `activity` tables exist (matches initDB schema).
+ * @returns {boolean}
+ */
+export function isTrackerReady() {
+  const row = trackerStmts().schemaReady.get();
+  return (row?.table_count ?? 0) === 2;
+}
+
+/**
+ * Issue counts by status for `baton status` (single round-trip).
+ * @returns {{ total: number, open: number, inProgress: number, closed: number }}
+ */
+export function getIssueStats() {
+  const row = trackerStmts().issueStats.get();
+  return {
+    total: row.total ?? 0,
+    open: row.open_count ?? 0,
+    inProgress: row.in_progress_count ?? 0,
+    closed: row.closed_count ?? 0,
+  };
+}
+
+/**
+ * All issues ordered by id.
+ * @returns {object[]}
+ */
+export function getAllIssues() {
+  return trackerStmts().allIssues.all();
+}
+
+/**
+ * Highest-priority open issue, then lowest id (same ordering as previous JS sort).
+ * @returns {object|null}
+ */
+export function selectNextIssue() {
+  return trackerStmts().nextOpenIssue.get() ?? null;
+}
+
+/**
+ * Mark an issue in-progress, increment attempts, and log activity (atomic).
+ * Uses existing `findById` / `logActivity` from above; does not modify lines 1–187.
+ * @param {number} issueId
+ * @returns {object}
+ */
+export function workOnIssue(issueId) {
+  const db = getDB();
+  const issue = findById(db, issueId);
+
+  if (issue.status === Status.CLOSED) {
+    throw new Error(`Issue #${issueId} is closed and cannot be worked on.`);
+  }
+
+  const tx = db.transaction(() => {
+    logActivity(db, issueId, Action.READ, `Agent accessed issue #${issueId}`);
+    trackerStmts().updateWorkOnIssue.run(Status.IN_PROGRESS, issueId);
+    logActivity(
+      db,
+      issueId,
+      Action.STATE_CHANGE,
+      `Status changed from ${issue.status} to ${Status.IN_PROGRESS}`,
+    );
+    logActivity(
+      db,
+      issueId,
+      Action.EDIT,
+      `Agent attempt #${issue.attempt_num + 1} on issue #${issueId}`,
+    );
+  });
+  tx();
+
+  return findById(db, issueId);
+}
+
+/**
+ * Remove all issues (`baton init --force`). Activity rows are kept for audit.
+ */
+export function clearAllIssues() {
+  trackerStmts().clearAllIssues.run();
+}
