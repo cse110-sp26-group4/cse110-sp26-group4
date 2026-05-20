@@ -131,7 +131,7 @@ export function searchIssues(query) {}
 export function updateIssue(id, { title, description, tokenLimit } = {}) {
   const db = getDb();
   if (title !== undefined) {
-    const row = db.prepare(`
+    db.prepare(`
         UPDATE issues
         SET title = ?
         WHERE id = ?
@@ -139,7 +139,7 @@ export function updateIssue(id, { title, description, tokenLimit } = {}) {
       .run(title, id);
   }
   if (description !== undefined) {
-    const row = db.prepare(`
+    db.prepare(`
         UPDATE issues
         SET description = ?
         WHERE id = ?
@@ -147,13 +147,15 @@ export function updateIssue(id, { title, description, tokenLimit } = {}) {
       .run(description, id);
   }
   if (tokenLimit !== undefined) {
-    const row = db.prepare(`
+    db.prepare(`
         UPDATE issues
         SET token_limit = ?
         WHERE id = ?
       `)
       .run(tokenLimit, id);
   }
+  
+  return getIssue(id);
 }
 
 /**
