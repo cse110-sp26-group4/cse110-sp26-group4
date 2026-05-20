@@ -1,17 +1,13 @@
-export const Status = Object.freeze({
-  BACKLOG:     "backlog",
-  READY:       "ready",
-  IN_PROGRESS: "in_progress",
-  IN_REVIEW:   "in_review",
-  DONE:        "done"
+export const Status = Object.freeze({ 
+  OPEN: "Open", 
+  IN_PROGRESS: "In-Progress", 
+  CLOSED: "Closed" 
 });
 
 export const Priority = Object.freeze({
-  NONE:   null,
   LOW:    "low",
   MEDIUM: "medium",
   HIGH:   "high",
-  URGENT: "urgent",
 });
 
 export const Type = Object.freeze({
