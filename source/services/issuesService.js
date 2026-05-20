@@ -154,7 +154,7 @@ export function updateIssue(id, { title, description, tokenLimit } = {}) {
       `)
       .run(tokenLimit, id);
   }
-  
+  logActivity(db, id, Action.EDIT, `Issue #${id} was updated.`);
   return getIssue(id);
 }
 
@@ -165,7 +165,16 @@ export function updateIssue(id, { title, description, tokenLimit } = {}) {
  * @param {string} status
  * @returns {Issue}
  */
-export function setStatus(id, status) {}
+export function setStatus(id, status) {
+  const db = getDb();
+  db.prepare(`
+    UPDATE issues
+    SET status = ?
+    WHERE id = ?
+  `).run(status, id);
+  logActivity(db, id, Action.STATE_CHANGE, `Issue #${id} status changed to ${status}.`);
+  return getIssue(id);
+}
 
 /**
  * Change the priority of an issue (Low / Medium / High).
@@ -174,7 +183,16 @@ export function setStatus(id, status) {}
  * @param {string} priority
  * @returns {Issue}
  */
-export function setPriority(id, priority) {}
+export function setPriority(id, priority) {
+  const db = getDb();
+  db.prepare(`
+    UPDATE issues
+    SET priority = ?
+    WHERE id = ?
+  `).run(priority, id);
+  logActivity(db, id, Action.PRIORITY_CHANGE, `Issue #${id} priority changed to ${priority}.`);
+  return getIssue(id);
+}
 
 /**
  * Increment the attempt counter for an issue.
@@ -182,7 +200,16 @@ export function setPriority(id, priority) {}
  * @param {number} id
  * @returns {Issue}
  */
-export function incrementAttempt(id) {}
+export function incrementAttempt(id) {
+  const db = getDb();
+  db.prepare(`
+    UPDATE issues
+    SET attempt_num = attempt_num + 1
+    WHERE id = ?
+  `).run(id);
+  logActivity(db, id, Action.EDIT, `Attempt count increased for Issue #${id}.`);
+  return getIssue(id);
+}
 
 /**
  * Delete an issue. Activity log entry is written before deletion
