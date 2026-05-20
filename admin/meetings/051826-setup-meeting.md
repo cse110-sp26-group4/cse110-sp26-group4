@@ -21,7 +21,9 @@ Technical Development meeting
 - Anish worked on ```db.js``` with the help of Albert
 - Albert begun work on cli commands
 - Worked together to get through technical issues with setup
-
+  
+## Decisions Made:
+- Decided to make use of ```better-sqlite3``` to make storage of the database simpler
 
 
 ## Tasks
