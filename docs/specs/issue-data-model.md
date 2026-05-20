@@ -29,6 +29,7 @@
 | ```id``` | int | The issue that was addressed |
 | ```created_at``` | TIMESTAMP | The time when the event occurred in the format of  (HH:MM:SS YYYY-MM-DD) |
 | ```action``` | enum | The action performed on the issue: (state_change, priority_change, edit, read, creation, deletion) |
+| ```details``` | string | Details of what occurred at each action |
 
 
 ## Implementation:
