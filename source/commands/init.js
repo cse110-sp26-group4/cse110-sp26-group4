@@ -10,8 +10,6 @@
 // examples usage of specs flag:
 //  baton init --specs ./path/to/my-specs.md
 //  baton init --specs C:\full\path\to\specs.md
-/* global process */
-
 
 import { readFileSync, existsSync } from 'node:fs';
 import { isAbsolute, join, resolve } from 'node:path';

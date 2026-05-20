@@ -10,8 +10,6 @@
 //   status: show issue counts and overall progress
 //
 // see each command's file for more detailed flags specifications.
-/* global process */
-
 /**
  * Imports the run functions from each command.
  */
