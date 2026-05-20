@@ -128,7 +128,33 @@ export function searchIssues(query) {}
  * @param {{ title?: string, description?: string, tokenLimit?: number }} fields
  * @returns {Issue}
  */
-export function updateIssue(id, { title, description, tokenLimit } = {}) {}
+export function updateIssue(id, { title, description, tokenLimit } = {}) {
+  const db = getDb();
+  if (title !== undefined) {
+    const row = db.prepare(`
+        UPDATE issues
+        SET title = ?
+        WHERE id = ?
+      `)
+      .run(title, id);
+  }
+  if (description !== undefined) {
+    const row = db.prepare(`
+        UPDATE issues
+        SET description = ?
+        WHERE id = ?
+      `)
+      .run(description, id);
+  }
+  if (tokenLimit !== undefined) {
+    const row = db.prepare(`
+        UPDATE issues
+        SET token_limit = ?
+        WHERE id = ?
+      `)
+      .run(tokenLimit, id);
+  }
+}
 
 /**
  * Change the status of an issue (Open / Closed).
