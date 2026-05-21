@@ -1,11 +1,11 @@
 import  { getDB } from  "../db.js";
-import {
+/*import {
   Issue,
   ActivityLog,
   Status,
   Priority,
   Action,
-} from "../models/issue.js";
+} from "../models/issue.js";*/
 
 /**
  * Internal helper to log actions.
@@ -108,18 +108,154 @@ export function getIssue(id) {
 }
 
 /**
- * List issues with optional filters. Does not log activity.
- * @param {{ status?: string, priority?: string, limit?: number, offset?: number }} options
- * @returns {Issue[]}
+ * Helper function used to format and print Issues in a table
+ * @param {Object} issue 
+ * @param {{ id: number, title: number, status: number, priority: number, assignee: number }} width
+ * @returns {void}
  */
-export function listIssues({ status, priority, limit = 50, offset = 0 } = {}) {}
+function printIssueTable(issue, width) {
+  const idVal = String(issue.id).substring(0, width.id);
+  
+  let titleVal = String(issue.title || `Issue #${issue.id}`);
+  if (titleVal.length > width.title) {
+    titleVal = titleVal.substring(0, width.title - 3) + "...";
+  }
+
+  const statusVal = String(issue.status || "Open");
+  const priorityVal = String(issue.priority || "Low");
+  const assigneeVal = String(issue.assignee || "None");
+
+  console.log(
+    idVal.padEnd(width.id) + " │ "
+    + titleVal.padEnd(width.title) + " │ "
+    + statusVal.padEnd(width.status) + " │ "      
+    + priorityVal.padEnd(width.priority) + " │ "   
+    + assigneeVal.padEnd(width.assignee)        
+  );
+}
+
+/**
+ * List issues with optional filters. Does not log activity.
+ * @param {{ status?: string, priority?: string, assignee?: string, limit?: number, offset?: number }} options
+ * @returns {Promise<Issue[]>}
+ */
+export async function listIssues({ status, priority, assignee, limit = 50, offset = 0 } = {}) {
+  const db = getDB();
+
+  let query = "SELECT title, status, priority, id, assignee FROM issues WHERE 1=1";
+  const param = [];
+
+  if (status) {
+    query += " AND status = ?";
+    param.push(status);
+  }
+
+  if (priority) {
+    query += " AND priority = ?";
+    param.push(priority);
+  }
+
+  if (assignee) {
+    query += " AND assignee = ?";
+    param.push(assignee);
+  }
+
+  query += " LIMIT ? OFFSET ?";
+  param.push(limit, offset);
+
+  try {
+    const rows = await db.all(query, param);
+
+    if (rows.length == 0) {
+      console.log("\nNo issues matching those filters were found.\n");
+      return [];
+    }
+
+    const width = { id: 5, title: 30, status: 15, priority: 10, assignee: 20 };
+
+    console.log(
+      "\nID #".padEnd(id_width) + " | " 
+      + "TITLE".padEnd(title_width) + " | " 
+      + "STATUS".padEnd(status_width) + " | " 
+      + "PRIORITY".padEnd(priority_width) + " | " 
+      + "ASSIGNEE".padEnd(assignee_width)
+    );
+
+    console.log (
+      "─".repeat(id_width) + "─┼─" 
+      + "─".repeat(title_width) + "─┼─" 
+      + "─".repeat(status_width) + "─┼─" 
+      + "─".repeat(priority_width) + "─┼─" 
+      + "─".repeat(assignee_width)
+    );
+
+    rows.forEach(issue => printIssueTable(issue, width));
+    console.log("\n");
+
+    return rows.map(row => rowToIssue(row));
+
+  } catch (error) {
+    console.error("Failed to list issues:", error.message);
+    throw error;
+  }
+}
 
 /**
  * Search issues by title or description. Does not log activity.
  * @param {string} query
  * @returns {Issue[]}
  */
-export function searchIssues(query) {}
+export function searchIssues(query) {
+  const db = getDB();
+
+  if (!query || query.trim() == "") {
+    console.log("\nSearch query is empty.\n");
+    return [];
+  }
+
+  const sql = `SELECT title, status, priority, assignee, id FROM issues 
+  WHERE title LIKE ? OR description LIKE ?`;
+
+  const searchTerm = `%${query.toLowerCase().trim()}%`;
+
+  try {
+    const statement = db.prepare(sql);
+    const row = statement.all(query, query);
+
+    if (row.length == 0) {
+      console.log(`\nNo issues containing "${searchString}" were found.\n`);
+      return [];
+    }
+
+    const width = {id: 5, title: 30, status: 15, priority: 10, assignee: 20 };
+
+    console.log(`\nFound ${row.length} issue(s) containing "${query}":\n`);
+    console.log(
+      "ID".padEnd(width.id) + " │ " 
+      + "TITLE".padEnd(width.title) + " │ " 
+      + "STATUS".padEnd(width.status) + " │ " 
+      + "PRIORITY".padEnd(width.priority) + " │ " 
+      + "ASSIGNEE".padEnd(width.assignee)
+    );
+
+    console.log(
+      "─".repeat(width.id) + "─┼─" 
+      + "─".repeat(width.title) + "─┼─" 
+      + "─".repeat(width.status) + "─┼─" 
+      + "─".repeat(width.priority) + "─┼─" 
+      + "─".repeat(width.assignee)
+    );
+
+    row.forEach(issue => printIssueTable(issue, width));
+
+    console.log("\n");
+
+    return row.map(row => rowToIssue(row));
+  } catch (error) {
+    console.error("Search failed:", error.message);
+    throw error;
+  }
+}
 
 /**
  * Update editable fields: title, description, tokenLimit.
