@@ -180,11 +180,12 @@ export function listIssues({ status, priority, assignee, limit = 50, offset = 0 
     const width = { id: 5, title: 30, status: 15, priority: 10, assignee: 20 };
 
     console.log(`Filters: ${JSON.stringify({ status, priority, assignee })}`);
+    console.log("");
     console.log(
-      "\nID #".padEnd(width.id) + " | " 
-      + "TITLE".padEnd(width.title) + " | " 
-      + "STATUS".padEnd(width.status) + " | " 
-      + "PRIORITY".padEnd(width.priority) + " | " 
+      "ID".padEnd(width.id) + " │ " 
+      + "TITLE".padEnd(width.title) + " │ " 
+      + "STATUS".padEnd(width.status) + " │ " 
+      + "PRIORITY".padEnd(width.priority) + " │ " 
       + "ASSIGNEE".padEnd(width.assignee)
     );
 
@@ -197,7 +198,7 @@ export function listIssues({ status, priority, assignee, limit = 50, offset = 0 
     );
 
     rows.forEach(issue => printIssueTable(issue, width));
-    console.log("\n");
+    console.log("");
 
     return rows.map(row => rowToIssue(row));
 
@@ -255,7 +256,7 @@ export function searchIssues(query) {
 
     row.forEach(issue => printIssueTable(issue, width));
 
-    console.log("\n");
+    console.log("");
 
     return row.map(row => rowToIssue(row));
   } catch (error) {
