@@ -5,6 +5,7 @@ export const Action = Object.freeze({
   READ:            "read",
   CREATION:        "creation",
   DELETION:        "deletion",
+  REJECT:          "rejection", 
 });
 
 export class ActivityLog {
