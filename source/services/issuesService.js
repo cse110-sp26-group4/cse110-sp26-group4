@@ -1,4 +1,4 @@
-import { getDb } from "../db.js";
+import  { getDB } from  "../db.js";
 import {
   Issue,
   ActivityLog,
@@ -72,7 +72,7 @@ export function createIssue({
 } = {}) {
   Issue.validate({ title, priority, tokenLimit });
 
-  const db = getDb();
+  const db = getDB();
   const result = db
     .prepare(
       `
@@ -101,7 +101,7 @@ export function createIssue({
  * @returns {Issue}
  */
 export function getIssue(id) {
-  const db = getDb();
+  const db = getDB();
   const issue = rowToIssue(findById(db, id));
   logActivity(db, id, Action.READ, `Issue #${id} was accessed.`);
   return issue;
@@ -129,7 +129,7 @@ export function searchIssues(query) {}
  * @returns {Issue}
  */
 export function updateIssue(id, { title, description, tokenLimit } = {}) {
-  const db = getDb();
+  const db = getDB();
   if (title !== undefined) {
     db.prepare(`
         UPDATE issues
@@ -159,6 +159,43 @@ export function updateIssue(id, { title, description, tokenLimit } = {}) {
 }
 
 /**
+ * Change the status of an issue from in-review to closed
+ * Logs a closed event.
+ * @param {number} id
+ * @returns {Issue}
+ */
+export function approveIssue(id) {
+  const db = getDB();
+  const status = 'Closed';
+  db.prepare(`
+    UPDATE issues
+    SET status = ?
+    WHERE id = ?
+  `).run(status, id);
+  logActivity(db, id, Action.STATE_CHANGE, `Issue #${id} has been closed`);
+  return getIssue(id);
+}
+
+/**
+ * Change the status of an issue from in-review to in-progress
+ * Logs a reject event and reason.
+ * @param {number} id
+ * @param {string} reason
+ * @returns {Issue}
+ */
+export function rejectIssue(id, reason) {
+  const db = getDB();
+  const status = 'In-Progress';
+  db.prepare(`
+    UPDATE issues
+    SET status = ?
+    WHERE id = ?
+  `).run(status, id);
+  logActivity(db, id, Action.REJECT, `Issue #${id} has been rejected due to "${reason}"`);
+  return getIssue(id);
+}
+
+/**
  * Change the status of an issue (Open / Closed).
  * Logs a state_change event.
  * @param {number} id
@@ -166,7 +203,7 @@ export function updateIssue(id, { title, description, tokenLimit } = {}) {
  * @returns {Issue}
  */
 export function setStatus(id, status) {
-  const db = getDb();
+  const db = getDB();
   db.prepare(`
     UPDATE issues
     SET status = ?
@@ -184,7 +221,7 @@ export function setStatus(id, status) {
  * @returns {Issue}
  */
 export function setPriority(id, priority) {
-  const db = getDb();
+  const db = getDB();
   db.prepare(`
     UPDATE issues
     SET priority = ?
@@ -201,7 +238,7 @@ export function setPriority(id, priority) {
  * @returns {Issue}
  */
 export function incrementAttempt(id) {
-  const db = getDb();
+  const db = getDB();
   db.prepare(`
     UPDATE issues
     SET attempt_num = attempt_num + 1
@@ -218,7 +255,7 @@ export function incrementAttempt(id) {
  * @returns {boolean}
  */
 export function deleteIssue(id) {
-  const db = getDb();
+  const db = getDB();
   const existing = findById(db, id);
 
   logActivity(db, id, Action.DELETION, `"${existing.title}" was deleted.`);
