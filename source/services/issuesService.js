@@ -1,11 +1,11 @@
 import  { getDB } from  "../db.js";
-/*import {
+import {
   Issue,
   ActivityLog,
   Status,
   Priority,
   Action,
-} from "../models/issue.js";*/
+} from "../models/issue.js";
 
 /**
  * Internal helper to log actions.
@@ -137,34 +137,40 @@ function printIssueTable(issue, width) {
 /**
  * List issues with optional filters. Does not log activity.
  * @param {{ status?: string, priority?: string, assignee?: string, limit?: number, offset?: number }} options
- * @returns {Promise<Issue[]>}
+ * @returns {Issue[]}
  */
-export async function listIssues({ status, priority, assignee, limit = 50, offset = 0 } = {}) {
+export function listIssues({ status, priority, assignee, limit = 50, offset = 0 } = {}) {
   const db = getDB();
 
   let query = "SELECT title, status, priority, id, assignee FROM issues WHERE 1=1";
   const param = [];
+  const filter = [];
 
   if (status) {
-    query += " AND status = ?";
-    param.push(status);
+    filter.push(`status = ?`);
+    param.push(filter.status);
   }
 
   if (priority) {
-    query += " AND priority = ?";
-    param.push(priority);
+    filter.push(`priority = ?`);
+    param.push(filter.priority);
   }
 
   if (assignee) {
-    query += " AND assignee = ?";
-    param.push(assignee);
+    filter.push(`assignee = ?`);
+    param.push(filter.assignee);
+  }
+
+  if (filter.length > 0) {
+    query += ` WHERE ` + filter.join(` AND `);
   }
 
   query += " LIMIT ? OFFSET ?";
   param.push(limit, offset);
 
   try {
-    const rows = await db.all(query, param);
+    const statement = db.prepare(query); // 1. Prepare the statement first
+    const rows = statement.all(...param);
 
     if (rows.length == 0) {
       console.log("\nNo issues matching those filters were found.\n");
@@ -173,20 +179,21 @@ export async function listIssues({ status, priority, assignee, limit = 50, offse
 
     const width = { id: 5, title: 30, status: 15, priority: 10, assignee: 20 };
 
+    console.log(`Filters: ${JSON.stringify({ status, priority, assignee })}`);
     console.log(
-      "\nID #".padEnd(id_width) + " | " 
-      + "TITLE".padEnd(title_width) + " | " 
-      + "STATUS".padEnd(status_width) + " | " 
-      + "PRIORITY".padEnd(priority_width) + " | " 
-      + "ASSIGNEE".padEnd(assignee_width)
+      "\nID #".padEnd(width.id) + " | " 
+      + "TITLE".padEnd(width.title) + " | " 
+      + "STATUS".padEnd(width.status) + " | " 
+      + "PRIORITY".padEnd(width.priority) + " | " 
+      + "ASSIGNEE".padEnd(width.assignee)
     );
 
     console.log (
-      "─".repeat(id_width) + "─┼─" 
-      + "─".repeat(title_width) + "─┼─" 
-      + "─".repeat(status_width) + "─┼─" 
-      + "─".repeat(priority_width) + "─┼─" 
-      + "─".repeat(assignee_width)
+      "─".repeat(width.id) + "─┼─" 
+      + "─".repeat(width.title) + "─┼─" 
+      + "─".repeat(width.status) + "─┼─" 
+      + "─".repeat(width.priority) + "─┼─" 
+      + "─".repeat(width.assignee)
     );
 
     rows.forEach(issue => printIssueTable(issue, width));
