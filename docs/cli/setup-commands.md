@@ -1,11 +1,16 @@
 # Setup CLI Commands
 
+All setup commands follow the pattern: `baton <group> <command> [arguments] [flags]`
+
+---
 
 ## `<tool> init`
 
-Initializes a new issue tracker in the current directory. Creates the `.tracker/` folder and all required files with default values.
+```
+<tool> init [options]
+```
 
-**Usage:** `<tool> init [options]`
+Initializes a new issue tracker in the current directory. Creates the `.tracker/` folder and all required files with default values.
 
 ### Options
 
@@ -53,9 +58,11 @@ your-project/
 
 ## `<tool> config set <key> <value>`
 
-Sets a configuration value for this project.
+```
+<tool> config set <key> <value>
+```
 
-**Usage:** `<tool> config set <key> <value>`
+Sets a configuration value for this project.
 
 ### Arguments
 
@@ -85,11 +92,13 @@ Sets a configuration value for this project.
 
 ---
 
-## `<tool> config get <key>`
+## `<tool> config list`
+
+```
+<tool> config list
+```
 
 Prints all current configuration values with their descriptions.
-
-**Usage:** `<tool> config list`
 
 ### Example Output
 
@@ -105,9 +114,11 @@ duplicateCheckThreshold   0.8    Similarity score (0–1) to trigger duplicate w
 
 ## `<tool> agent register <id>`
 
-Registers a new agent identity with the tracker so it can make authenticated SDK calls.
+```
+<tool> agent register <id> [options]
+```
 
-**Usage:** `<tool> agent register <id> [options]`
+Registers a new agent identity with the tracker so it can make authenticated SDK calls.
 
 ### Arguments
 
@@ -138,9 +149,11 @@ Registers a new agent identity with the tracker so it can make authenticated SDK
 
 ## `<tool> agent list`
 
-Lists all registered agents and their metadata.
+```
+<tool> agent list
+```
 
-**Usage:** `<tool> agent list`
+Lists all registered agents and their metadata.
 
 ### Example Output
 
@@ -156,9 +169,11 @@ claude-dev     QA agent               2026-05-11
 
 ## `<tool> agent remove <id>`
 
-Removes a registered agent from the tracker.
+```
+<tool> agent remove <id> [options]
+```
 
-**Usage:** `<tool> agent remove <id> [options]`
+Removes a registered agent from the tracker.
 
 ### Options
 
@@ -184,7 +199,7 @@ Removes a registered agent from the tracker.
 
 ## Config Keys
 
-Valid keys for `<tool> config set <key> <value>` and `<tool> config get <key>`.
+Valid keys for `<tool> config set <key> <value>` and `<tool> config list`.
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
@@ -197,6 +212,15 @@ Valid keys for `<tool> config set <key> <value>` and `<tool> config get <key>`.
 ## Error Handling Standards
 
 All setup commands follow these conventions:
+
+- Error messages begin with `Error:`.
+- Commands validate required options and print a helpful usage hint on failure.
+- Missing tracker state prints:
+  ```
+  Error: No tracker found in this directory.
+  Run `<tool> init` first.
+  ```
+- Invalid input prints the expected type or permitted values.
 
 - **Exit code 0** on success.
 - **Exit code 1** on user error (bad args, already initialized, unknown key, etc.).
