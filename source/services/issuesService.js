@@ -159,6 +159,43 @@ export function updateIssue(id, { title, description, tokenLimit } = {}) {
 }
 
 /**
+ * Change the status of an issue from in-review to closed
+ * Logs a closed event.
+ * @param {number} id
+ * @returns {Issue}
+ */
+export function approveIssue(id) {
+  const db = getDb();
+  const status = 'closed';
+  db.prepare(`
+    UPDATE issues
+    SET status = ?
+    WHERE id = ?
+  `).run(status, id);
+  logActivity(db, id, Action.CLOSED, `Issue #${id} has been closed`);
+  return getIssue(id);
+}
+
+/**
+ * Change the status of an issue from in-review to in-progress
+ * Logs a reject event and reason.
+ * @param {number} id
+ * @param {string} reason
+ * @returns {Issue}
+ */
+export function rejectIssue(id, reason) {
+  const db = getDb();
+  const status = 'in-progress';
+  db.prepare(`
+    UPDATE issues
+    SET status = ?
+    WHERE id = ?
+  `).run(status, id);
+  logActivity(db, id, Action.REJECT, `Issue #${id} has been rejected due to "${reason}"`);
+  return getIssue(id);
+}
+
+/**
  * Change the status of an issue (Open / Closed).
  * Logs a state_change event.
  * @param {number} id
