@@ -212,8 +212,8 @@ export function listIssues({ status, priority, assignee, limit = 50, offset = 0 
     return rows.map(row => rowToIssue(row));
 
   } catch (error) {
-    console.error("Failed to list issues:", error.message);
-    throw error;
+    console.log("Failed to list issues:", error.message);
+    return;
   }
 }
 
@@ -237,10 +237,10 @@ export function searchIssues(query) {
 
   try {
     const statement = db.prepare(sql);
-    const row = statement.all(query, query);
+    const row = statement.all(searchTerm, searchTerm);
 
     if (row.length == 0) {
-      console.log(`\nNo issues containing "${searchString}" were found.\n`);
+      console.log(`\nNo issues containing "${query}" were found.\n`);
       return [];
     }
 
@@ -271,8 +271,8 @@ export function searchIssues(query) {
 
     return row.map(row => rowToIssue(row));
   } catch (error) {
-    console.error("Search failed:", error.message);
-    throw error;
+    console.log("Search failed:", error.message);
+    return;
   }
 }
 
