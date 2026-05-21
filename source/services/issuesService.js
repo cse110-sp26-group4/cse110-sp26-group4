@@ -1,4 +1,4 @@
-import  { getDB } from  "../db.js";
+import { getDB } from "../db.js";
 import {
   Issue,
   ActivityLog,
@@ -131,32 +131,88 @@ export function searchIssues(query) {}
 export function updateIssue(id, { title, description, tokenLimit } = {}) {
   const db = getDB();
   if (title !== undefined) {
-    db.prepare(`
+    db.prepare(
+      `
         UPDATE issues
         SET title = ?
         WHERE id = ?
-      `)
-      .run(title, id);
+      `,
+    ).run(title, id);
   }
   if (description !== undefined) {
-    db.prepare(`
+    db.prepare(
+      `
         UPDATE issues
         SET description = ?
         WHERE id = ?
-      `)
-      .run(description, id);
+      `,
+    ).run(description, id);
   }
   if (tokenLimit !== undefined) {
-    db.prepare(`
+    db.prepare(
+      `
         UPDATE issues
         SET token_limit = ?
         WHERE id = ?
-      `)
-      .run(tokenLimit, id);
+      `,
+    ).run(tokenLimit, id);
   }
   logActivity(db, id, Action.EDIT, `Issue #${id} was updated.`);
   return getIssue(id);
 }
+
+/**
+ * Assign an issue to an agent and log the assignment.
+ * @param {number} id
+ * @param {string} agentId
+ * @returns {Issue}
+ */
+export function assignIssue(id, agentId) {
+  const db = getDB();
+  findById(db, id);
+  db.prepare(
+    `
+    UPDATE issues
+    SET assignee = ?
+    WHERE id = ?
+  `,
+  ).run(agentId, id);
+  logActivity(db, id, Action.EDIT, `Issue #${id} assigned to ${agentId}.`);
+  return getIssue(id);
+}
+
+//oops i accidentally put respondToIssue on wrong branch
+// /**
+//  * Accept a human response on a blocked issue and transition it back to in-progress.
+//  * @param {number} id
+//  * @param {string} message
+//  * @returns {Issue}
+//  */
+// export function respondToIssue(id, message) {
+//   const db = getDB();
+//   const issue = rowToIssue(findById(db, id));
+//   if (issue.status !== Status.BLOCKED) {
+//     throw new Error(
+//       `Cannot respond to Issue #${id} because it is not blocked; current status is ${issue.status}`,
+//     );
+//   }
+
+//   db.prepare(
+//     `
+//     UPDATE issues
+//     SET status = ?
+//     WHERE id = ?
+//   `,
+//   ).run(Status.IN_PROGRESS, id);
+
+//   logActivity(
+//     db,
+//     id,
+//     Action.STATE_CHANGE,
+//     `Issue #${id} moved from Blocked to In-Progress. Human message: "${message}"`,
+//   );
+//   return getIssue(id);
+// }
 
 /**
  * Change the status of an issue from in-review to closed
@@ -166,12 +222,14 @@ export function updateIssue(id, { title, description, tokenLimit } = {}) {
  */
 export function approveIssue(id) {
   const db = getDB();
-  const status = 'Closed';
-  db.prepare(`
+  const status = "Closed";
+  db.prepare(
+    `
     UPDATE issues
     SET status = ?
     WHERE id = ?
-  `).run(status, id);
+  `,
+  ).run(status, id);
   logActivity(db, id, Action.STATE_CHANGE, `Issue #${id} has been closed`);
   return getIssue(id);
 }
@@ -185,13 +243,20 @@ export function approveIssue(id) {
  */
 export function rejectIssue(id, reason) {
   const db = getDB();
-  const status = 'In-Progress';
-  db.prepare(`
+  const status = "In-Progress";
+  db.prepare(
+    `
     UPDATE issues
     SET status = ?
     WHERE id = ?
-  `).run(status, id);
-  logActivity(db, id, Action.REJECT, `Issue #${id} has been rejected due to "${reason}"`);
+  `,
+  ).run(status, id);
+  logActivity(
+    db,
+    id,
+    Action.REJECT,
+    `Issue #${id} has been rejected due to "${reason}"`,
+  );
   return getIssue(id);
 }
 
@@ -204,12 +269,19 @@ export function rejectIssue(id, reason) {
  */
 export function setStatus(id, status) {
   const db = getDB();
-  db.prepare(`
+  db.prepare(
+    `
     UPDATE issues
     SET status = ?
     WHERE id = ?
-  `).run(status, id);
-  logActivity(db, id, Action.STATE_CHANGE, `Issue #${id} status changed to ${status}.`);
+  `,
+  ).run(status, id);
+  logActivity(
+    db,
+    id,
+    Action.STATE_CHANGE,
+    `Issue #${id} status changed to ${status}.`,
+  );
   return getIssue(id);
 }
 
@@ -222,12 +294,19 @@ export function setStatus(id, status) {
  */
 export function setPriority(id, priority) {
   const db = getDB();
-  db.prepare(`
+  db.prepare(
+    `
     UPDATE issues
     SET priority = ?
     WHERE id = ?
-  `).run(priority, id);
-  logActivity(db, id, Action.PRIORITY_CHANGE, `Issue #${id} priority changed to ${priority}.`);
+  `,
+  ).run(priority, id);
+  logActivity(
+    db,
+    id,
+    Action.PRIORITY_CHANGE,
+    `Issue #${id} priority changed to ${priority}.`,
+  );
   return getIssue(id);
 }
 
@@ -239,11 +318,13 @@ export function setPriority(id, priority) {
  */
 export function incrementAttempt(id) {
   const db = getDB();
-  db.prepare(`
+  db.prepare(
+    `
     UPDATE issues
     SET attempt_num = attempt_num + 1
     WHERE id = ?
-  `).run(id);
+  `,
+  ).run(id);
   logActivity(db, id, Action.EDIT, `Attempt count increased for Issue #${id}.`);
   return getIssue(id);
 }
