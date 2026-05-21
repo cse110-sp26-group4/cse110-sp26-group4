@@ -110,7 +110,7 @@ export function getIssue(id) {
 /**
  * Helper function used to format and print Issues in a table
  * @param {Object} issue 
- * @param {{ id: number, title: number, status: number, priority: number, assignee: number }} width
+ * @param {{ id: number, title: string, status: string, priority: string, assignee: string }} width
  * @returns {void}
  */
 function printIssueTable(issue, width) {
@@ -125,13 +125,22 @@ function printIssueTable(issue, width) {
   const priorityVal = String(issue.priority || "Low");
   const assigneeVal = String(issue.assignee || "None");
 
-  console.log(
-    idVal.padEnd(width.id) + " │ "
-    + titleVal.padEnd(width.title) + " │ "
-    + statusVal.padEnd(width.status) + " │ "      
-    + priorityVal.padEnd(width.priority) + " │ "   
-    + assigneeVal.padEnd(width.assignee)        
-  );
+  let row = idVal.padEnd(width.id) + " │ "
+          + titleVal.padEnd(width.title) + " │ "
+          + statusVal.padEnd(width.status) + " │ "      
+          + priorityVal.padEnd(width.priority) + " │ "   
+          + assigneeVal.padEnd(width.assignee);
+
+  if (issue.description) {
+    let descVal = String(issue.description);
+    if (descVal.length > width.description) {
+      descVal = descVal.substring(0, width.description - 3) + "...";
+    }
+    // IMPORTANT: Keep the separator and padEnd here
+    row += " │ " + descVal.padEnd(width.description);
+  }
+
+  console.log(row);
 }
 
 /**
@@ -177,7 +186,7 @@ export function listIssues({ status, priority, assignee, limit = 50, offset = 0 
       return [];
     }
 
-    const width = { id: 5, title: 30, status: 15, priority: 10, assignee: 20 };
+    const width = { id: 5, title: 30, status: 15, priority: 10, assignee: 10 };
 
     console.log(`Filters: ${JSON.stringify({ status, priority, assignee })}`);
     console.log("");
@@ -221,7 +230,7 @@ export function searchIssues(query) {
     return [];
   }
 
-  const sql = `SELECT title, status, priority, assignee, id FROM issues 
+  const sql = `SELECT title, status, priority, assignee, id, description FROM issues 
   WHERE title LIKE ? OR description LIKE ?`;
 
   const searchTerm = `%${query.toLowerCase().trim()}%`;
@@ -235,7 +244,7 @@ export function searchIssues(query) {
       return [];
     }
 
-    const width = {id: 5, title: 30, status: 15, priority: 10, assignee: 20 };
+    const width = {id: 5, title: 30, status: 15, priority: 10, assignee: 10, description: 30 };
 
     console.log(`\nFound ${row.length} issue(s) containing "${query}":\n`);
     console.log(
@@ -243,7 +252,8 @@ export function searchIssues(query) {
       + "TITLE".padEnd(width.title) + " │ " 
       + "STATUS".padEnd(width.status) + " │ " 
       + "PRIORITY".padEnd(width.priority) + " │ " 
-      + "ASSIGNEE".padEnd(width.assignee)
+      + "ASSIGNEE".padEnd(width.assignee) + " │ "
+      + "DESCRIPTION".padEnd(width.description)
     );
 
     console.log(
@@ -251,7 +261,8 @@ export function searchIssues(query) {
       + "─".repeat(width.title) + "─┼─" 
       + "─".repeat(width.status) + "─┼─" 
       + "─".repeat(width.priority) + "─┼─" 
-      + "─".repeat(width.assignee)
+      + "─".repeat(width.assignee) + "─┼─" 
+      + "─".repeat(width.description) + "─┼─" 
     );
 
     row.forEach(issue => printIssueTable(issue, width));
