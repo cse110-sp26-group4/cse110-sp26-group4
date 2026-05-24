@@ -109,17 +109,70 @@ export function getIssue(id) {
 
 /**
  * List issues with optional filters. Does not log activity.
- * @param {{ status?: string, priority?: string, limit?: number, offset?: number }} options
+ * @param {{ status?: string, priority?: string, assignee?: string, limit?: number, offset?: number }} options
  * @returns {Issue[]}
  */
-export function listIssues({ status, priority, limit = 50, offset = 0 } = {}) {}
+export function listIssues({ status, priority, assignee, limit = 50, offset = 0 } = {}) {
+  const db = getDB();
+
+  let query = "SELECT * FROM issues WHERE 1=1";
+  const param = [];
+  const filter = [];
+
+  if (status) {
+    filter.push(`status = ?`);
+    param.push(filter.status);
+  }
+
+  if (priority) {
+    filter.push(`priority = ?`);
+    param.push(filter.priority);
+  }
+
+  if (assignee) {
+    filter.push(`assignee = ?`);
+    param.push(filter.assignee);
+  }
+
+  if (filter.length > 0) {
+    query += ` WHERE ` + filter.join(` AND `);
+  }
+
+  query += " LIMIT ? OFFSET ?";
+  param.push(limit, offset);
+
+  try {
+    const statement = db.prepare(query); 
+    return statement.all(...param);
+  } catch (error) {
+    return [];
+  }
+}
 
 /**
  * Search issues by title or description. Does not log activity.
  * @param {string} query
  * @returns {Issue[]}
  */
-export function searchIssues(query) {}
+export function searchIssues(query) {
+  const db = getDB();
+
+  if (!query || query.trim() == "") {
+    return [];
+  }
+
+  const sql = `SELECT * FROM issues 
+  WHERE title LIKE ? OR description LIKE ?`;
+
+  const searchTerm = `%${query.toLowerCase().trim()}%`;
+
+  try {
+    const statement = db.prepare(sql);
+    return statement.all(searchTerm, searchTerm);
+  } catch (error) {
+    return [];
+  }
+}
 
 /**
  * Update editable fields: title, description, tokenLimit.
