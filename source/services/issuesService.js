@@ -269,11 +269,17 @@ export function deleteIssue(id) {
  * @param {number} issueId
  * @returns {ActivityLog[]}
  */
-export function getActivityLog(issueId) {}
+export function getActivityLog(issueId) {
+  const db = getDB();
+  return db.prepare("SELECT * FROM activity WHERE id = ? ORDER BY log_id ASC").all(issueId);
+}
 
 /**
  * Get the most recent activity across all issues.
  * @param {{ limit?: number }} options
  * @returns {ActivityLog[]}
  */
-export function getRecentActivity({ limit = 20 } = {}) {}
+export function getRecentActivity({ limit = 20 } = {}) {
+  const db = getDB();
+  return db.prepare("SELECT * FROM activity ORDER BY log_id DESC LIMIT ?").all(limit);
+}
