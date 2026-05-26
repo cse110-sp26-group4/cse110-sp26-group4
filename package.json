@@ -9,11 +9,16 @@
   "scripts": {
     "test": "node --test tests/",
     "lint": "eslint source/",
-    "lint:fix": "eslint source/ --fix"
+    "lint:fix": "eslint source/ --fix",
+    "prepare": "husky",
+    "commitlint": "commitlint --edit" 
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.0.1",
+    "@commitlint/config-conventional": "^21.0.1",
     "@eslint/js": "^9.0.0",
-    "eslint": "^9.0.0"
+    "eslint": "^9.0.0",
+    "husky": "^9.1.7"
   },
   "engines": {
     "node": ">=22.0.0"
