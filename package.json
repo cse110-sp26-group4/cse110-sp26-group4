@@ -9,11 +9,13 @@
   "scripts": {
     "test": "node --test tests/",
     "lint": "eslint source/",
-    "lint:fix": "eslint source/ --fix"
+    "lint:fix": "eslint source/ --fix",
+    "build-docs": "jsdoc --pedantic -r source -d docs/jsdocs"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
-    "eslint": "^9.0.0"
+    "eslint": "^9.0.0",
+    "jsdoc": "^4.0.5"
   },
   "engines": {
     "node": ">=22.0.0"
