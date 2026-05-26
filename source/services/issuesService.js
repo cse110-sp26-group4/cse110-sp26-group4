@@ -162,12 +162,12 @@ export function updateIssue(id, { title, description, tokenLimit } = {}) {
 }
 
 /**
- * Assign an issue to an agent and log the assignment.
+ * Assign an issue to a user and log the assignment.
  * @param {number} id
- * @param {string} agentId
+ * @param {string} userId
  * @returns {Issue}
  */
-export function assignIssue(id, agentId) {
+export function assignIssue(id, userId) {
   const db = getDB();
   findById(db, id);
   db.prepare(
@@ -176,8 +176,8 @@ export function assignIssue(id, agentId) {
     SET assignee = ?
     WHERE id = ?
   `,
-  ).run(agentId, id);
-  logActivity(db, id, Action.EDIT, `Issue #${id} assigned to ${agentId}.`);
+  ).run(userId, id);
+  logActivity(db, id, Action.EDIT, `Issue #${id} assigned to ${userId}.`);
   return getIssue(id);
 }
 
