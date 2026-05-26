@@ -59,9 +59,17 @@ function findById(db, id) {
 }
 
 /**
+ * @typedef {Object} CreateIssueFields
+ * @property {string} [title] - The title of the issue.
+ * @property {string} [priority] - The priority level.
+ * @property {number} [tokenLimit] - The maximum token limit for the issue.
+ * @property {string} [description] - The detailed description of the issue.
+ */
+
+/**
  * Create a new issue.
  * Title defaults to "Issue #<id>" via SQL trigger if not provided.
- * @param {{ title?: string, priority?: string, tokenLimit?: number, description?: string }} fields
+ * @param {CreateIssueFields} fields - The fields to initialize the issue with.
  * @returns {Issue}
  */
 export function createIssue({
@@ -108,8 +116,16 @@ export function getIssue(id) {
 }
 
 /**
+ * @typedef {Object} ListIssuesOptions
+ * @property {string} [status] - Filter issues by their current status.
+ * @property {string} [priority] - Filter issues by their priority level.
+ * @property {number} [limit] - Maximum number of issues to return.
+ * @property {number} [offset] - Pagination offset.
+ */
+
+/**
  * List issues with optional filters. Does not log activity.
- * @param {{ status?: string, priority?: string, limit?: number, offset?: number }} options
+ * @param {ListIssuesOptions} options - Filtering and pagination options.
  * @returns {Issue[]}
  */
 export function listIssues({ status, priority, limit = 50, offset = 0 } = {}) {}
@@ -122,10 +138,17 @@ export function listIssues({ status, priority, limit = 50, offset = 0 } = {}) {}
 export function searchIssues(query) {}
 
 /**
+ * @typedef {Object} UpdateIssueFields
+ * @property {string} [title] - The updated title.
+ * @property {string} [description] - The updated description.
+ * @property {number} [tokenLimit] - The updated token limit.
+ */
+
+/**
  * Update editable fields: title, description, tokenLimit.
  * Logs an edit event.
  * @param {number} id
- * @param {{ title?: string, description?: string, tokenLimit?: number }} fields
+ * @param {UpdateIssueFields} fields - The fields to update.
  * @returns {Issue}
  */
 export function updateIssue(id, { title, description, tokenLimit } = {}) {
@@ -272,8 +295,13 @@ export function deleteIssue(id) {
 export function getActivityLog(issueId) {}
 
 /**
+ * @typedef {Object} RecentActivityOptions
+ * @property {number} [limit] - The maximum number of recent activity logs to retrieve.
+ */
+
+/**
  * Get the most recent activity across all issues.
- * @param {{ limit?: number }} options
+ * @param {RecentActivityOptions} options - Options for retrieving recent activity.
  * @returns {ActivityLog[]}
  */
 export function getRecentActivity({ limit = 20 } = {}) {}
