@@ -1,7 +1,7 @@
 export const Status = Object.freeze({
   OPEN: "Open",
   IN_PROGRESS: "In-Progress",
-  // BLOCKED: "Blocked", for respondToIssue, but not currently used
+  BLOCKED: "Blocked",
   CLOSED: "Closed",
 });
 

@@ -181,38 +181,38 @@ export function assignIssue(id, userId) {
   return getIssue(id);
 }
 
-//oops i accidentally put respondToIssue on wrong branch
-// /**
-//  * Accept a human response on a blocked issue and transition it back to in-progress.
-//  * @param {number} id
-//  * @param {string} message
-//  * @returns {Issue}
-//  */
-// export function respondToIssue(id, message) {
-//   const db = getDB();
-//   const issue = rowToIssue(findById(db, id));
-//   if (issue.status !== Status.BLOCKED) {
-//     throw new Error(
-//       `Cannot respond to Issue #${id} because it is not blocked; current status is ${issue.status}`,
-//     );
-//   }
+/**
+ * Accept a user response on a blocked issue and transition it back to in-progress.
+ * @param {number} id
+ * @param {string} message
+ * @param {string} userId
+ * @returns {Issue}
+ */
+export function respondToIssue(id, userId, message) {
+  const db = getDB();
+  const issue = rowToIssue(findById(db, id));
+  if (issue.status !== Status.BLOCKED) {
+    throw new Error(
+      `Cannot respond to Issue #${id} because it is not blocked; current status is ${issue.status}`,
+    );
+  }
 
-//   db.prepare(
-//     `
-//     UPDATE issues
-//     SET status = ?
-//     WHERE id = ?
-//   `,
-//   ).run(Status.IN_PROGRESS, id);
+  db.prepare(
+    `
+    UPDATE issues
+    SET status = ?
+    WHERE id = ?
+  `,
+  ).run(Status.IN_PROGRESS, id);
 
-//   logActivity(
-//     db,
-//     id,
-//     Action.STATE_CHANGE,
-//     `Issue #${id} moved from Blocked to In-Progress. Human message: "${message}"`,
-//   );
-//   return getIssue(id);
-// }
+  logActivity(
+    db,
+    id,
+    Action.STATE_CHANGE,
+    `Issue #${id} unblocked. Response logged and agent notified. ${userId} message: "${message}"`,
+  );
+  return getIssue(id);
+}
 
 /**
  * Change the status of an issue from in-review to closed
