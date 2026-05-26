@@ -38,9 +38,10 @@ export function initDB() {
       attempt_num INTEGER DEFAULT 0 NOT NULL,
       title TEXT DEFAULT 'PENDING' NOT NULL,
       status TEXT NOT NULL DEFAULT 'Open'
-        CHECK (status IN ('Open', 'In-Progress', 'Closed')),
+        CHECK (status IN ('Open', 'In-Progress', 'Blocked', 'Closed')), 
       priority TEXT DEFAULT 'Low'
         CHECK (priority IN ('Low', 'Medium', 'High')),
+      assignee TEXT,
       token_limit INTEGER CHECK (token_limit >= 0),
       description TEXT
     );
