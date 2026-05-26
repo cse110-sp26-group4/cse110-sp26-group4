@@ -1,5 +1,5 @@
 {
-  "branches": ["main", "docs/jack/automatic-changelog-generation"],
+  "branches": ["main"],
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",

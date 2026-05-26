@@ -2,7 +2,7 @@ name: Release
 on:
   push:
     branches:
-      - docs/jack/automatic-changelog-generation
+      - main
 
 jobs:
   release:
