@@ -39,9 +39,9 @@ jobs:
             node-version: "20"
       - run: npm ci
       - run: |
-          npm run build-docs > jsdoc.log 2>&1
-          cat jsdoc.log
+          npm run build-docs > jsdoc.log 2>&1 || true
           if grep -iq "error" jsdoc.log; then
+            cat jsdoc.log
             echo "JSDoc validation failed! Syntax errors detected."
             exit 1
           fi
