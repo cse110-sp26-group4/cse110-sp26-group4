@@ -11,14 +11,18 @@
     "lint": "eslint source/",
     "lint:fix": "eslint source/ --fix",
     "prepare": "husky",
-    "commitlint": "commitlint --edit" 
+    "commitlint": "commitlint --edit",
+    "semantic-release": "semantic-release"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.0.1",
     "@commitlint/config-conventional": "^21.0.1",
     "@eslint/js": "^9.0.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
     "eslint": "^9.0.0",
-    "husky": "^9.1.7"
+    "husky": "^9.1.7",
+    "semantic-release": "^25.0.3"
   },
   "engines": {
     "node": ">=22.0.0"
