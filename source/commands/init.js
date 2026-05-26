@@ -35,16 +35,9 @@ import {
 const DEFAULT_SPECS_PATH = join('docs', 'specs', 'project-requirements.md');
 
 /**
- * Represents the parsed command-line flags for initialization.
- * @typedef {Object} InitFlags
- * @property {boolean} force - Whether to force initialization even if already initialized.
- * @property {string | null} specs - The resolved path to the specifications file.
- */
-
-/**
  * Parses the initialization flags.
  * @param {string[]} args
- * @returns {InitFlags}
+ * @returns {{ force: boolean, specs: string | null }}
  */
 function parseInitFlags(args) {
   const specsFromFlag = getFlagValue(args, '--specs');
@@ -62,14 +55,6 @@ function parseInitFlags(args) {
     specs: specsFromFlag ?? positionalSpecs,
   };
 }
-
-/**
- * Represents a discrete requirement parsed from the markdown specs.
- * @typedef {Object} Requirement
- * @property {string} title - The title or ID of the requirement (e.g., FR-1).
- * @property {string} description - The detailed breakdown of the requirement.
- * @property {string} priority - The assigned urgency level.
- */
 
 /**
  * Parses the must requirements from the markdown file.
@@ -107,7 +92,7 @@ function parseMustRequirements(markdown) {
 /**
  * Generates issues from the specs file.
  * @param {string | null} specsPath
- * @returns {Issue[]}
+ * @returns {import('../models/issue.js').Issue[]}
  */
 function generateIssuesFromSpecs(specsPath) {
   const resolvedPath = resolvePath(specsPath, DEFAULT_SPECS_PATH);

@@ -88,16 +88,9 @@ export function getNumericFlag(args, flag) {
 }
 
 /**
- * Represents the options for parsing the first positional argument.
- * @typedef {Object} FirstPositionalArgOptions
- * @property {string[]} [valueFlags]
- * @property {string[]} [ignoreFlags]
- */
-
-/**
  * First positional argument, skipping flag tokens and values consumed by value flags.
  * @param {string[]} args
- * @param {FirstPositionalArgOptions} [options]
+ * @param {{ valueFlags?: string[], ignoreFlags?: string[] }} [options]
  * @returns {string | null}
  */
 export function getFirstPositionalArg(
