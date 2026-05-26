@@ -75,7 +75,7 @@ function parseInitFlags(args) {
  * Parses the must requirements from the markdown file.
  * Likely to be changed in future iterations when AI implementation is added.
  * @param {string} markdown
- * @returns {{ title: string, description: string, priority: string }[]}
+ * @returns {Requirement[]}
  */
 function parseMustRequirements(markdown) {
   const issues = [];
