@@ -1,4 +1,6 @@
-// AI was consulted for some portions of this file.
+/** AI was consulted to help draft the initial better-sqlite3 setup and explain how to create/open the SQLite database filem. 
+*The final schema choices, file structure, and code review changes were made by the team.
+*/
 /* global process */
 
 import Database from "better-sqlite3";
