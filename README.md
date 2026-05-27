@@ -1,5 +1,8 @@
 # Fantastic Four
 
+## Developer Guide
+[Contributing guide](CONTRIBUTING.md)
+
 ## Project Details: 
 TBD
 
