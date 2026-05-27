@@ -69,7 +69,6 @@ export function createIssue({
   tokenLimit,
   description,
 } = {}) {
-  Issue.validate({ title, priority, tokenLimit });
 
   const db = getDB();
   const result = db
@@ -333,7 +332,12 @@ function trackerStmts() {
  * @returns {boolean}
  */
 export function isTrackerReady() {
-  const row = trackerStmts().schemaReady.get();
+  const db = getDB();
+  const row = db.prepare(`
+    SELECT COUNT(*) AS table_count
+    FROM sqlite_master
+    WHERE type = 'table' AND name IN ('issues', 'activity')
+  `).get();
   return (row?.table_count ?? 0) === 2;
 }
 
