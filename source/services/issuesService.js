@@ -1,11 +1,10 @@
 import { getDB } from '../db.js';
 import {
   Issue,
-  ActivityLog,
   Status,
   Priority,
-  Action,
 } from "../models/issue.js";
+import { ActivityLog, Action } from '../models/activityLog.js';
 
 /**
  * Internal helper to log actions.
