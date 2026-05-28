@@ -126,36 +126,36 @@ export function getIssue(id) {
  * @param {ListIssuesOptions} options - Filtering and pagination options.
  * @returns {Issue[]}
  */
-export function listIssues({ status, priority, limit = 50, offset = 0 } = {}) {
+export function listIssues({ status, priority, limit, offset } = {}) {
   const db = getDB();
 
-  let query = "SELECT * FROM issues WHERE 1=1";
+  let query = "SELECT * FROM issues";
   const param = [];
-  const filter = [];
+  const filters = [];
 
   if (status) {
-    filter.push(`status = ?`);
-    param.push(filter.status);
+    filters.push(`status COLLATE NOCASE = ?`);
+    param.push(status);
   }
 
   if (priority) {
-    filter.push(`priority = ?`);
-    param.push(filter.priority);
+    filters.push(`priority COLLATE NOCASE = ?`);
+    param.push(priority);
   }
 
-  if (filter.length > 0) {
-    query += ` WHERE ` + filter.join(` AND `);
+  if (filters.length > 0) {
+    query += ` WHERE ` + filters.join(` AND `);
   }
+
+  // set defaults if limit or offset is NULL
+  const limitVal = limit ?? 50;
+  const offsetVal = offset ?? 0;
 
   query += " LIMIT ? OFFSET ?";
-  param.push(limit, offset);
+  param.push(limitVal, offsetVal);
 
-  try {
-    const statement = db.prepare(query); 
-    return statement.all(...param);
-  } catch (error) {
-    return [];
-  }
+  const statement = db.prepare(query); 
+  return statement.all(...param);
 }
 
 /**
