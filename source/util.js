@@ -2,7 +2,6 @@
 // AI was consulted for small portions of this file.
 // utility functions for the issue tracker transferred over from other files
 // centralizing these functions here to avoid duplication and improve code organization.
-/* global console, process */
 
 import { isAbsolute, resolve } from 'node:path';
 
@@ -88,9 +87,16 @@ export function getNumericFlag(args, flag) {
 }
 
 /**
+ * Represents the options for parsing the first positional argument.
+ * @typedef {Object} FirstPositionalArgOptions
+ * @property {string[]} [valueFlags]
+ * @property {string[]} [ignoreFlags]
+ */
+
+/**
  * First positional argument, skipping flag tokens and values consumed by value flags.
  * @param {string[]} args
- * @param {{ valueFlags?: string[], ignoreFlags?: string[] }} [options]
+ * @param {FirstPositionalArgOptions} [options]
  * @returns {string | null}
  */
 export function getFirstPositionalArg(
