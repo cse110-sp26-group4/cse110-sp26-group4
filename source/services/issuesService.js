@@ -126,14 +126,62 @@ export function getIssue(id) {
  * @param {ListIssuesOptions} options - Filtering and pagination options.
  * @returns {Issue[]}
  */
-export function listIssues({ status, priority, limit = 50, offset = 0 } = {}) {}
+export function listIssues({ status, priority, limit = 50, offset = 0 } = {}) {
+  const db = getDB();
+
+  let query = "SELECT * FROM issues WHERE 1=1";
+  const param = [];
+  const filter = [];
+
+  if (status) {
+    filter.push(`status = ?`);
+    param.push(filter.status);
+  }
+
+  if (priority) {
+    filter.push(`priority = ?`);
+    param.push(filter.priority);
+  }
+
+  if (filter.length > 0) {
+    query += ` WHERE ` + filter.join(` AND `);
+  }
+
+  query += " LIMIT ? OFFSET ?";
+  param.push(limit, offset);
+
+  try {
+    const statement = db.prepare(query); 
+    return statement.all(...param);
+  } catch (error) {
+    return [];
+  }
+}
 
 /**
  * Search issues by title or description. Does not log activity.
  * @param {string} query
  * @returns {Issue[]}
  */
-export function searchIssues(query) {}
+export function searchIssues(query) {
+  const db = getDB();
+
+  if (!query || query.trim() == "") {
+    return [];
+  }
+
+  const sql = `SELECT * FROM issues 
+  WHERE title LIKE ? OR description LIKE ?`;
+
+  const searchTerm = `%${query.toLowerCase().trim()}%`;
+
+  try {
+    const statement = db.prepare(sql);
+    return statement.all(searchTerm, searchTerm);
+  } catch (error) {
+    return [];
+  }
+}
 
 /**
  * @typedef {Object} UpdateIssueFields
