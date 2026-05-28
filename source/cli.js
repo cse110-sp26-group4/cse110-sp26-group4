@@ -31,6 +31,7 @@ Commands:
   next     Work on the highest-priority open issue
   loop     Run the agent autonomously for multiple steps
   status   Show issue counts and overall progress
+  search   Search issues by title and description (case insensitive)
 
 Options:
   init --force              Re-initialize an existing tracker database
@@ -39,6 +40,7 @@ Options:
   Default specs: docs/specs/project-requirements.md
   loop --steps <n>          Number of autonomous steps (alias: -n)
   loop -n <n>
+  search <query>
 
 Examples:
   baton init
@@ -48,6 +50,7 @@ Examples:
   baton next
   baton loop --steps 5
   baton status
+  baton search system
 `;
 
 /**

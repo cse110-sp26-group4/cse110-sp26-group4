@@ -1,9 +1,7 @@
 // search.js
 // AI was consulted for some portions of this file.
 // search command which allows the user to search for issues by keywords (case insensitive).
-// Usage:
-//  baton search "login bug"
-//  baton loop auth
+// Usage: baton search "login bug"
 
 import { searchIssues } from "../services/issuesService.js";
 
