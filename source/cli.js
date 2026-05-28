@@ -18,6 +18,7 @@ import { run as runNext } from './commands/next.js';
 import { run as runLoop } from './commands/loop.js';
 import { run as runStatus } from './commands/status.js';
 import { wantsHelp } from './util.js';
+import { run as runView} from './commands/view.js';
 
 const HELP = `baton — AI agent issue tracker CLI
 
@@ -29,6 +30,7 @@ Commands:
   next     Work on the highest-priority open issue
   loop     Run the agent autonomously for multiple steps
   status   Show issue counts and overall progress
+  view     View all issue fields for a given issue ID
 
 Options:
   init --force              Re-initialize an existing tracker database
@@ -37,6 +39,7 @@ Options:
   Default specs: docs/specs/project-requirements.md
   loop --steps <n>          Number of autonomous steps (alias: -n)
   loop -n <n>
+  view <id>  
 
 Examples:
   baton init
@@ -46,6 +49,7 @@ Examples:
   baton next
   baton loop --steps 5
   baton status
+  baton view 29
 `;
 
 /**
@@ -66,6 +70,7 @@ async function main() {
     next: () => runNext(args),
     loop: () => runLoop(args),
     status: () => runStatus(args),
+    view: () => runView(args)
   };
 
   const handler = handlers[command];
