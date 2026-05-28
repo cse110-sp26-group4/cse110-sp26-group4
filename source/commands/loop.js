@@ -10,8 +10,6 @@
 //  baton loop --steps 5
 //  baton loop -n 5
 
-/* global console */
-
 import { isTrackerReady } from '../services/issuesService.js';
 import { getNumericFlag, reportTrackerNotReady } from '../util.js';
 import { run as runNext } from './next.js';

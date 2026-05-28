@@ -86,7 +86,7 @@ node source/cli.js [command]
     Implement your changes, following the code style and adding tests as needed.
 3.  **Verification:** 
 
-    Ensure all tests pass (`npm test`) and linting is clean (`npm run lint`), and updating documentation (`npm run build-docs`) doesn't throw errors.
+    Ensure all tests pass (`npm test`) and linting is clean (`npm run lint`), and updating documentation (`npm run build-docs`) doesn't throw errors. Documentation creation is automated, so please don't push any JSDoc documentation.
 4.  **Commit:** 
 
     Commit your changes using commit messages following the Conventional Commits standard.

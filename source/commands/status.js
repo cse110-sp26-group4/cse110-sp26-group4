@@ -3,8 +3,6 @@
 // status command for the issue tracker which allows the user to see the status of the tracker.
 // usage: baton status
 
-/* global console */
-
 import {
   isTrackerReady,
   getIssueStats,
