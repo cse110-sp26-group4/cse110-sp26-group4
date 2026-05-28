@@ -22,9 +22,7 @@ const WIDTHS = {
  */
 export async function run(args) {
     if (args.length == 0) {
-        console.log(`Invalid input: No search term was entered.`);
-        console.log(`Usage: baton search <query>`);
-        return 2;
+        throw new Error("Invalid input: No search term entered.\nUsage: baton search <query>");
     }
 
     try {
@@ -41,21 +39,21 @@ export async function run(args) {
 
         // Logic for table formatting 
         console.log(
-        "ID".padEnd(WIDTHS.id) + " │ " 
-        + "TITLE".padEnd(WIDTHS.title) + " │ " 
-        + "STATUS".padEnd(WIDTHS.status) + " │ " 
-        + "PRIORITY".padEnd(WIDTHS.priority) + " │ " 
-        //+ "ASSIGNEE".padEnd(WIDTHS.assignee) + " │ "
-        + "DESCRIPTION".padEnd(WIDTHS.description)
+          "ID".padEnd(WIDTHS.id) + " │ " 
+          + "TITLE".padEnd(WIDTHS.title) + " │ " 
+          + "STATUS".padEnd(WIDTHS.status) + " │ " 
+          + "PRIORITY".padEnd(WIDTHS.priority) + " │ " 
+          //+ "ASSIGNEE".padEnd(WIDTHS.assignee) + " │ "
+          + "DESCRIPTION".padEnd(WIDTHS.description)
         );
 
         console.log(
-        "─".repeat(WIDTHS.id) + "─┼─" 
-        + "─".repeat(WIDTHS.title) + "─┼─" 
-        + "─".repeat(WIDTHS.status) + "─┼─" 
-        + "─".repeat(WIDTHS.priority) + "─┼─" 
-        //+ "─".repeat(WIDTHS.assignee) + "─┼─" 
-        + "─".repeat(WIDTHS.description)
+          "─".repeat(WIDTHS.id) + "─┼─" 
+          + "─".repeat(WIDTHS.title) + "─┼─" 
+          + "─".repeat(WIDTHS.status) + "─┼─" 
+          + "─".repeat(WIDTHS.priority) + "─┼─" 
+          //+ "─".repeat(WIDTHS.assignee) + "─┼─" 
+          + "─".repeat(WIDTHS.description)
         );
 
         result.forEach(issue => printIssueTable(issue, WIDTHS));
@@ -64,7 +62,7 @@ export async function run(args) {
         return 0;
     } catch (error) {
         // Failed to query database
-        console.error("Error: Could not query the database.");
+        console.error("Error: Failed to retrieve data.");
         console.error(error.message);
         return 1;
     }
