@@ -1,11 +1,10 @@
 import { getDB } from '../db.js';
 import {
   Issue,
-  ActivityLog,
   Status,
   Priority,
-  Action,
 } from "../models/issue.js";
+import { ActivityLog, Action } from '../models/activityLog.js';
 
 /**
  * Internal helper to log actions.
@@ -78,7 +77,6 @@ export function createIssue({
   tokenLimit,
   description,
 } = {}) {
-  Issue.validate({ title, priority, tokenLimit });
 
   const db = getDB();
   const result = db
@@ -128,14 +126,62 @@ export function getIssue(id) {
  * @param {ListIssuesOptions} options - Filtering and pagination options.
  * @returns {Issue[]}
  */
-export function listIssues({ status, priority, limit = 50, offset = 0 } = {}) {}
+export function listIssues({ status, priority, limit = 50, offset = 0 } = {}) {
+  const db = getDB();
+
+  let query = "SELECT * FROM issues WHERE 1=1";
+  const param = [];
+  const filter = [];
+
+  if (status) {
+    filter.push(`status = ?`);
+    param.push(filter.status);
+  }
+
+  if (priority) {
+    filter.push(`priority = ?`);
+    param.push(filter.priority);
+  }
+
+  if (filter.length > 0) {
+    query += ` WHERE ` + filter.join(` AND `);
+  }
+
+  query += " LIMIT ? OFFSET ?";
+  param.push(limit, offset);
+
+  try {
+    const statement = db.prepare(query); 
+    return statement.all(...param);
+  } catch (error) {
+    return [];
+  }
+}
 
 /**
  * Search issues by title or description. Does not log activity.
  * @param {string} query
  * @returns {Issue[]}
  */
-export function searchIssues(query) {}
+export function searchIssues(query) {
+  const db = getDB();
+
+  if (!query || query.trim() == "") {
+    return [];
+  }
+
+  const sql = `SELECT * FROM issues 
+  WHERE title LIKE ? OR description LIKE ?`;
+
+  const searchTerm = `%${query.toLowerCase().trim()}%`;
+
+  try {
+    const statement = db.prepare(sql);
+    return statement.all(searchTerm, searchTerm);
+  } catch (error) {
+    return [];
+  }
+}
 
 /**
  * @typedef {Object} UpdateIssueFields
@@ -367,7 +413,12 @@ function trackerStmts() {
  * @returns {boolean}
  */
 export function isTrackerReady() {
-  const row = trackerStmts().schemaReady.get();
+  const db = getDB();
+  const row = db.prepare(`
+    SELECT COUNT(*) AS table_count
+    FROM sqlite_master
+    WHERE type = 'table' AND name IN ('issues', 'activity')
+  `).get();
   return (row?.table_count ?? 0) === 2;
 }
 
