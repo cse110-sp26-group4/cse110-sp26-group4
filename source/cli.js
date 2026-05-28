@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* global console, process */
 // cli.js
 // AI was consulted for large portions of this file.
 // CLI for the issue tracker which allows the user to interact with the tracker.
