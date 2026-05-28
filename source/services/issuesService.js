@@ -310,7 +310,7 @@ export function getActivityLog(issueId) {
 export function getRecentActivity({ limit = 20 } = {}) {
   const db = getDB();
   return db.prepare("SELECT * FROM activity ORDER BY log_id DESC LIMIT ?").all(limit);
-
+}
 // =============================================================================
 // Tracker operations (CLI: init / next / status / loop)
 // To be edited later if needed.
