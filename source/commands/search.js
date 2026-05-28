@@ -62,7 +62,7 @@ export async function run(args) {
         return 0;
     } catch (error) {
         // Failed to query database
-        console.error("Error: Could not query the database.");
+        console.error("Error: Failed to retrieve data.");
         console.error(error.message);
         return 1;
     }
