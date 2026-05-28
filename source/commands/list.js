@@ -10,8 +10,6 @@
 //  --offset <n>      Skip first n results (default: 0)
 //  -h, --help        Show this help
 
-/* global console */
-
 import { listIssues } from '../services/issuesService.js';
 import { getFlagValue, getNumericFlag } from '../util.js';
 
