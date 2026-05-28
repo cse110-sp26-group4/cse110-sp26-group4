@@ -5,8 +5,6 @@
 //  baton search "login bug"
 //  baton loop auth
 
-/* global console */
-
 import { searchIssues } from "../services/issuesService.js";
 
 // Column widths for displaying the results
@@ -15,8 +13,8 @@ const WIDTHS = {
   title: 30,
   status: 15,
   priority: 10,
-  assignee: 10,
-  description: 30
+  //assignee: 10,
+  description: 40
 };
 
 /**
@@ -49,7 +47,7 @@ export async function run(args) {
         + "TITLE".padEnd(WIDTHS.title) + " │ " 
         + "STATUS".padEnd(WIDTHS.status) + " │ " 
         + "PRIORITY".padEnd(WIDTHS.priority) + " │ " 
-        + "ASSIGNEE".padEnd(WIDTHS.assignee) + " │ "
+        //+ "ASSIGNEE".padEnd(WIDTHS.assignee) + " │ "
         + "DESCRIPTION".padEnd(WIDTHS.description)
         );
 
@@ -58,7 +56,7 @@ export async function run(args) {
         + "─".repeat(WIDTHS.title) + "─┼─" 
         + "─".repeat(WIDTHS.status) + "─┼─" 
         + "─".repeat(WIDTHS.priority) + "─┼─" 
-        + "─".repeat(WIDTHS.assignee) + "─┼─" 
+        //+ "─".repeat(WIDTHS.assignee) + "─┼─" 
         + "─".repeat(WIDTHS.description)
         );
 
@@ -91,14 +89,14 @@ function printIssueTable(issue, width) {
 
   const statusVal = String(issue.status || "Open");
   const priorityVal = String(issue.priority || "Low");
-  const assigneeVal = String(issue.assignee || "N/A");
+  //const assigneeVal = String(issue.assignee || "N/A");
   const descVal = String(issue.desc || "N/A");
 
   let row = idVal.padEnd(width.id) + " │ "
           + titleVal.padEnd(width.title) + " │ "
           + statusVal.padEnd(width.status) + " │ "      
           + priorityVal.padEnd(width.priority) + " │ "   
-          + assigneeVal.padEnd(width.assignee) + " │ " 
+          //+ assigneeVal.padEnd(width.assignee) + " │ " 
           + descVal.padEnd(width.description);
 
   console.log(row);
