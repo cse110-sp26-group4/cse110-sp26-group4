@@ -16,10 +16,10 @@ import { getFlagValue, getNumericFlag } from '../util.js';
 // Column widths for displaying the results
 const WIDTHS = {
   id: 5,
-  title: 30,
+  title: 20,
   status: 15,
   priority: 10,
-  description: 40
+  description: 60
 };
 
 /**
@@ -101,7 +101,10 @@ function printIssueTable(issue, width) {
 
   const statusVal = String(issue.status || "Open");
   const priorityVal = String(issue.priority || "Low");
-  const descVal = String(issue.desc || "N/A");
+  let descVal = String(issue.description || "N/A");
+  if (descVal.length > width.description) {
+    descVal = descVal.substring(0, width.description - 3) + "...";
+  }
 
   let row = idVal.padEnd(width.id) + " │ "
           + titleVal.padEnd(width.title) + " │ "
