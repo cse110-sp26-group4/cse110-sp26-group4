@@ -3,8 +3,6 @@
 // next command for the issue tracker which allows the user to manually move the AI from issue to issue.
 // usage: baton next
 
-/* global console */
-
 import {
   isTrackerReady,
   selectNextIssue,

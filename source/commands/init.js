@@ -11,8 +11,6 @@
 //  baton init --specs ./path/to/my-specs.md
 //  baton init --specs C:\full\path\to\specs.md
 
-/* global console, process */
-
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { initDB } from '../db/index.js';
