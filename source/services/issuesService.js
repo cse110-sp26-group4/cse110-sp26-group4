@@ -338,7 +338,10 @@ export function deleteIssue(id) {
  * @param {number} issueId
  * @returns {ActivityLog[]}
  */
-export function getActivityLog(issueId) {}
+export function getActivityLog(issueId) {
+  const db = getDB();
+  return db.prepare("SELECT * FROM activity WHERE id = ? ORDER BY log_id ASC").all(issueId);
+}
 
 /**
  * @typedef {Object} RecentActivityOptions
@@ -350,8 +353,10 @@ export function getActivityLog(issueId) {}
  * @param {RecentActivityOptions} options - Options for retrieving recent activity.
  * @returns {ActivityLog[]}
  */
-export function getRecentActivity({ limit = 20 } = {}) {}
-
+export function getRecentActivity({ limit = 20 } = {}) {
+  const db = getDB();
+  return db.prepare("SELECT * FROM activity ORDER BY log_id DESC LIMIT ?").all(limit);
+}
 // =============================================================================
 // Tracker operations (CLI: init / next / status / loop)
 // To be edited later if needed.
