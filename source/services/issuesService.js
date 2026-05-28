@@ -123,11 +123,10 @@ export function getIssue(id) {
 
 /**
  * List issues with optional filters. Does not log activity.
- * @param {{ status?: string, priority?: string, assignee?: string, limit?: number, offset?: number }} options
  * @param {ListIssuesOptions} options - Filtering and pagination options.
  * @returns {Issue[]}
  */
-export function listIssues({ status, priority, assignee, limit = 50, offset = 0 } = {}) {
+export function listIssues({ status, priority, limit = 50, offset = 0 } = {}) {
   const db = getDB();
 
   let query = "SELECT * FROM issues WHERE 1=1";
@@ -142,11 +141,6 @@ export function listIssues({ status, priority, assignee, limit = 50, offset = 0 
   if (priority) {
     filter.push(`priority = ?`);
     param.push(filter.priority);
-  }
-
-  if (assignee) {
-    filter.push(`assignee = ?`);
-    param.push(filter.assignee);
   }
 
   if (filter.length > 0) {
