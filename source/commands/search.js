@@ -35,7 +35,7 @@ export async function run(args) {
             return 0;
         }
 
-        console.log(`Found ${result.length} issue(s) containing "${query}":\n`);
+        console.log(`\nFound ${result.length} issue(s) containing "${query}":\n`);
 
         // Logic for table formatting 
         console.log(
