@@ -48,3 +48,7 @@ export function initDB() {
 export function getDB() {
   return db;
 }
+
+export function getSQLiteDB() {
+  return sqliteConnection;
+}
