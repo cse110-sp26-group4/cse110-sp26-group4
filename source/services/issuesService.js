@@ -1,11 +1,10 @@
-import  { getDB } from  "../db.js";
+import { getDB } from '../db.js';
 import {
   Issue,
-  ActivityLog,
   Status,
   Priority,
-  Action,
 } from "../models/issue.js";
+import { ActivityLog, Action } from '../models/activityLog.js';
 
 /**
  * Internal helper to log actions.
@@ -59,9 +58,17 @@ function findById(db, id) {
 }
 
 /**
+ * @typedef {Object} CreateIssueFields
+ * @property {string} [title] - The title of the issue.
+ * @property {string} [priority] - The priority level.
+ * @property {number} [tokenLimit] - The maximum token limit for the issue.
+ * @property {string} [description] - The detailed description of the issue.
+ */
+
+/**
  * Create a new issue.
  * Title defaults to "Issue #<id>" via SQL trigger if not provided.
- * @param {{ title?: string, priority?: string, tokenLimit?: number, description?: string }} fields
+ * @param {CreateIssueFields} fields - The fields to initialize the issue with.
  * @returns {Issue}
  */
 export function createIssue({
@@ -70,7 +77,6 @@ export function createIssue({
   tokenLimit,
   description,
 } = {}) {
-  Issue.validate({ title, priority, tokenLimit });
 
   const db = getDB();
   const result = db
@@ -108,8 +114,17 @@ export function getIssue(id) {
 }
 
 /**
+ * @typedef {Object} ListIssuesOptions
+ * @property {string} [status] - Filter issues by their current status.
+ * @property {string} [priority] - Filter issues by their priority level.
+ * @property {number} [limit] - Maximum number of issues to return.
+ * @property {number} [offset] - Pagination offset.
+ */
+
+/**
  * List issues with optional filters. Does not log activity.
  * @param {{ status?: string, priority?: string, assignee?: string, limit?: number, offset?: number }} options
+ * @param {ListIssuesOptions} options - Filtering and pagination options.
  * @returns {Issue[]}
  */
 export function listIssues({ status, priority, assignee, limit = 50, offset = 0 } = {}) {
@@ -175,10 +190,17 @@ export function searchIssues(query) {
 }
 
 /**
+ * @typedef {Object} UpdateIssueFields
+ * @property {string} [title] - The updated title.
+ * @property {string} [description] - The updated description.
+ * @property {number} [tokenLimit] - The updated token limit.
+ */
+
+/**
  * Update editable fields: title, description, tokenLimit.
  * Logs an edit event.
  * @param {number} id
- * @param {{ title?: string, description?: string, tokenLimit?: number }} fields
+ * @param {UpdateIssueFields} fields - The fields to update.
  * @returns {Issue}
  */
 export function updateIssue(id, { title, description, tokenLimit } = {}) {
@@ -325,8 +347,150 @@ export function deleteIssue(id) {
 export function getActivityLog(issueId) {}
 
 /**
+ * @typedef {Object} RecentActivityOptions
+ * @property {number} [limit] - The maximum number of recent activity logs to retrieve.
+ */
+
+/**
  * Get the most recent activity across all issues.
- * @param {{ limit?: number }} options
+ * @param {RecentActivityOptions} options - Options for retrieving recent activity.
  * @returns {ActivityLog[]}
  */
 export function getRecentActivity({ limit = 20 } = {}) {}
+
+// =============================================================================
+// Tracker operations (CLI: init / next / status / loop)
+// To be edited later if needed.
+// =============================================================================
+
+/** Lazily prepared statements used only by the CLI-facing exports below. */
+let _trackerStmts = null;
+
+function trackerStmts() {
+  const db = getDB();
+  if (!_trackerStmts) {
+    _trackerStmts = {
+      schemaReady: db.prepare(`
+        SELECT COUNT(*) AS table_count
+        FROM sqlite_master
+        WHERE type = 'table' AND name IN ('issues', 'activity')
+      `),
+      issueStats: db.prepare(`
+        SELECT
+          COUNT(*) AS total,
+          COALESCE(SUM(CASE WHEN status = 'Open' THEN 1 ELSE 0 END), 0) AS open_count,
+          COALESCE(SUM(CASE WHEN status = 'In-Progress' THEN 1 ELSE 0 END), 0) AS in_progress_count,
+          COALESCE(SUM(CASE WHEN status = 'Closed' THEN 1 ELSE 0 END), 0) AS closed_count
+        FROM issues
+      `),
+      allIssues: db.prepare('SELECT * FROM issues ORDER BY id ASC'),
+      nextOpenIssue: db.prepare(`
+        SELECT *
+        FROM issues
+        WHERE status = 'Open'
+        ORDER BY
+          CASE priority
+            WHEN 'High' THEN 0
+            WHEN 'Medium' THEN 1
+            WHEN 'Low' THEN 2
+            ELSE 3
+          END,
+          id ASC
+        LIMIT 1
+      `),
+      updateWorkOnIssue: db.prepare(`
+        UPDATE issues
+        SET status = ?, attempt_num = attempt_num + 1
+        WHERE id = ?
+      `),
+      clearAllIssues: db.prepare('DELETE FROM issues'),
+    };
+  }
+  return _trackerStmts;
+}
+
+/**
+ * True when both `issues` and `activity` tables exist (matches initDB schema).
+ * @returns {boolean}
+ */
+export function isTrackerReady() {
+  const db = getDB();
+  const row = db.prepare(`
+    SELECT COUNT(*) AS table_count
+    FROM sqlite_master
+    WHERE type = 'table' AND name IN ('issues', 'activity')
+  `).get();
+  return (row?.table_count ?? 0) === 2;
+}
+
+/**
+ * Issue counts by status for `baton status` (single round-trip).
+ * @returns {{ total: number, open: number, inProgress: number, closed: number }}
+ */
+export function getIssueStats() {
+  const row = trackerStmts().issueStats.get();
+  return {
+    total: row.total ?? 0,
+    open: row.open_count ?? 0,
+    inProgress: row.in_progress_count ?? 0,
+    closed: row.closed_count ?? 0,
+  };
+}
+
+/**
+ * All issues ordered by id.
+ * @returns {object[]}
+ */
+export function getAllIssues() {
+  return trackerStmts().allIssues.all();
+}
+
+/**
+ * Highest-priority open issue, then lowest id (same ordering as previous JS sort).
+ * @returns {object|null}
+ */
+export function selectNextIssue() {
+  return trackerStmts().nextOpenIssue.get() ?? null;
+}
+
+/**
+ * Mark an issue in-progress, increment attempts, and log activity (atomic).
+ * Uses existing `findById` / `logActivity` from above; does not modify lines 1–187.
+ * @param {number} issueId
+ * @returns {object}
+ */
+export function workOnIssue(issueId) {
+  const db = getDB();
+  const issue = findById(db, issueId);
+
+  if (issue.status === Status.CLOSED) {
+    throw new Error(`Issue #${issueId} is closed and cannot be worked on.`);
+  }
+
+  const tx = db.transaction(() => {
+    logActivity(db, issueId, Action.READ, `Agent accessed issue #${issueId}`);
+    trackerStmts().updateWorkOnIssue.run(Status.IN_PROGRESS, issueId);
+    logActivity(
+      db,
+      issueId,
+      Action.STATE_CHANGE,
+      `Status changed from ${issue.status} to ${Status.IN_PROGRESS}`,
+    );
+    logActivity(
+      db,
+      issueId,
+      Action.EDIT,
+      `Agent attempt #${issue.attempt_num + 1} on issue #${issueId}`,
+    );
+  });
+  tx();
+
+  return findById(db, issueId);
+}
+
+/**
+ * Remove all issues (`baton init --force`). Activity rows are kept for audit.
+ */
+export function clearAllIssues() {
+  trackerStmts().clearAllIssues.run();
+}
