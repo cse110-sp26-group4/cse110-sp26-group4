@@ -175,12 +175,8 @@ export function searchIssues(query) {
 
   const searchTerm = `%${query.toLowerCase().trim()}%`;
 
-  try {
-    const statement = db.prepare(sql);
-    return statement.all(searchTerm, searchTerm);
-  } catch (error) {
-    return [];
-  }
+  const statement = db.prepare(sql);
+  return statement.all(searchTerm, searchTerm);
 }
 
 /**

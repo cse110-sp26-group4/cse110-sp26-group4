@@ -19,6 +19,7 @@ import { run as runNext } from './commands/next.js';
 import { run as runLoop } from './commands/loop.js';
 import { run as runStatus } from './commands/status.js';
 import { wantsHelp } from './util.js';
+import { run as runSearch } from './commands/search.js';
 
 const HELP = `baton — AI agent issue tracker CLI
 
@@ -67,8 +68,9 @@ async function main() {
     next: () => runNext(args),
     loop: () => runLoop(args),
     status: () => runStatus(args),
+    search: () => runSearch(args)
   };
-
+  
   const handler = handlers[command];
   if (!handler) {
     console.error(`Error: Unknown command "${command}".`);
