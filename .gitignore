@@ -27,3 +27,6 @@ out/
 
 # Test coverage
 coverage/
+
+# JSDoc (automatically created by GitHub Actions)
+docs/jsdoc/
