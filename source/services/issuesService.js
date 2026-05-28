@@ -1,4 +1,4 @@
-import { getDB } from '../db.js';
+import { getDB } from '../db/index.js';
 import {
   Issue,
   Status,
