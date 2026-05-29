@@ -12,6 +12,7 @@ export const issuesTable = sqliteTable("issues", {
   priority:    text({ enum: Object.values(Priority) }).default(Priority.LOW),
   tokenLimit:  int("token_limit"),
   description: text(),
+  assignees:   text({mode: "json"}).default(sql`'[]'`),
 });
 
 export const activityTable = sqliteTable("activity", {
