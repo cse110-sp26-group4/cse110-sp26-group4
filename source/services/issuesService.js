@@ -75,7 +75,7 @@ function findById(db, id) {
  */
 export function createIssue({
   title,
-  priority = Priority.LOW,
+  priority,
   tokenLimit,
   description,
 } = {}) {
@@ -84,7 +84,7 @@ export function createIssue({
   const result = db.insert(issuesTable)
     .values({
       title: title?.trim() || "PENDING",
-      priority,
+      priority: priority ?? Priority.LOW,
       tokenLimit: tokenLimit ?? null,
       description: description ?? null,
     })
