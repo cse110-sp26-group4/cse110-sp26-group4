@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.0.0...v1.0.1) (2026-05-29)
+
+
+### Bug Fixes
+
+* added failure to files, refactored naming to align with drizzle ([#109](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/109)) ([b3bc4c7](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/b3bc4c7d1374d2132d8ca47e4cfb9bd25cc8ad6a))
+
 # 1.0.0 (2026-05-29)
 
 
