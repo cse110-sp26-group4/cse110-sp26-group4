@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.0.1...v1.1.0) (2026-05-29)
+
+
+### Features
+
+* **issue:** add validate function ([#107](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/107)) ([602b86d](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/602b86d390f050cb5e3c78265abd686adc01af32))
+
 ## [1.0.1](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.0.0...v1.0.1) (2026-05-29)
 
 
