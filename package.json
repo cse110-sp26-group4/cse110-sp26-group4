@@ -11,7 +11,7 @@
     "drizzle/"
   ],
   "scripts": {
-    "test": "node --test tests/placeholder.test.js",
+    "test": "node --test tests/",
     "lint": "eslint source/",
     "lint:fix": "eslint source/ --fix",
     "prepare": "husky",
