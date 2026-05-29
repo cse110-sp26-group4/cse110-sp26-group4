@@ -55,7 +55,7 @@ export async function run(args) {
         } else {
            //Logic for table formatting
             const activeFilters = Object.entries(options)
-                .filter(([_, value]) => value !== null && value !== undefined && value !== '')
+                .filter(([, value]) => value !== null && value !== undefined && value !== '')
                 .map(([key, value]) => `${key.replace('--', '')}: ${value}`)
                 .join(', ');
 
