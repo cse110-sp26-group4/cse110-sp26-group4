@@ -189,7 +189,42 @@ export function reportTrackerNotReady() {
   console.error('Run `baton init` first.');
 }
 
-//Helper for printIssueTable 
+/**
+ * Configuration for table column widths.
+ */
+export const WIDTHS = {
+  id: 5,
+  title: 20,
+  status: 15,
+  priority: 10,
+ //assignee: 10, 
+  description: 60
+};
+
+/**
+ * Prints the table header row and separator line.
+ * @returns {void}
+ */
+export function printTableHeader() {
+  console.log(
+    "ID".padEnd(WIDTHS.id) + " │ " +
+    "TITLE".padEnd(WIDTHS.title) + " │ " +
+    "STATUS".padEnd(WIDTHS.status) + " │ " +
+    "PRIORITY".padEnd(WIDTHS.priority) + " │ " +
+    //+ "ASSIGNEE".padEnd(WIDTHS.assignee) + " │ "
+    "DESCRIPTION".padEnd(WIDTHS.description)
+  );
+  console.log(
+    "─".repeat(WIDTHS.id) + "─┼─" +
+    "─".repeat(WIDTHS.title) + "─┼─" +
+    "─".repeat(WIDTHS.status) + "─┼─" +
+    "─".repeat(WIDTHS.priority) + "─┼─" +
+    //+ "─".repeat(WIDTHS.assignee) + "─┼─" 
+    "─".repeat(WIDTHS.description)
+  );
+}
+
+// Helper for printIssueTable 
 /**
  * Truncates a string to a specific length and adds ellipsis if it exceeds the specified length
  * @param {string} str The string to be truncated
@@ -208,15 +243,14 @@ export function truncate(str, length) {
 /**
  * Helper function used to format and print Issues in a table
  * @param {Object} issue 
- * @param {Object} width
  * @returns {void}
  */
-export function printIssueTable(issue, width) {
-  const idVal = String(issue.id).padEnd(width.id);
-  const titleVal = truncate(issue.title || `Issue #${issue.id}`, width.title).padEnd(width.title);
-  const statusVal = truncate(issue.status, width.status).padEnd(width.status);
-  const priorityVal = truncate(issue.priority, width.priority).padEnd(width.priority);
-  const descVal = truncate(issue.description, width.description).padEnd(width.description);
+export function printIssueTable(issue) {
+  const idVal = String(issue.id).padEnd(WIDTHS.id);
+  const titleVal = truncate(issue.title || `Issue #${issue.id}`, WIDTHS.title).padEnd(WIDTHS.title);
+  const statusVal = truncate(issue.status, WIDTHS.status).padEnd(WIDTHS.status);
+  const priorityVal = truncate(issue.priority, WIDTHS.priority).padEnd(WIDTHS.priority);
+  const descVal = truncate(issue.description, WIDTHS.description).padEnd(WIDTHS.description);
 
   console.log(`${idVal} │ ${titleVal} │ ${statusVal} │ ${priorityVal} │ ${descVal}`);
 }

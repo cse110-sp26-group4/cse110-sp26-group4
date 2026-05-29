@@ -4,17 +4,7 @@
 // Usage: baton search "login bug"
 
 import { searchIssues } from "../services/issuesService.js";
-import { printIssueTable } from '../util.js';
-
-// Column widths for displaying the results
-const WIDTHS = {
-  id: 5,
-  title: 20,
-  status: 15,
-  priority: 10,
-  //assignee: 10,
-  description: 60
-};
+import { printIssueTable, printTableHeader } from '../util.js';
 
 /**
  * Searches for a title or description matching the command line argument
@@ -39,25 +29,8 @@ export async function run(args) {
         console.log(`\nFound ${result.length} issue(s) containing "${query}":\n`);
 
         // Logic for table formatting 
-        console.log(
-          "ID".padEnd(WIDTHS.id) + " │ " 
-          + "TITLE".padEnd(WIDTHS.title) + " │ " 
-          + "STATUS".padEnd(WIDTHS.status) + " │ " 
-          + "PRIORITY".padEnd(WIDTHS.priority) + " │ " 
-          //+ "ASSIGNEE".padEnd(WIDTHS.assignee) + " │ "
-          + "DESCRIPTION".padEnd(WIDTHS.description)
-        );
-
-        console.log(
-          "─".repeat(WIDTHS.id) + "─┼─" 
-          + "─".repeat(WIDTHS.title) + "─┼─" 
-          + "─".repeat(WIDTHS.status) + "─┼─" 
-          + "─".repeat(WIDTHS.priority) + "─┼─" 
-          //+ "─".repeat(WIDTHS.assignee) + "─┼─" 
-          + "─".repeat(WIDTHS.description)
-        );
-
-        result.forEach(issue => printIssueTable(issue, WIDTHS));
+        printTableHeader();
+        result.forEach(issue => printIssueTable(issue));
 
         console.log("");
         return 0;

@@ -12,16 +12,7 @@
 
 import { listIssues } from '../services/issuesService.js';
 import { getFlagValue, getNumericFlag } from '../util.js';
-import { parseArgs, printIssueTable } from '../util.js';
-
-// Column widths for displaying the results
-const WIDTHS = {
-  id: 5,
-  title: 20,
-  status: 15,
-  priority: 10,
-  description: 60
-};
+import { parseArgs, printIssueTable, printTableHeader } from '../util.js';
 
 /**
  * Lists issues matching the filters and pagination settings 
@@ -57,28 +48,12 @@ export async function run(args) {
             const filterLog = activeFilters ? `matching filters: [${activeFilters}]` : "with no filters applied";
             console.log(`\nFound ${result.length} issue(s) ${filterLog}.`);
             console.log("");
-            console.log(
-                "ID".padEnd(WIDTHS.id) + " │ " 
-                + "TITLE".padEnd(WIDTHS.title) + " │ " 
-                + "STATUS".padEnd(WIDTHS.status) + " │ " 
-                + "PRIORITY".padEnd(WIDTHS.priority) + " │ " 
-                + "DESCRIPTION".padEnd(WIDTHS.description)
-            );
 
-            console.log(
-                "─".repeat(WIDTHS.id) + "─┼─" 
-                + "─".repeat(WIDTHS.title) + "─┼─" 
-                + "─".repeat(WIDTHS.status) + "─┼─" 
-                + "─".repeat(WIDTHS.priority) + "─┼─" 
-                + "─".repeat(WIDTHS.description)
-            );
-
-            result.forEach(issue => printIssueTable(issue, WIDTHS));
-
+            printTableHeader();
+            result.forEach(issue => printIssueTable(issue));
             console.log("");
             return 0;
         }
-
     } catch (error) {
         // Separate error message for missing value
         if (error.message.includes('Missing value')) {
