@@ -43,8 +43,8 @@ export async function run(args) {
         const options = {
             status: getFlagValue(args, '--status'),
             priority: getFlagValue(args, '--priority'),
-            limit: getNumericFlag(args, '--limit'),
-            offset: getNumericFlag(args, '--offset')
+            limit: getNumericFlag(args, '--limit') ?? 50,
+            offset: getNumericFlag(args, '--offset') ?? 0
         };
 
         const result = await listIssues(options);
@@ -54,6 +54,13 @@ export async function run(args) {
             return 0;
         } else {
            //Logic for table formatting
+            const activeFilters = Object.entries(options)
+                .filter(([_, value]) => value !== null && value !== undefined && value !== '')
+                .map(([key, value]) => `${key.replace('--', '')}: ${value}`)
+                .join(', ');
+
+            const filterLog = activeFilters ? `matching filters: [${activeFilters}]` : "with no filters applied";
+            console.log(`\nFound ${result.length} issue(s) ${filterLog}.`);
             console.log("");
             console.log(
                 "ID".padEnd(WIDTHS.id) + " │ " 
@@ -78,8 +85,13 @@ export async function run(args) {
         }
 
     } catch (error) {
-        console.error("Error: Failed to retrieve data.");
-        console.error(error.message);
+        // Separate error message for missing value
+        if (error.message.includes('Missing value')) {
+            console.error(`Usage Error: ${error.message}`);
+        } else {
+            console.error("Error: Failed to retrieve data.");
+            console.error(error.message);
+        }
         return 1;
     }
 }

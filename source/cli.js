@@ -84,7 +84,7 @@ async function main() {
     loop: () => runLoop(args),
     status: () => runStatus(args),
     view: () => runView(args),
-    search: () => runSearch(args)
+    search: () => runSearch(args),
     list: () => runList(args)
   };
   

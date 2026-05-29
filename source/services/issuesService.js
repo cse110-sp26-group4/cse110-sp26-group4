@@ -122,23 +122,39 @@ export function getIssue(id) {
  * @param {ListIssuesOptions} options - Filtering and pagination options.
  * @returns {Issue[]}
  */
-export function listIssues({ status, priority, limit, offset } = {}) {
+export async function listIssues({ status, priority, limit, offset } = {}) {
   const db = getDB();
   const filters = [];
 
-  if (status) filters.push(eq(issuesTable.status, status));
-  if (priority) filters.push(eq(issuesTable.priority, priority));
+  // Generate a map from the Enum object
+  const createMap = (enumObj) => Object.entries(enumObj).reduce((acc, [key, value]) => {
+    acc[value.toLowerCase()] = value;
+    return acc;
+  }, {});
 
-  try {
-    return db.select()
-      .from(issuesTable)
-      .where(filters.length > 0 ? and(...filters) : undefined)
-      .limit(limit)
-      .offset(offset)
-      .all();
-  } catch (error) {
-    return [];
+  const statusMap = createMap(Status);
+  const priorityMap = createMap(Priority);
+  
+  // Map status argument to values in Status object
+  if (status) {
+    const val = statusMap[status.toLowerCase()];
+    if (!val) throw new Error(`Invalid status: "${status}".\nUse: open, in-progress, closed.`);
+    filters.push(sql`${issuesTable.status} = ${val}`);
   }
+  
+  // Map priority argument to values in Priority object
+  if (priority) {
+    const val = priorityMap[priority.toLowerCase()];
+    if (!val) throw new Error(`Invalid priority: "${priority}".\nUse: low, medium, high.`);
+    filters.push(sql`${issuesTable.priority} = ${val}`);
+  }
+
+  return db.select()
+    .from(issuesTable)
+    .where(filters.length > 0 ? and(...filters) : undefined)
+    .limit(limit)
+    .offset(offset)
+    .all();
 }
 
 /**
