@@ -36,4 +36,36 @@ export class Issue {
     this.createdAt   = createdAt;
     this.attemptNum  = attemptNum;
   }
+
+  
+  /**
+  * Validates the issue fields based on project business rules.
+  * @returns {{isValid: boolean, errors: string[]}} boolean and an array of errors
+  */
+  validate(){
+    const errors = [];
+
+    if (!this.title || typeof this.title !== "string" || this.title.trim() === ""){
+      errors.push("Title cannot be empty");
+    }
+
+    if (!Object.values(Status).includes(this.status)) {
+      errors.push(`Invalid status "${this.status}". Must be one of: ${Object.values(Status).join(", ")}`)
+    }
+
+    if (!Object.values(Priority).includes(this.priority)) {
+      errors.push(`Invalid priority "${this.priority}". Must be one of: ${Object.values(Priority).join(", ")}`)
+    }
+
+    if (this.tokenLimit != null){
+      const tokenLim = Number(this.tokenLimit);
+      if (isNaN(tokenLim) || tokenLim <= 0){
+        errors.push("tokenLimit must be positive");
+      }
+    }
+
+    return {isValid: errors.length == 0, errors: errors}
+  }
 }
+
+
