@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.1.0...v1.2.0) (2026-05-29)
+
+
+### Features
+
+* add In-Review status and lastUpdated column to DB schema ([#108](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/108)) ([112766b](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/112766bc1cfb969cf0f94b202d03876c877f5c6b))
+
 # [1.1.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.0.1...v1.1.0) (2026-05-29)
 
 
