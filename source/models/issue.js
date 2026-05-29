@@ -21,8 +21,8 @@ export class Issue {
     assignees = null,
     // Auto-generated fields
     id          = 0,
-    created_at  = new Date().toISOString(),
-    attempt_num = 0,
+    createdAt   = new Date().toISOString(),
+    attemptNum  = 0,
     
   } = {}) {
     this.title       = title;
@@ -33,7 +33,7 @@ export class Issue {
     this.assignees = assignees;
     
     this.id          = id;
-    this.created_at  = created_at;
-    this.attempt_num = attempt_num;
+    this.createdAt   = createdAt;
+    this.attemptNum  = attemptNum;
   }
 }
