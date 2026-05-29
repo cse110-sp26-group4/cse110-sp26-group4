@@ -39,9 +39,9 @@ export class Issue {
 
   
   /**
-     * Validates the issue fields based on project business rules.
-     * @returns {boolean and an array of errors}
-     */
+  * Validates the issue fields based on project business rules.
+  * @returns {{isValid: boolean, errors: string[]}} boolean and an array of errors
+  */
   validate(){
     const errors = [];
 
@@ -67,4 +67,5 @@ export class Issue {
     return {isValid: errors.length == 0, errors: errors}
   }
 }
+
 
