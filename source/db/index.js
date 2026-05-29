@@ -43,6 +43,18 @@ export function initDB() {
       WHERE id = NEW.id;
     END;
   `);
+
+  sqliteConnection.exec(`
+   CREATE TRIGGER IF NOT EXISTS update_last_updated
+   AFTER UPDATE ON issues
+   FOR EACH ROW
+   WHEN NEW.last_updated IS OLD.last_updated
+   BEGIN
+    UPDATE issues
+    SET last_updated = CURRENT_TIMESTAMP
+    WHERE id = OLD.id;
+  END;
+  `);
 }
 
 export function getDB() {

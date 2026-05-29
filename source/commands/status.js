@@ -34,6 +34,7 @@ export async function run() {
   console.log(`Total issues:     ${stats.total}`);
   console.log(`Open:             ${stats.open}`);
   console.log(`In progress:      ${stats.inProgress}`);
+  console.log(`In review:        ${stats.inReview}`);
   console.log(`Closed:           ${stats.closed}`);
   console.log(`Overall progress: ${progress}% complete`);
 

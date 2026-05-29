@@ -1,6 +1,7 @@
 export const Status = Object.freeze({ 
   OPEN: "Open", 
   IN_PROGRESS: "In-Progress", 
+  IN_REVIEW: "In-Review",
   CLOSED: "Closed" 
 });
 
@@ -18,23 +19,23 @@ export class Issue {
     priority    = Priority.LOW,
     tokenLimit  = null,
     description = null,
+    lastUpdated = new Date().toISOString(),
     assignees = null,
     // Auto-generated fields
     id          = 0,
-    createdAt   = new Date().toISOString(),
-    attemptNum  = 0,
-    
+    createdAt  = new Date().toISOString(),
+    attemptNum = 0,
   } = {}) {
     this.title       = title;
     this.status      = status;
     this.priority    = priority;
     this.tokenLimit  = tokenLimit;
     this.description = description;
+    this.lastUpdated = lastUpdated;
     this.assignees = assignees;
-    
     this.id          = id;
-    this.createdAt   = createdAt;
-    this.attemptNum  = attemptNum;
+    this.createdAt  = createdAt;
+    this.attemptNum = attemptNum;
   }
 
   
