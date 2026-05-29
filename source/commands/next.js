@@ -36,8 +36,8 @@ export async function run() {
   console.log(`  Title:       ${updated.title}`);
   console.log(`  Priority:    ${updated.priority}`);
   console.log(`  Status:      ${updated.status}`);
-  console.log(`  Attempts:    ${updated.attempt_num}`);
-  console.log(`  Created:     ${formatTimestamp(updated.created_at)}`);
+  console.log(`  Attempts:    ${updated.attemptNum}`);
+  console.log(`  Created:     ${formatTimestamp(updated.createdAt)}`);
   if (updated.description) {
     console.log(`  Description: ${updated.description}`);
   }

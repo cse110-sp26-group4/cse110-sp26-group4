@@ -28,14 +28,14 @@
 | ```log_id``` | int | id system to keep track of activity history |
 | ```id``` | int | The issue that was addressed |
 | ```created_at``` | TIMESTAMP | The time when the event occurred in the format of  (HH:MM:SS YYYY-MM-DD) |
-| ```action``` | enum | The action performed on the issue: (state_change, priority_change, edit, read, creation, deletion) |
+| ```action``` | enum | The action performed on the issue: (state_change, priority_change, edit, read, creation, deletion, rejection) |
 | ```details``` | string | Details of what occurred at each action |
 
 
 ## Implementation:
 - All data is stored in SQL 
 - The data per issue will be stored as a sqlite entry with the keys defined in the tables above in the ```issues``` table
-- Activity log will store every instance of actions occurring in the ```activity``` table, including: creation: (creation of issues), state_change: (status change of issues such as from closed to open), deletion: (deletion of issues), read: (issue accessed), edit: (attempts made to address issue, comment addition, edits to any input field), priority_change: (change of priority such as from low to high). Events will automatically be appended to activity log to ensure integrity of ```activity``` table.
+- Activity log will store every instance of actions occurring in the ```activity``` table, including: creation: (creation of issues), state_change: (status change of issues such as from closed to open), deletion: (deletion of issues), read: (issue accessed), edit: (attempts made to address issue, comment addition, edits to any input field), priority_change: (change of priority such as from low to high), rejection: (human rejection of a completed issue with reason in details). Events will automatically be appended to activity log to ensure integrity of ```activity``` table.
 
 ## SQL Schema:
 ### ```issues``` table
@@ -77,7 +77,8 @@ CREATE TABLE IF NOT EXISTS activity (
             'edit', 
             'read', 
             'creation',
-            'deletion'
+            'deletion',
+            'rejection'
         )),
     details TEXT
     -- We keep the issue_id to ensure the audit trail remains intact.
