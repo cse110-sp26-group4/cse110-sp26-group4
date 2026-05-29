@@ -8,17 +8,17 @@ jobs:
   release:
     name: Semantic Release
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
     steps:
       - uses: actions/checkout@v4
+        with:
+        # This is required for semantic-release to access the full git history and tags.
+          fetch-depth: 0 
+          token: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
       - run: npm ci
       - run: npm run semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
         
