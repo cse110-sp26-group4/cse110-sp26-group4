@@ -21,3 +21,17 @@ export const activityTable = sqliteTable("activity", {
   action:    text({ enum: Object.values(Action) }).notNull(),
   details:   text(),
 });
+
+// helper for parsing command line arguments 
+export const IssueSchema = {
+    id:         { flag: '--id', type: 'number' },
+    attemptNum: { flag: '--attempt', type: 'number' },
+    title:      { flag: '--title', type: 'string' },
+    status:     { flag: '--status', type: 'enum', values: Object.values(Status) },
+    tokenLimit: { flag: '--token-limit', type: 'number' },
+    priority:   { flag: '--priority', type: 'enum', values: Object.values(Priority) },
+    description:{ flag: '--description', type: 'string' },
+    // Pagination options 
+    limit:      { flag: '--limit', type: 'number' },
+    offset:       { flag: '--offset', type: 'number' }
+};

@@ -15,6 +15,7 @@
 
 import { createIssue } from "../services/issuesService.js";
 import { getFlagValue, getNumericFlag } from "../util.js";
+import { parseArgs } from '../util.js';
 
 /**
  * Initializes a new issue in the database with the specified fields
@@ -33,12 +34,7 @@ export async function run(args) {
     }
 
     try {
-        const options = {
-            title: getFlagValue(args, '--title'),
-            description: getFlagValue(args, '--description'),
-            priority: getFlagValue(args, '--priority'),
-            tokenLimit: getNumericFlag(args, '--token-limit')
-        };
+        const options = parseArgs(args);
 
         const issue = await createIssue(options);
 

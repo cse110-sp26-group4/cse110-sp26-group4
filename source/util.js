@@ -4,6 +4,7 @@
 // centralizing these functions here to avoid duplication and improve code organization.
 
 import { isAbsolute, resolve } from 'node:path';
+import { IssueSchema } from '../source/models/schema.js';
 
 /**
  * Formats a timestamp as `HH:MM:SS YYYY-MM-DD`.
@@ -99,6 +100,37 @@ export function getNumericFlag(args, flag) {
 }
 
 /**
+ * Represents the options for issue fields entered by the user.
+ * @typedef {Object} parsedOptions
+ * @property {string} [title] The title of an issue
+ * @property {string} [status] The issue's status: open | in-progress | closed
+ * @property {string} [priority] The issue's priority: low | medium | high
+ * @property {number} [tokenLimit] The token limit for an AI agent
+ * @property {string} [description] Description of the issue 
+ * @property {string} [assignee] The agent assigned to the issue
+ */
+/**
+ * Parses command line arguments and extracts values for any flags / data fields
+ * @param {string[]} args The command line arguemnts
+ * @returns {parsedOptions} Object containing the extracted fields 
+ */
+export function parseArgs(args) {
+  const options = {};
+  for (const [key, config] of Object.entries(IssueSchema)) {
+        if (hasFlag(args, config.flag)) {
+          // Use numericFlag helper if the argument type is a number
+            const value = config.type === 'number' 
+                ? getNumericFlag(args, config.flag) 
+                : getFlagValue(args, config.flag);
+          // Only add value if user used the corresponding flag
+            if (value !== null) {
+                options[key] = value;
+            }
+        }
+    }
+  return options;
+}
+/**
  * Represents the options for parsing the first positional argument.
  * @typedef {Object} FirstPositionalArgOptions
  * @property {string[]} [valueFlags]
@@ -155,4 +187,36 @@ export function resolvePath(userPath, defaultPath) {
 export function reportTrackerNotReady() {
   console.error('Error: No tracker found in this directory.');
   console.error('Run `baton init` first.');
+}
+
+//Helper for printIssueTable 
+/**
+ * Truncates a string to a specific length and adds ellipsis if it exceeds the specified length
+ * @param {string} str The string to be truncated
+ * @param {number} length The maximum length of the string 
+ * @returns {string} The truncated string 
+ */
+export function truncate(str, length) {
+    if (str === null || str === undefined || str === '') return "N/A";
+    const s = String(str);
+    if (s.length > length) {
+        return s.substring(0, length - 3) + "...";
+    }
+    return s;
+}
+
+/**
+ * Helper function used to format and print Issues in a table
+ * @param {Object} issue 
+ * @param {Object} width
+ * @returns {void}
+ */
+export function printIssueTable(issue, width) {
+  const idVal = String(issue.id).padEnd(width.id);
+  const titleVal = truncate(issue.title || `Issue #${issue.id}`, width.title).padEnd(width.title);
+  const statusVal = truncate(issue.status, width.status).padEnd(width.status);
+  const priorityVal = truncate(issue.priority, width.priority).padEnd(width.priority);
+  const descVal = truncate(issue.description, width.description).padEnd(width.description);
+
+  console.log(`${idVal} │ ${titleVal} │ ${statusVal} │ ${priorityVal} │ ${descVal}`);
 }
