@@ -1,4 +1,6 @@
-import { getSQLiteDB as getDB } from '../db/index.js';
+import { getDB } from '../db/index.js';
+import { eq, and, or, like, sql } from "drizzle-orm";
+import {issuesTable, activityTable} from "../models/schema.js";
 import {
   Issue,
   Status,
@@ -15,12 +17,9 @@ import { ActivityLog, Action } from '../models/activityLog.js';
  * @param {string|null} [details=null] - Optional details.
  */
 function logActivity(db, issueId, action, details = null) {
-  db.prepare(
-    `
-    INSERT INTO activity (issue_id, action, details)
-    VALUES (?, ?, ?)
-  `,
-  ).run(issueId, action, details);
+  db.insert(activityTable)
+    .values({ issueId, action, details })
+    .run();
 }
 
 /**
@@ -52,7 +51,10 @@ function rowToLog(row) {
  * @throws {Error} If no issue with the given ID exists.
  */
 function findById(db, id) {
-  const row = db.prepare(`SELECT * FROM issues WHERE id = ?`).get(id);
+  const row = db.select()
+    .from(issuesTable)
+    .where(eq(issuesTable.id, id))
+    .get();
   if (!row) throw new Error(`Issue #${id} not found`);
   return row;
 }
@@ -79,23 +81,17 @@ export function createIssue({
 } = {}) {
 
   const db = getDB();
-  const result = db
-    .prepare(
-      `
-    INSERT INTO issues (title, priority, token_limit, description)
-    VALUES (?, ?, ?, ?)
-  `,
-    )
-    .run(
-      title?.trim() || "PENDING",
+  const result = db.insert(issuesTable)
+    .values({
+      title: title?.trim() || "PENDING",
       priority,
-      tokenLimit ?? null,
-      description ?? null,
-    );
+      tokenLimit: tokenLimit ?? null,
+      description: description ?? null,
+    })
+    .returning()
+    .get();
 
-  const issue = rowToIssue(
-    db.prepare(`SELECT * FROM issues WHERE id = ?`).get(result.lastInsertRowid),
-  );
+  const issue = rowToIssue(result);
   logActivity(db, issue.id, Action.CREATION, `"${issue.title}" was created.`);
 
   return issue;
@@ -128,31 +124,18 @@ export function getIssue(id) {
  */
 export function listIssues({ status, priority, limit = 50, offset = 0 } = {}) {
   const db = getDB();
+  const filters = [];
 
-  let query = "SELECT * FROM issues WHERE 1=1";
-  const param = [];
-  const filter = [];
-
-  if (status) {
-    filter.push(`status = ?`);
-    param.push(filter.status);
-  }
-
-  if (priority) {
-    filter.push(`priority = ?`);
-    param.push(filter.priority);
-  }
-
-  if (filter.length > 0) {
-    query += ` WHERE ` + filter.join(` AND `);
-  }
-
-  query += " LIMIT ? OFFSET ?";
-  param.push(limit, offset);
+  if (status) filters.push(eq(issuesTable.status, status));
+  if (priority) filters.push(eq(issuesTable.priority, priority));
 
   try {
-    const statement = db.prepare(query); 
-    return statement.all(...param);
+    return db.select()
+      .from(issuesTable)
+      .where(filters.length > 0 ? and(...filters) : undefined)
+      .limit(limit)
+      .offset(offset)
+      .all();
   } catch (error) {
     return [];
   }
@@ -170,13 +153,17 @@ export function searchIssues(query) {
     return [];
   }
 
-  const sql = `SELECT * FROM issues 
-  WHERE title LIKE ? OR description LIKE ?`;
-
   const searchTerm = `%${query.toLowerCase().trim()}%`;
 
-  const statement = db.prepare(sql);
-  return statement.all(searchTerm, searchTerm);
+  return db.select()
+    .from(issuesTable)
+    .where(
+      or(
+        like(issuesTable.title, searchTerm),
+        like(issuesTable.description, searchTerm)
+      )
+    )
+    .all();
 }
 
 /**
@@ -195,30 +182,19 @@ export function searchIssues(query) {
  */
 export function updateIssue(id, { title, description, tokenLimit } = {}) {
   const db = getDB();
-  if (title !== undefined) {
-    db.prepare(`
-        UPDATE issues
-        SET title = ?
-        WHERE id = ?
-      `)
-      .run(title, id);
+  const updates = {};
+  
+  if (title !== undefined) updates.title = title;
+  if (description !== undefined) updates.description = description;
+  if (tokenLimit !== undefined) updates.tokenLimit = tokenLimit;
+
+  if (Object.keys(updates).length > 0) {
+    db.update(issuesTable)
+      .set(updates)
+      .where(eq(issuesTable.id, id))
+      .run();
   }
-  if (description !== undefined) {
-    db.prepare(`
-        UPDATE issues
-        SET description = ?
-        WHERE id = ?
-      `)
-      .run(description, id);
-  }
-  if (tokenLimit !== undefined) {
-    db.prepare(`
-        UPDATE issues
-        SET token_limit = ?
-        WHERE id = ?
-      `)
-      .run(tokenLimit, id);
-  }
+
   logActivity(db, id, Action.EDIT, `Issue #${id} was updated.`);
   return getIssue(id);
 }
@@ -231,12 +207,7 @@ export function updateIssue(id, { title, description, tokenLimit } = {}) {
  */
 export function approveIssue(id) {
   const db = getDB();
-  const status = 'Closed';
-  db.prepare(`
-    UPDATE issues
-    SET status = ?
-    WHERE id = ?
-  `).run(status, id);
+  db.update(issuesTable).set({ status: Status.CLOSED }).where(eq(issuesTable.id, id)).run();
   logActivity(db, id, Action.STATE_CHANGE, `Issue #${id} has been closed`);
   return getIssue(id);
 }
@@ -250,12 +221,7 @@ export function approveIssue(id) {
  */
 export function rejectIssue(id, reason) {
   const db = getDB();
-  const status = 'In-Progress';
-  db.prepare(`
-    UPDATE issues
-    SET status = ?
-    WHERE id = ?
-  `).run(status, id);
+  db.update(issuesTable).set({ status: Status.IN_PROGRESS }).where(eq(issuesTable.id, id)).run();
   logActivity(db, id, Action.REJECT, `Issue #${id} has been rejected due to "${reason}"`);
   return getIssue(id);
 }
@@ -269,11 +235,7 @@ export function rejectIssue(id, reason) {
  */
 export function setStatus(id, status) {
   const db = getDB();
-  db.prepare(`
-    UPDATE issues
-    SET status = ?
-    WHERE id = ?
-  `).run(status, id);
+  db.update(issuesTable).set({ status }).where(eq(issuesTable.id, id)).run();
   logActivity(db, id, Action.STATE_CHANGE, `Issue #${id} status changed to ${status}.`);
   return getIssue(id);
 }
@@ -287,11 +249,7 @@ export function setStatus(id, status) {
  */
 export function setPriority(id, priority) {
   const db = getDB();
-  db.prepare(`
-    UPDATE issues
-    SET priority = ?
-    WHERE id = ?
-  `).run(priority, id);
+  db.update(issuesTable).set({ priority }).where(eq(issuesTable.id, id)).run();
   logActivity(db, id, Action.PRIORITY_CHANGE, `Issue #${id} priority changed to ${priority}.`);
   return getIssue(id);
 }
@@ -304,11 +262,10 @@ export function setPriority(id, priority) {
  */
 export function incrementAttempt(id) {
   const db = getDB();
-  db.prepare(`
-    UPDATE issues
-    SET attempt_num = attempt_num + 1
-    WHERE id = ?
-  `).run(id);
+  db.update(issuesTable)
+    .set({ attemptNum: sql`${issuesTable.attemptNum} + 1` })
+    .where(eq(issuesTable.id, id))
+    .run();
   logActivity(db, id, Action.EDIT, `Attempt count increased for Issue #${id}.`);
   return getIssue(id);
 }
@@ -324,8 +281,7 @@ export function deleteIssue(id) {
   const existing = findById(db, id);
 
   logActivity(db, id, Action.DELETION, `"${existing.title}" was deleted.`);
-  db.prepare(`DELETE FROM issues WHERE id = ?`).run(id);
-
+  db.delete(issuesTable).where(eq(issuesTable.id, id)).run();
   return true;
 }
 
@@ -336,13 +292,8 @@ export function deleteIssue(id) {
  */
 export function getActivityLog(issueId) {
   const db = getDB();
-  return db.prepare("SELECT * FROM activity WHERE id = ? ORDER BY log_id ASC").all(issueId);
+  return db.select().from(activityTable).where(eq(activityTable.issueId, issueId)).all();
 }
-
-/**
- * @typedef {Object} RecentActivityOptions
- * @property {number} [limit] - The maximum number of recent activity logs to retrieve.
- */
 
 /**
  * Get the most recent activity across all issues.
@@ -351,58 +302,12 @@ export function getActivityLog(issueId) {
  */
 export function getRecentActivity({ limit = 20 } = {}) {
   const db = getDB();
-  return db.prepare("SELECT * FROM activity ORDER BY log_id DESC LIMIT ?").all(limit);
+  return db.select().from(activityTable).orderBy(sql`${activityTable.logId} DESC`).limit(limit).all();
 }
 // =============================================================================
 // Tracker operations (CLI: init / next / status / loop)
 // To be edited later if needed.
 // =============================================================================
-
-/** Lazily prepared statements used only by the CLI-facing exports below. */
-let _trackerStmts = null;
-
-function trackerStmts() {
-  const db = getDB();
-  if (!_trackerStmts) {
-    _trackerStmts = {
-      schemaReady: db.prepare(`
-        SELECT COUNT(*) AS table_count
-        FROM sqlite_master
-        WHERE type = 'table' AND name IN ('issues', 'activity')
-      `),
-      issueStats: db.prepare(`
-        SELECT
-          COUNT(*) AS total,
-          COALESCE(SUM(CASE WHEN status = 'Open' THEN 1 ELSE 0 END), 0) AS open_count,
-          COALESCE(SUM(CASE WHEN status = 'In-Progress' THEN 1 ELSE 0 END), 0) AS in_progress_count,
-          COALESCE(SUM(CASE WHEN status = 'Closed' THEN 1 ELSE 0 END), 0) AS closed_count
-        FROM issues
-      `),
-      allIssues: db.prepare('SELECT * FROM issues ORDER BY id ASC'),
-      nextOpenIssue: db.prepare(`
-        SELECT *
-        FROM issues
-        WHERE status = 'Open'
-        ORDER BY
-          CASE priority
-            WHEN 'High' THEN 0
-            WHEN 'Medium' THEN 1
-            WHEN 'Low' THEN 2
-            ELSE 3
-          END,
-          id ASC
-        LIMIT 1
-      `),
-      updateWorkOnIssue: db.prepare(`
-        UPDATE issues
-        SET status = ?, attempt_num = attempt_num + 1
-        WHERE id = ?
-      `),
-      clearAllIssues: db.prepare('DELETE FROM issues'),
-    };
-  }
-  return _trackerStmts;
-}
 
 /**
  * True when both `issues` and `activity` tables exist (matches initDB schema).
@@ -410,12 +315,17 @@ function trackerStmts() {
  */
 export function isTrackerReady() {
   const db = getDB();
-  const row = db.prepare(`
-    SELECT COUNT(*) AS table_count
-    FROM sqlite_master
-    WHERE type = 'table' AND name IN ('issues', 'activity')
-  `).get();
-  return (row?.table_count ?? 0) === 2;
+  try {
+    // use raw SQL query here, can't use Drizzle
+    const row = db.get(sql`
+        SELECT COUNT(*) AS table_count
+        FROM sqlite_master
+        WHERE type = 'table' AND name IN ('issues', 'activity')
+      `);
+    return (row?.table_count ?? 0) === 2;
+  } catch (error) {
+    return false;
+  }
 }
 
 /**
@@ -423,12 +333,21 @@ export function isTrackerReady() {
  * @returns {{ total: number, open: number, inProgress: number, closed: number }}
  */
 export function getIssueStats() {
-  const row = trackerStmts().issueStats.get();
+  const db = getDB();
+  const row = db.get(sql`
+    SELECT
+      COUNT(*) AS total,
+      COALESCE(SUM(CASE WHEN status = 'Open' THEN 1 ELSE 0 END), 0) AS open_count,
+      COALESCE(SUM(CASE WHEN status = 'In-Progress' THEN 1 ELSE 0 END), 0) AS in_progress_count,
+      COALESCE(SUM(CASE WHEN status = 'Closed' THEN 1 ELSE 0 END), 0) AS closed_count
+    FROM issues
+  `);
+  
   return {
-    total: row.total ?? 0,
-    open: row.open_count ?? 0,
-    inProgress: row.in_progress_count ?? 0,
-    closed: row.closed_count ?? 0,
+    total: Number(row?.total ?? 0),
+    open: Number(row?.open_count ?? 0),
+    inProgress: Number(row?.in_progress_count ?? 0),
+    closed: Number(row?.closed_count ?? 0),
   };
 }
 
@@ -437,7 +356,8 @@ export function getIssueStats() {
  * @returns {object[]}
  */
 export function getAllIssues() {
-  return trackerStmts().allIssues.all();
+  const db = getDB();
+  return db.select().from(issuesTable).orderBy(issuesTable.id).all();
 }
 
 /**
@@ -445,7 +365,16 @@ export function getAllIssues() {
  * @returns {object|null}
  */
 export function selectNextIssue() {
-  return trackerStmts().nextOpenIssue.get() ?? null;
+  const db = getDB();
+  return db.select()
+    .from(issuesTable)
+    .where(eq(issuesTable.status, Status.OPEN))
+    .orderBy(
+      sql`CASE priority WHEN 'High' THEN 0 WHEN 'Medium' THEN 1 WHEN 'Low' THEN 2 ELSE 3 END`,
+      issuesTable.id
+    )
+    .limit(1)
+    .get() ?? null;
 }
 
 /**
@@ -462,23 +391,31 @@ export function workOnIssue(issueId) {
     throw new Error(`Issue #${issueId} is closed and cannot be worked on.`);
   }
 
-  const tx = db.transaction(() => {
-    logActivity(db, issueId, Action.READ, `Agent accessed issue #${issueId}`);
-    trackerStmts().updateWorkOnIssue.run(Status.IN_PROGRESS, issueId);
+  db.transaction((tx) => {
+    logActivity(tx, issueId, Action.READ, `Agent accessed issue #${issueId}`);
+    
+    tx.update(issuesTable)
+      .set({ 
+        status: Status.IN_PROGRESS,
+        attemptNum: sql`${issuesTable.attemptNum} + 1` 
+      })
+      .where(eq(issuesTable.id, issueId))
+      .run();
+
     logActivity(
-      db,
+      tx,
       issueId,
       Action.STATE_CHANGE,
       `Status changed from ${issue.status} to ${Status.IN_PROGRESS}`,
     );
+    
     logActivity(
-      db,
+      tx,
       issueId,
       Action.EDIT,
-      `Agent attempt #${issue.attempt_num + 1} on issue #${issueId}`,
+      `Agent attempt #${issue.attemptNum + 1} on issue #${issueId}`,
     );
   });
-  tx();
 
   return findById(db, issueId);
 }
@@ -487,5 +424,6 @@ export function workOnIssue(issueId) {
  * Remove all issues (`baton init --force`). Activity rows are kept for audit.
  */
 export function clearAllIssues() {
-  trackerStmts().clearAllIssues.run();
+  const db = getDB();
+  db.delete(issuesTable).run();
 }
