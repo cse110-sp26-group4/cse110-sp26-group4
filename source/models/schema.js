@@ -6,6 +6,7 @@ import { Action } from "./activityLog.js";
 export const issuesTable = sqliteTable("issues", {
   id:          int().primaryKey({ autoIncrement: true }),
   createdAt:   text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  lastUpdated: text("last_updated").notNull().default(sql`CURRENT_TIMESTAMP`),
   attemptNum:  int("attempt_num").notNull().default(0),
   title:       text().notNull().default("PENDING"),
   status:      text({ enum: Object.values(Status) }).notNull().default(Status.OPEN),

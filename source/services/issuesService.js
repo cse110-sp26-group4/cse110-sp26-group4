@@ -233,6 +233,19 @@ export function rejectIssue(id, reason) {
 }
 
 /**
+ * Change the status of an issue to in-review.
+ * Logs a state_change_event.
+ * @param {number} id
+ * @returns {Issue}
+ */
+export function submitForReview(id) {
+  const db = getDB();
+  db.update(issuesTable).set({ status: Status.IN_REVIEW }).where(eq(issuesTable.id, id)).run();
+  logActivity(db, id, Action.STATE_CHANGE, `Issue #${id} was submitted for review.`);
+  return getIssue(id);
+}
+
+/**
  * Change the status of an issue (Open / Closed).
  * Logs a state_change event.
  * @param {number} id
@@ -345,6 +358,7 @@ export function getIssueStats() {
       COUNT(*) AS total,
       COALESCE(SUM(CASE WHEN status = 'Open' THEN 1 ELSE 0 END), 0) AS open_count,
       COALESCE(SUM(CASE WHEN status = 'In-Progress' THEN 1 ELSE 0 END), 0) AS in_progress_count,
+      COALESCE(SUM(CASE WHEN status = 'In-Review' THEN 1 ELSE 0 END), 0) AS in_review_count,
       COALESCE(SUM(CASE WHEN status = 'Closed' THEN 1 ELSE 0 END), 0) AS closed_count
     FROM issues
   `);
@@ -353,6 +367,7 @@ export function getIssueStats() {
     total: Number(row?.total ?? 0),
     open: Number(row?.open_count ?? 0),
     inProgress: Number(row?.in_progress_count ?? 0),
+    inReview: Number(row?.in_review_count ?? 0),
     closed: Number(row?.closed_count ?? 0),
   };
 }
