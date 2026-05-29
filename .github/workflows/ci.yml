@@ -1,11 +1,9 @@
 name: CI
-on: 
+on:
   pull_request:
-    paths:
-      - 'source/**'
-      - 'tests/**'
-      - 'package.json'
-      - 'package-lock.json'
+  push:
+    branches:
+      - main
 jobs:
   lint:
     name: Lint
