@@ -21,6 +21,7 @@ import { wantsHelp } from './util.js';
 import { run as runView} from './commands/view.js';
 import { run as runSearch } from './commands/search.js';
 import { run as runList } from './commands/list.js';
+import { run as runCreate } from './commands/create.js'
 
 const HELP = `baton — AI agent issue tracker CLI
 
@@ -34,21 +35,26 @@ Commands:
   status   Show issue counts and overall progress
   view     View all issue fields for a given issue ID
   search   Search issues by title and description (case insensitive)
-  list     Lists issues filtered by status and priority 
+  list     Lists issues filtered by status and priority
+  create   Creates an issue with specified fields
 
 Options:
-  init --force              Re-initialize an existing tracker database
-  init --specs <path>       Path to product specs file (overrides default)
-  init <path>               Same as --specs <path> (positional)
+  init --force                    Re-initialize an existing tracker database
+  init --specs <path>             Path to product specs file (overrides default)
+  init <path>                     Same as --specs <path> (positional)
   Default specs: docs/specs/project-requirements.md
-  loop --steps <n>          Number of autonomous steps (alias: -n)
+  loop --steps <n>                Number of autonomous steps (alias: -n)
   loop -n <n>
   view <id>  
   search <query>
-  list --status <s>         Filter by status: open | in-progress | closed
-  list --priority <p>       Filter by priority: low | medium | high
-  list --limit <n>          Max results (default: 50)
-  list --offset <n>         Skip first n results (default: 0)
+  list --status <s>               Filter by status: open | in-progress | closed
+  list --priority <p>             Filter by priority: low | medium | high
+  list --limit <n>                Max results (default: 50)
+  list --offset <n>               Skip first n results (default: 0)
+  create --title <text>           Issue title (defaults to "Issue #<id>" if omitted)
+  create --description <text>     Issue description
+  create --priority <level>       low | medium | high  (default: low)
+  create --token-limit <n>        Optional token budget for this issue
 
 Examples:
   baton init
@@ -63,6 +69,8 @@ Examples:
   baton list
   baton list --status open --priority high
   baton list --limit 10 --offset 20
+  baton create --title "Fix login bug" --priority high
+  baton create --title "Refactor auth" --description "Clean up JWT logic" --token-limit 4000
 `;
 
 /**
@@ -85,7 +93,8 @@ async function main() {
     status: () => runStatus(args),
     view: () => runView(args),
     search: () => runSearch(args),
-    list: () => runList(args)
+    list: () => runList(args),
+    create: () => runCreate(args)
   };
   
   const handler = handlers[command];

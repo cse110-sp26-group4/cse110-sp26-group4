@@ -53,10 +53,22 @@ export function getFlagValue(args, flag) {
   if (index === -1) {
     return null;
   }
+
+  let endIdx = args.length;
+  // Finds beginning of next flag 
+  for (let i = index + 1; i < args.length; i++) {
+    if (args[i].startsWith('--')) {
+      endIdx = i;
+      break;
+    }
+  }
+
   if (index === args.length - 1) {
     throw new Error(`Missing value for ${flag}.`);
   }
-  return args[index + 1];
+
+  // join the elements into one sentence
+  return args.slice(index + 1, endIdx).join(' ');
 }
 
 /**
