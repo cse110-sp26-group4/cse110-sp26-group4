@@ -1,6 +1,6 @@
 // create.js
 // AI was consulted for some portions of this file.
-// create commandallows the user to create an issue 
+// create command allows the user to create an issue 
 // Usage: baton create --title <text> --description <text> --priority <level> --token-limit <n>
 // 
 // Examples:
@@ -13,7 +13,6 @@
 //  --token-limit <n>      Optional token budget for this issue
 //  -h, --help             Show this help
 
-//import { title } from "node:process";
 import { createIssue } from "../services/issuesService.js";
 import { getFlagValue, getNumericFlag } from "../util.js";
 
