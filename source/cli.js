@@ -20,6 +20,7 @@ import { run as runStatus } from './commands/status.js';
 import { wantsHelp } from './util.js';
 import { run as runView} from './commands/view.js';
 import { run as runSearch } from './commands/search.js';
+import { run as runList } from './commands/list.js';
 
 const HELP = `baton — AI agent issue tracker CLI
 
@@ -33,6 +34,7 @@ Commands:
   status   Show issue counts and overall progress
   view     View all issue fields for a given issue ID
   search   Search issues by title and description (case insensitive)
+  list     Lists issues filtered by status and priority 
 
 Options:
   init --force              Re-initialize an existing tracker database
@@ -43,6 +45,10 @@ Options:
   loop -n <n>
   view <id>  
   search <query>
+  list --status <s>         Filter by status: open | in-progress | closed
+  list --priority <p>       Filter by priority: low | medium | high
+  list --limit <n>          Max results (default: 50)
+  list --offset <n>         Skip first n results (default: 0)
 
 Examples:
   baton init
@@ -54,6 +60,9 @@ Examples:
   baton status
   baton view 29
   baton search system
+  baton list
+  baton list --status open --priority high
+  baton list --limit 10 --offset 20
 `;
 
 /**
@@ -75,7 +84,8 @@ async function main() {
     loop: () => runLoop(args),
     status: () => runStatus(args),
     view: () => runView(args),
-    search: () => runSearch(args)
+    search: () => runSearch(args),
+    list: () => runList(args)
   };
   
   const handler = handlers[command];

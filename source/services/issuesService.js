@@ -122,23 +122,29 @@ export function getIssue(id) {
  * @param {ListIssuesOptions} options - Filtering and pagination options.
  * @returns {Issue[]}
  */
-export function listIssues({ status, priority, limit = 50, offset = 0 } = {}) {
+export async function listIssues({ status, priority, limit, offset } = {}) {
   const db = getDB();
   const filters = [];
 
-  if (status) filters.push(eq(issuesTable.status, status));
-  if (priority) filters.push(eq(issuesTable.priority, priority));
-
-  try {
-    return db.select()
-      .from(issuesTable)
-      .where(filters.length > 0 ? and(...filters) : undefined)
-      .limit(limit)
-      .offset(offset)
-      .all();
-  } catch (error) {
-    return [];
+  
+  if (status) {
+    filters.push(sql`${issuesTable.status} COLLATE NOCASE = ${status}`);
   }
+  
+  if (priority) {
+    filters.push(sql`${issuesTable.priority} COLLATE NOCASE = ${priority}`);
+  }
+
+  // set defaults if limit or offset is NULL
+  const limitVal = limit ?? 50;
+  const offsetVal = offset ?? 0;
+
+  return db.select()
+    .from(issuesTable)
+    .where(filters.length > 0 ? and(...filters) : undefined)
+    .limit(limitVal)
+    .offset(offsetVal)
+    .all();
 }
 
 /**
