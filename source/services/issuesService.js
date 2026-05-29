@@ -126,34 +126,24 @@ export async function listIssues({ status, priority, limit, offset } = {}) {
   const db = getDB();
   const filters = [];
 
-  // Generate a map from the Enum object
-  const createMap = (enumObj) => Object.entries(enumObj).reduce((acc, [key, value]) => {
-    acc[value.toLowerCase()] = value;
-    return acc;
-  }, {});
-
-  const statusMap = createMap(Status);
-  const priorityMap = createMap(Priority);
   
-  // Map status argument to values in Status object
   if (status) {
-    const val = statusMap[status.toLowerCase()];
-    if (!val) throw new Error(`Invalid status: "${status}".\nUse: open, in-progress, closed.`);
-    filters.push(sql`${issuesTable.status} = ${val}`);
+    filters.push(sql`${issuesTable.status} COLLATE NOCASE = ${status}`);
   }
   
-  // Map priority argument to values in Priority object
   if (priority) {
-    const val = priorityMap[priority.toLowerCase()];
-    if (!val) throw new Error(`Invalid priority: "${priority}".\nUse: low, medium, high.`);
-    filters.push(sql`${issuesTable.priority} = ${val}`);
+    filters.push(sql`${issuesTable.priority} COLLATE NOCASE = ${priority}`);
   }
+
+  // set defaults if limit or offset is NULL
+  const limitVal = limit ?? 50;
+  const offsetVal = offset ?? 0;
 
   return db.select()
     .from(issuesTable)
     .where(filters.length > 0 ? and(...filters) : undefined)
-    .limit(limit)
-    .offset(offset)
+    .limit(limitVal)
+    .offset(offsetVal)
     .all();
 }
 

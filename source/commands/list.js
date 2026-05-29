@@ -43,8 +43,8 @@ export async function run(args) {
         const options = {
             status: getFlagValue(args, '--status'),
             priority: getFlagValue(args, '--priority'),
-            limit: getNumericFlag(args, '--limit') ?? 50,
-            offset: getNumericFlag(args, '--offset') ?? 0
+            limit: getNumericFlag(args, '--limit'),
+            offset: getNumericFlag(args, '--offset')
         };
 
         const result = await listIssues(options);
