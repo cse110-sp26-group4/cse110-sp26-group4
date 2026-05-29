@@ -23,7 +23,7 @@ export const activityTable = sqliteTable("activity", {
 });
 
 // helper for parsing command line arguments 
-export const IssueSchema = {
+export const issueSchema = {
     id:         { flag: '--id', type: 'number' },
     attemptNum: { flag: '--attempt', type: 'number' },
     title:      { flag: '--title', type: 'string' },

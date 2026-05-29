@@ -4,7 +4,7 @@
 // centralizing these functions here to avoid duplication and improve code organization.
 
 import { isAbsolute, resolve } from 'node:path';
-import { IssueSchema } from '../source/models/schema.js';
+import { issueSchema } from '../source/models/schema.js';
 
 /**
  * Formats a timestamp as `HH:MM:SS YYYY-MM-DD`.
@@ -116,7 +116,7 @@ export function getNumericFlag(args, flag) {
  */
 export function parseArgs(args) {
   const options = {};
-  for (const [key, config] of Object.entries(IssueSchema)) {
+  for (const [key, config] of Object.entries(issueSchema)) {
         if (hasFlag(args, config.flag)) {
           // Use numericFlag helper if the argument type is a number
             const value = config.type === 'number' 
