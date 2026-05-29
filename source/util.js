@@ -197,8 +197,8 @@ export const WIDTHS = {
   title: 20,
   status: 15,
   priority: 10,
- //assignee: 10, 
-  description: 60
+  //assignees: 10, 
+  description: 50
 };
 
 /**
@@ -211,7 +211,7 @@ export function printTableHeader() {
     "TITLE".padEnd(WIDTHS.title) + " │ " +
     "STATUS".padEnd(WIDTHS.status) + " │ " +
     "PRIORITY".padEnd(WIDTHS.priority) + " │ " +
-    //+ "ASSIGNEE".padEnd(WIDTHS.assignee) + " │ "
+    //"ASSIGNEE".padEnd(WIDTHS.assignees) + " │ " +
     "DESCRIPTION".padEnd(WIDTHS.description)
   );
   console.log(
@@ -219,7 +219,7 @@ export function printTableHeader() {
     "─".repeat(WIDTHS.title) + "─┼─" +
     "─".repeat(WIDTHS.status) + "─┼─" +
     "─".repeat(WIDTHS.priority) + "─┼─" +
-    //+ "─".repeat(WIDTHS.assignee) + "─┼─" 
+    //"─".repeat(WIDTHS.assignees) + "─┼─" +
     "─".repeat(WIDTHS.description)
   );
 }
@@ -251,6 +251,10 @@ export function printIssueTable(issue) {
   const statusVal = truncate(issue.status, WIDTHS.status).padEnd(WIDTHS.status);
   const priorityVal = truncate(issue.priority, WIDTHS.priority).padEnd(WIDTHS.priority);
   const descVal = truncate(issue.description, WIDTHS.description).padEnd(WIDTHS.description);
+
+  // Handling the assignee array
+  //const assigneesVal = Array.isArray(issue.assignees) ? issue.assignees.join(', ') : 'None';
+  //const assigneeVal = truncate(assigneesVal, WIDTHS.assignees).padEnd(WIDTHS.assignees);
 
   console.log(`${idVal} │ ${titleVal} │ ${statusVal} │ ${priorityVal} │ ${descVal}`);
 }

@@ -32,6 +32,7 @@ export const issueSchema = {
     tokenLimit: { flag: '--token-limit', type: 'number' },
     priority:   { flag: '--priority', type: 'enum', values: Object.values(Priority) },
     description:{ flag: '--description', type: 'string' },
+    //assignees:   { flag: '--assignees', type: 'json'},
     // Pagination options 
     limit:      { flag: '--limit', type: 'number' },
     offset:       { flag: '--offset', type: 'number' }
