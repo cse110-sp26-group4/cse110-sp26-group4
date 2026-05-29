@@ -19,6 +19,7 @@ import { run as runLoop } from './commands/loop.js';
 import { run as runStatus } from './commands/status.js';
 import { wantsHelp } from './util.js';
 import { run as runView} from './commands/view.js';
+import { run as runSearch } from './commands/search.js';
 
 const HELP = `baton — AI agent issue tracker CLI
 
@@ -31,6 +32,7 @@ Commands:
   loop     Run the agent autonomously for multiple steps
   status   Show issue counts and overall progress
   view     View all issue fields for a given issue ID
+  search   Search issues by title and description (case insensitive)
 
 Options:
   init --force              Re-initialize an existing tracker database
@@ -40,6 +42,7 @@ Options:
   loop --steps <n>          Number of autonomous steps (alias: -n)
   loop -n <n>
   view <id>  
+  search <query>
 
 Examples:
   baton init
@@ -50,6 +53,7 @@ Examples:
   baton loop --steps 5
   baton status
   baton view 29
+  baton search system
 `;
 
 /**
@@ -70,9 +74,10 @@ async function main() {
     next: () => runNext(args),
     loop: () => runLoop(args),
     status: () => runStatus(args),
-    view: () => runView(args)
+    view: () => runView(args),
+    search: () => runSearch(args)
   };
-
+  
   const handler = handlers[command];
   if (!handler) {
     console.error(`Error: Unknown command "${command}".`);

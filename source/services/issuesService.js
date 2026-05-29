@@ -155,19 +155,15 @@ export function searchIssues(query) {
 
   const searchTerm = `%${query.toLowerCase().trim()}%`;
 
-  try {
-    return db.select()
-      .from(issuesTable)
-      .where(
-        or(
-          like(issuesTable.title, searchTerm),
-          like(issuesTable.description, searchTerm)
-        )
+  return db.select()
+    .from(issuesTable)
+    .where(
+      or(
+        like(issuesTable.title, searchTerm),
+        like(issuesTable.description, searchTerm)
       )
-      .all();
-  } catch (error) {
-    return [];
-  }
+    )
+    .all();
 }
 
 /**
