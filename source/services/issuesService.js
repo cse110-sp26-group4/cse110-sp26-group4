@@ -177,6 +177,8 @@ export function searchIssues(query) {
  * @property {string} [title] - The updated title.
  * @property {string} [description] - The updated description.
  * @property {number} [tokenLimit] - The updated token limit.
+ * @property {string} [status] - The updated status.
+ * @property {string} [priority] - The updated priority.
  */
 
 /**
@@ -186,13 +188,29 @@ export function searchIssues(query) {
  * @param {UpdateIssueFields} fields - The fields to update.
  * @returns {Issue}
  */
-export function updateIssue(id, { title, description, tokenLimit } = {}) {
+export function updateIssue(id, { title, description, tokenLimit, status, priority } = {}) {
   const db = getDB();
   const updates = {};
   
   if (title !== undefined) updates.title = title;
   if (description !== undefined) updates.description = description;
   if (tokenLimit !== undefined) updates.tokenLimit = tokenLimit;
+  if (status !== undefined) updates.status = status;
+  if (priority !== undefined) updates.priority = priority;
+
+  // Normalize status argument
+  if (status) {
+    const statusValues = Object.values(Status);
+    const toUpdate = statusValues.find(v => v.toLowerCase() === status.toLowerCase());
+    if (toUpdate) updates.status = toUpdate;
+  }
+
+  // Normalize priority argument
+  if (priority) {
+    const priorityValues = Object.values(Priority);
+    const toUpdate = priorityValues.find(v => v.toLowerCase() === priority.toLowerCase());
+    if (toUpdate) updates.priority = toUpdate;
+  }
 
   if (Object.keys(updates).length > 0) {
     db.update(issuesTable)

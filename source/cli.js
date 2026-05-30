@@ -22,6 +22,7 @@ import { run as runView} from './commands/view.js';
 import { run as runSearch } from './commands/search.js';
 import { run as runList } from './commands/list.js';
 import { run as runCreate } from './commands/create.js'
+import { run as runUpdate } from './commands/update.js'
 
 const HELP = `baton — AI agent issue tracker CLI
 
@@ -37,6 +38,7 @@ Commands:
   search   Search issues by title and description (case insensitive)
   list     Lists issues filtered by status and priority
   create   Creates an issue with specified fields
+  update   Updates an issue's specified fields 
 
 Options:
   init --force                    Re-initialize an existing tracker database
@@ -55,6 +57,12 @@ Options:
   create --description <text>     Issue description
   create --priority <level>       low | medium | high  (default: low)
   create --token-limit <n>        Optional token budget for this issue
+  update --title <text>           New title
+  update --description <text>     New description
+  update --token-limit <n>        New token budget
+  update --status <s>             open | in-progress | closed
+  update --priority <level>       low | medium | high  
+ 
 
 Examples:
   baton init
@@ -71,6 +79,8 @@ Examples:
   baton list --limit 10 --offset 20
   baton create --title "Fix login bug" --priority high
   baton create --title "Refactor auth" --description "Clean up JWT logic" --token-limit 4000
+  baton update 3 --title "Revised title"
+  baton update 7 --status closed --priority medium
 `;
 
 /**
@@ -94,7 +104,8 @@ async function main() {
     view: () => runView(args),
     search: () => runSearch(args),
     list: () => runList(args),
-    create: () => runCreate(args)
+    create: () => runCreate(args),
+    update: () => runUpdate(args)
   };
   
   const handler = handlers[command];
