@@ -80,7 +80,7 @@ Examples:
 async function main() {
   const [, , command, ...args] = process.argv;
 
-  if (!command || command === 'help' || wantsHelp(args)) {
+  if (!command || command === 'help' || wantsHelp(args) || command === '--help') {
     console.log(HELP);
     process.exit(command ? 0 : 1);
     return;
