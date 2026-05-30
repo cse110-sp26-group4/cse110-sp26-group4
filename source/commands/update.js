@@ -52,7 +52,7 @@ export async function run(args) {
         // Store the old issue fields for displaying purposes:
         const oldIssue = getIssue(id);
 
-        const newIssue = await updateIssue(id, options);
+        const newIssue = await updateIssue(id, oldIssue, options);
 
         console.log("");
         // Compare and print the changes:
