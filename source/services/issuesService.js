@@ -88,10 +88,11 @@ export function createIssue({
       tokenLimit: tokenLimit ?? null,
       description: description ?? null,
     })
-    .returning()
+    .returning({ id: issuesTable.id })
     .get();
 
-  const issue = rowToIssue(result);
+  // re-fetch the issue to get auto-generated fields back
+  const issue = rowToIssue(findById(db, result.id));
   logActivity(db, issue.id, Action.CREATION, `"${issue.title}" was created.`);
 
   return issue;
