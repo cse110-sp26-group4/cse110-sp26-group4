@@ -17,6 +17,7 @@ import { run as runInit } from './commands/init.js';
 import { run as runNext } from './commands/next.js';
 import { run as runLoop } from './commands/loop.js';
 import { run as runStatus } from './commands/status.js';
+import { run as runApprove } from './commands/approve.js';
 import { wantsHelp } from './util.js';
 import { run as runView} from './commands/view.js';
 import { run as runSearch } from './commands/search.js';
@@ -37,6 +38,7 @@ Commands:
   search   Search issues by title and description (case insensitive)
   list     Lists issues filtered by status and priority
   create   Creates an issue with specified fields
+  approve  Move an issue from in-review to closed
 
 Options:
   init --force                    Re-initialize an existing tracker database
@@ -55,6 +57,7 @@ Options:
   create --description <text>     Issue description
   create --priority <level>       low | medium | high  (default: low)
   create --token-limit <n>        Optional token budget for this issue
+  approve <id>
 
 Examples:
   baton init
@@ -71,6 +74,7 @@ Examples:
   baton list --limit 10 --offset 20
   baton create --title "Fix login bug" --priority high
   baton create --title "Refactor auth" --description "Clean up JWT logic" --token-limit 4000
+  baton approve 5
 `;
 
 /**
@@ -94,6 +98,7 @@ async function main() {
     view: () => runView(args),
     search: () => runSearch(args),
     list: () => runList(args),
+    approve: () => runApprove(args),
     create: () => runCreate(args)
   };
   
