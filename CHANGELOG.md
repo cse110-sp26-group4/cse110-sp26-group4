@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.2.0...v1.2.1) (2026-05-30)
+
+
+### Bug Fixes
+
+* add back helper for parsing command line args ([#111](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/111)) ([49797d5](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/49797d556fdc6042c93f4505599bb390281a6c14))
+
 # [1.2.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.1.0...v1.2.0) (2026-05-29)
 
 
