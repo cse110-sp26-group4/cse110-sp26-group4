@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.3.0...v1.3.1) (2026-05-31)
+
+
+### Bug Fixes
+
+* Rename baton generated files w/ baton ([#124](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/124)) ([9955bd0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/9955bd0606bbb6cb2745b9d54d2a8b002d8c8bcb))
+
 # [1.3.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.2.2...v1.3.0) (2026-05-31)
 
 
