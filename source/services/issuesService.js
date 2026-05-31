@@ -178,22 +178,47 @@ export function searchIssues(query) {
  * @property {string} [title] - The updated title.
  * @property {string} [description] - The updated description.
  * @property {number} [tokenLimit] - The updated token limit.
+ * @property {string} [status] - The updated status.
+ * @property {string} [priority] - The updated priority.
  */
 
 /**
- * Update editable fields: title, description, tokenLimit.
+ * Update editable fields: title, description, tokenLimit, status, priority.
  * Logs an edit event.
  * @param {number} id
+ * @param {Issue} oldIssue - The current data
  * @param {UpdateIssueFields} fields - The fields to update.
  * @returns {Issue}
  */
-export function updateIssue(id, { title, description, tokenLimit } = {}) {
+export function updateIssue(id, oldIssue, { title, description, tokenLimit, status, priority } = {}) {
   const db = getDB();
   const updates = {};
-  
+
   if (title !== undefined) updates.title = title;
   if (description !== undefined) updates.description = description;
   if (tokenLimit !== undefined) updates.tokenLimit = tokenLimit;
+
+  // Normalize status argument
+  if (status !== undefined) {
+    const statusValues = Object.values(Status);
+    const toUpdate = statusValues.find(v => v.trim().toLowerCase() === status.trim().toLowerCase());
+    updates.status = toUpdate || status;
+  }
+
+  // Normalize priority argument
+  if (priority !== undefined) {
+    const priorityValues = Object.values(Priority);
+    const toUpdate = priorityValues.find(v => v.toLowerCase().trim() === priority.trim().toLowerCase());
+    updates.priority = toUpdate || priority;
+  }
+
+  // Validate the new data 
+  const proposedIssue = new Issue({ ...oldIssue, ...updates });
+  const { isValid, errors } = proposedIssue.validate();
+  
+  if (!isValid) {
+    throw new Error(`Validation failed: ${errors.join(", ")}`);
+  }
 
   if (Object.keys(updates).length > 0) {
     db.update(issuesTable)
