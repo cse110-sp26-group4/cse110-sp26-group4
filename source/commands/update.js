@@ -47,7 +47,6 @@ const STATUS_CHOICES = issueSchema.status.values.map((v) => ({
     value: v,
 }));
 
-
 /**
  * Opens the user's $EDITOR pre-filled with existing content.
  * Falls back to the inquirer built-in editor widget if $EDITOR is not set.
@@ -61,7 +60,7 @@ async function openEditorForDescription(existing = "") {
 
     if (!editorBin) {
         const result = await editor({
-            message: "Description (opens in-terminal editor -- save & quit when done):",
+            message: "Description (save & quit when done):",
             default: existing,
             waitForUseInput: false,
         });
@@ -137,11 +136,9 @@ async function runInteractiveMode(issue) {
             },
         });
         results.tokenLimit = Number(raw);
-    } else {
-        results.tokenLimit = null;
     }
 
-    // Description -- $EDITOR flow, keep original if the user makes no changes
+    // Description - $EDITOR flow, keep original if the user makes no changes
     const wantsDescription = await confirm({
         message: "Edit description?",
         default: true,
@@ -151,9 +148,8 @@ async function runInteractiveMode(issue) {
         const hint = editorBin ? `opens ${editorBin}` : "in-terminal editor";
         console.log(`  ->  ${hint} -- edit the description, save and quit when done.\n`);
         const edited = await openEditorForDescription(issue.description ?? "");
-        results.description = edited !== null ? edited : issue.description;
-    } else {
-        results.description = issue.description;
+        // Only write to results if the user actually changed something
+        if (edited !== null) results.description = edited;
     }
 
     // Diff: loop over results and collect only what changed.
@@ -184,8 +180,6 @@ async function runInteractiveMode(issue) {
     return pending;
 }
 
-
-// --- Entry point ---
 
 /**
  * Updates the specified fields for a given issue ID.
