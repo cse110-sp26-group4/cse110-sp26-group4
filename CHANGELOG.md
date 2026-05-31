@@ -1,3 +1,17 @@
+# [1.3.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.2.2...v1.3.0) (2026-05-31)
+
+
+### Features
+
+* added update command ([#119](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/119)) ([b3a3fdd](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/b3a3fddb421d052dcbe3240a4cc5917be3ca018e))
+
+## [1.2.2](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.2.1...v1.2.2) (2026-05-30)
+
+
+### Bug Fixes
+
+* updated baton --help command ([#118](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/118)) ([affbe5a](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/affbe5a27cc5d0aa729f6b193e3c0484687f7e76))
+
 ## [1.2.1](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.2.0...v1.2.1) (2026-05-30)
 
 

@@ -17,7 +17,8 @@ if (!fs.existsSync(dataDir)) {
 const sqliteConnection = new Database(dbPath);
 
 // Initialize Drizzle ORM, passing in the schema for relational queries
-const db = drizzle(sqliteConnection, { schema });
+// Using let here so we can reassign it in tests with an in-memory database instance.
+let db = drizzle(sqliteConnection, { schema });
 
 export function initDB() {
   // Apply Migrations dynamically on CLI startup
@@ -63,4 +64,9 @@ export function getDB() {
 
 export function getSQLiteDB() {
   return sqliteConnection;
+}
+
+// function for the test suite mocking
+export function setTestDB(testDbInstance) {
+  db = testDbInstance;
 }
