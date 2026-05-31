@@ -180,7 +180,6 @@ async function runInteractiveMode() {
   return { title, priority, tokenLimit, description };
 }
 
-// --- Entry point ---
 
 /**
  * Initializes a new issue in the database with the specified fields
