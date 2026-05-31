@@ -6,8 +6,8 @@ import path from "path";
 
 import * as schema from "../models/schema.js"; 
 
-const dataDir = path.join(process.cwd(), "data");
-const dbPath = path.join(dataDir, "issues.db");
+const dataDir = path.join(process.cwd(), ".baton");
+const dbPath = path.join(dataDir, "baton.db");
 
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir);
