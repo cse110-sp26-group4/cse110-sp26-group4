@@ -21,6 +21,7 @@ npm-debug.log*
 dist/
 out/
 data/
+.baton/
 
 # IDE / editor
 .vscode/
