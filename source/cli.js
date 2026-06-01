@@ -106,12 +106,6 @@ Examples:
 async function main() {
   const [, , command, ...args] = process.argv;
 
-  if (!command || command === 'help' || wantsHelp(args) || command === '--help') {
-    console.log(HELP);
-    process.exit(command ? 0 : 1);
-    return;
-  }
-
   const handlers = {
     init: () => runInit(args),
     next: () => runNext(args),
@@ -125,9 +119,20 @@ async function main() {
     create: () => runCreate(args),
     update: () => runUpdate(args)
   };
-  
+
+  if (!command || command === 'help' || command === '--help') {
+    console.log(HELP);
+    process.exit(command ? 0 : 1);
+    return;
+  }
+
   const handler = handlers[command];
   if (!handler) {
+    if (wantsHelp(args)) {
+      console.log(HELP);
+      process.exit(0);
+      return;
+    }
     console.error(`Error: Unknown command "${command}".`);
     console.error('Run `baton --help` for usage.');
     process.exit(1);
