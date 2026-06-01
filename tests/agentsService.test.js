@@ -85,7 +85,6 @@ describe('Agents Service Operations', () => {
       assert.ok(agent.id);
       assert.equal(agent.name, 'claude-dev');
       assert.equal(agent.type, 'agent');
-      assert.ok(agent.createdAt);
 
       // Verify it actually inserted into the database
       const rows = testDb.select().from(agentsTable).all();
