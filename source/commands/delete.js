@@ -39,7 +39,7 @@ export async function run(args) {
         return 1;
     }
 
-    if (args.length > MAX_FLAGS) {
+    if (args.length > MAX_ARGS) {
         console.error(`Error: Too many arguments. Are you sure all of them are valid?\n${USAGE}`);
         return 1;
     }
