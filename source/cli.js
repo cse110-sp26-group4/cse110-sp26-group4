@@ -25,6 +25,7 @@ import { run as runList } from './commands/list.js';
 import { run as runCreate } from './commands/create.js'
 import { run as runUpdate } from './commands/update.js';
 import { run as runPriority } from './commands/priority.js';
+import { run as runLog } from './commands/log.js';
 
 const HELP = `baton — AI agent issue tracker CLI
 
@@ -42,7 +43,8 @@ Commands:
   create   Creates an issue with specified fields
   approve  Move an issue from in-review to closed
   priority Set an issue's priority level
-  update   Updates an issue's specified fields 
+  update   Updates an issue's specified fields
+  log      Show activity history for an issue
 
 Options:
   init --force                    Re-initialize an existing tracker database
@@ -75,7 +77,7 @@ Options:
   update --status <s>             open | in-progress | closed
   update --priority <level>       low | medium | high
   update --json                   Output as JSON (for AI agents)
- 
+  log <id> [--json]
 
 Examples:
   baton init
@@ -97,6 +99,7 @@ Examples:
   baton priority 3 low
   baton update 3 --title "Revised title"
   baton update 7 --status closed --priority medium
+  baton log 5
 `;
 
 /**
@@ -117,7 +120,8 @@ async function main() {
     approve: () => runApprove(args),
     priority: () => runPriority(args),
     create: () => runCreate(args),
-    update: () => runUpdate(args)
+    update: () => runUpdate(args),
+    log: () => runLog(args),
   };
 
   if (!command || command === 'help' || command === '--help') {
