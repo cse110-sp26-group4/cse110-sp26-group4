@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.5.0...v1.6.0) (2026-06-01)
+
+
+### Features
+
+* add baton priority command  ([#135](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/135)) ([de21620](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/de216200760b598d4886962798298585cdb57937))
+
 # [1.5.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.4.0...v1.5.0) (2026-06-01)
 
 

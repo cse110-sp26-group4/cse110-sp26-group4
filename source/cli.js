@@ -24,6 +24,7 @@ import { run as runSearch } from './commands/search.js';
 import { run as runList } from './commands/list.js';
 import { run as runCreate } from './commands/create.js'
 import { run as runUpdate } from './commands/update.js';
+import { run as runPriority } from './commands/priority.js';
 import { run as runLog } from './commands/log.js';
 import { run as runRegister } from './commands/register.js';
 
@@ -45,6 +46,7 @@ Commands:
   list     Lists issues filtered by status and priority
   create   Creates an issue with specified fields
   approve  Move an issue from in-review to closed
+  priority Set an issue's priority level
   update   Updates an issue's specified fields
   log      Show activity history for an issue
 
@@ -74,6 +76,7 @@ Options:
   create --token-limit <n>        Optional token budget for this issue
   create --json                   Output as JSON (for AI agents)
   approve <id> [--json]
+  priority <id> <level> [--json]  low | medium | high
   update --title <text>           New title
   update --description <text>     New description
   update --token-limit <n>        New token budget
@@ -99,6 +102,8 @@ Examples:
   baton create --title "Fix login bug" --priority high
   baton create --title "Refactor auth" --description "Clean up JWT logic" --token-limit 4000
   baton approve 5
+  baton priority 5 high
+  baton priority 3 low
   baton update 3 --title "Revised title"
   baton update 7 --status closed --priority medium
   baton log 5
@@ -130,13 +135,25 @@ async function main() {
     search: () => runSearch(args),
     list: () => runList(args),
     approve: () => runApprove(args),
+    priority: () => runPriority(args),
     create: () => runCreate(args),
     update: () => runUpdate(args),
     log: () => runLog(args),
   };
-  
+
+  if (!command || command === 'help' || command === '--help') {
+    console.log(HELP);
+    process.exit(command ? 0 : 1);
+    return;
+  }
+
   const handler = handlers[command];
   if (!handler) {
+    if (wantsHelp(args)) {
+      console.log(HELP);
+      process.exit(0);
+      return;
+    }
     console.error(`Error: Unknown command "${command}".`);
     console.error('Run `baton --help` for usage.');
     process.exit(1);
