@@ -169,15 +169,16 @@ export function updateIssue(id, { title, description, tokenLimit } = {}) {
  */
 export function assignIssue(id, userId) {
   const db = getDB();
-  findById(db, id);
-  db.prepare(
-    `
-    UPDATE issues
-    SET assignee = ?
-    WHERE id = ?
-  `,
-  ).run(userId, id);
-  logActivity(db, id, Action.EDIT, `Issue #${id} assigned to ${userId}.`);
+  
+  const assignTx = db.transaction(() => {
+
+    //checks if issue exists
+    //if issue doesn't exist, throws error and function terminates
+    findById(db, id);
+    db.prepare(`UPDATE issues SET assignee = ? WHERE id = ?`).run(userId, id);
+    logActivity(db, id, Action.EDIT, `Issue #${id} assigned to ${userId}.`);
+  });
+  assignTx(); // runs steps as a single transaction
   return getIssue(id);
 }
 
