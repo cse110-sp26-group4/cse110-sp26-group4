@@ -11,7 +11,7 @@
 //   baton reject 5 --reason "Needs more detail"
 
 import { rejectIssue } from '../services/issuesService.js';
-import { hasFlag, wantsHelp } from '../util.js';
+import { hasFlag, getFlagValue, wantsHelp } from '../util.js';
 import { confirm } from '@inquirer/prompts';
 
 const USAGE = "Usage:\n  baton reject <id> [options]\n\nOptions:\n  --reason <text>        Reason for rejection (required)\n  -h, --help   Show this help";
@@ -48,17 +48,15 @@ export async function run(args) {
         return 1;
     }
 
-    let reasonText = "";
-
     let i = 1;
     while (i < args.length) { // validate args
         const flag = args[i];
         if (!flag.startsWith('-')) {
-            console.error(`Error: Expected flag, instead got positional argument ${arg}.`);
+            console.error(`Error: Expected a flag, instead got positional argument ${flag}.\n${USAGE}`);
             return 1;
         }
         if (!VALID_FLAGS.has(flag)) { // invalid flag
-            console.error(`Error: Unknown flag ${arg}.`);
+            console.error(`Error: Unknown flag ${flag}.`);
             return 1;
         }
 
@@ -66,15 +64,16 @@ export async function run(args) {
 
         switch (flag) {
             case "--reason":
-                if(i == args.length - 1) {
-                    console.error(`Error: Missing --reason <text> positional argument.`);
-                    return 1;
-                }
-
-                reasonText = args[i+1];
                 i += 1;
         }
     }
+
+    // required flags
+    if (!hasFlag(args, "--reason")) {
+        console.error(`Error: Missing reason for reject.\n${USAGE}`);
+        return 1;
+    }
+    const reasonText = getFlagValue(args, "--reason");
     
     try {
         rejectIssue(id, reasonText);
