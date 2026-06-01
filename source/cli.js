@@ -70,7 +70,7 @@ Options:
   create --token-limit <n>        Optional token budget for this issue
   create --json                   Output as JSON (for AI agents)
   approve <id> [--json]
-  priority <id> <level>         low | medium | high
+  priority <id> <level> [--json]  low | medium | high
   update --title <text>           New title
   update --description <text>     New description
   update --token-limit <n>        New token budget
