@@ -24,7 +24,9 @@ import {
   getFlagValue,
   getFirstPositionalArg,
   hasFlag,
+  renderOutput,
   resolvePath,
+  serializeIssue,
 } from '../util.js';
 
 /**
@@ -48,7 +50,7 @@ function parseInitFlags(args) {
   const specsFromFlag = getFlagValue(args, '--specs');
   const positionalSpecs = getFirstPositionalArg(args, {
     valueFlags: ['--specs'],
-    ignoreFlags: ['--force'],
+    ignoreFlags: ['--force', '--json'],
   });
 
   if (specsFromFlag && positionalSpecs) {
@@ -132,6 +134,7 @@ function generateIssuesFromSpecs(specsPath) {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args = []) {
+  const isJson = hasFlag(args, '--json');
   let flags;
   try {
     flags = parseInitFlags(args);
@@ -155,17 +158,26 @@ export async function run(args = []) {
 
   const resolvedSpecsPath = resolvePath(flags.specs, DEFAULT_SPECS_PATH);
   const createdIssues = generateIssuesFromSpecs(flags.specs);
+  const envelope = {
+    status: 'success',
+    db_path: join(process.cwd(), 'data', 'issues.db'),
+    specs_path: resolvedSpecsPath,
+    count: createdIssues.length,
+    issues: createdIssues.map(serializeIssue),
+  };
 
-  console.log(`Tracker initialized at ${join(process.cwd(), 'data', 'issues.db')}`);
-  console.log(`Specs: ${resolvedSpecsPath}`);
-  console.log(`Created ${createdIssues.length} issue(s) from product specs.`);
-  if (createdIssues.length > 0) {
-    console.log('Issues:');
-    for (const issue of createdIssues) {
-      console.log(`  #${issue.id} [${issue.priority}] ${issue.title}`);
+  renderOutput(isJson, envelope, () => {
+    console.log(`Tracker initialized at ${join(process.cwd(), 'data', 'issues.db')}`);
+    console.log(`Specs: ${resolvedSpecsPath}`);
+    console.log(`Created ${createdIssues.length} issue(s) from product specs.`);
+    if (createdIssues.length > 0) {
+      console.log('Issues:');
+      for (const issue of createdIssues) {
+        console.log(`  #${issue.id} [${issue.priority}] ${issue.title}`);
+      }
     }
-  }
-  console.log('Run `baton status` to review progress or `baton next` to start work.');
+    console.log('Run `baton status` to review progress or `baton next` to start work.');
+  });
 
   return 0;
 }

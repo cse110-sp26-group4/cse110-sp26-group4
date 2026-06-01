@@ -45,26 +45,33 @@ Commands:
 Options:
   init --force                    Re-initialize an existing tracker database
   init --specs <path>             Path to product specs file (overrides default)
+  init --json                     Output as JSON (for AI agents)
   init <path>                     Same as --specs <path> (positional)
   Default specs: docs/specs/project-requirements.md
   loop --steps <n>                Number of autonomous steps (alias: -n)
   loop -n <n>
-  view <id>  
-  search <query>
+  loop --json                     Output as JSON (for AI agents)
+  next --json                     Output as JSON (for AI agents)
+  status --json                   Output as JSON (for AI agents)
+  view <id> [--json]
+  search <query> [--json]
   list --status <s>               Filter by status: open | in-progress | closed
   list --priority <p>             Filter by priority: low | medium | high
   list --limit <n>                Max results (default: 50)
   list --offset <n>               Skip first n results (default: 0)
+  list --json                     Output as JSON (for AI agents)
   create --title <text>           Issue title (defaults to "Issue #<id>" if omitted)
   create --description <text>     Issue description
   create --priority <level>       low | medium | high  (default: low)
   create --token-limit <n>        Optional token budget for this issue
-  approve <id>
+  create --json                   Output as JSON (for AI agents)
+  approve <id> [--json]
   update --title <text>           New title
   update --description <text>     New description
   update --token-limit <n>        New token budget
   update --status <s>             open | in-progress | closed
-  update --priority <level>       low | medium | high  
+  update --priority <level>       low | medium | high
+  update --json                   Output as JSON (for AI agents)
  
 
 Examples:

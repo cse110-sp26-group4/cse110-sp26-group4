@@ -190,6 +190,67 @@ export function reportTrackerNotReady() {
 }
 
 /**
+ * Converts DB-style enum values to lowercase snake_case for JSON output.
+ * e.g. "In-Progress" → "in_progress"
+ * @param {string | null | undefined} value
+ * @returns {string | null}
+ */
+function toJsonEnum(value) {
+  return value?.toLowerCase().replace(/-/g, '_') ?? null;
+}
+
+/**
+ * Normalizes a DB row or Issue instance into a stable JSON-friendly shape.
+ * All commands should serialize through this before building their envelope.
+ * @param {object} issue
+ * @returns {object}
+ */
+export function serializeIssue(issue) {
+  return {
+    id: issue.id,
+    title: issue.title,
+    status: toJsonEnum(issue.status),
+    priority: toJsonEnum(issue.priority),
+    description: issue.description ?? null,
+    token_limit: issue.tokenLimit ?? issue.token_limit ?? null,
+    attempt_num: issue.attemptNum ?? issue.attempt_num ?? 0,
+    created_at: issue.createdAt ?? issue.created_at ?? null,
+    last_updated: issue.lastUpdated ?? issue.last_updated ?? null,
+    assignees: issue.assignees ?? null,
+  };
+}
+
+/**
+ * Centralized output renderer.
+ * If isJson is true, outputs the envelope as JSON.
+ * Otherwise, runs the human-readable callback.
+ * @param {boolean} isJson - Whether the user passed the --json flag
+ * @param {object} envelope - Structured response payload (e.g. { status, issues })
+ * @param {Function} humanOutput - Callback for human terminal styling
+ */
+export function renderOutput(isJson, envelope, humanOutput) {
+  if (isJson) {
+    console.log(JSON.stringify(envelope, null, 2));
+    return;
+  }
+  humanOutput(envelope);
+}
+
+/**
+ * Prints an error in JSON or plain text depending on output mode.
+ * @param {boolean} isJson
+ * @param {string} message
+ * @param {string} [code='ERROR']
+ */
+export function renderError(isJson, message, code = 'ERROR') {
+  if (isJson) {
+    console.error(JSON.stringify({ status: 'error', code, message }));
+    return;
+  }
+  console.error(`Error: ${message}`);
+}
+
+/**
  * Configuration for table column widths.
  */
 export const WIDTHS = {
