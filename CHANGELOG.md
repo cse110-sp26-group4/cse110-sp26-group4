@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.4.0...v1.5.0) (2026-06-01)
+
+
+### Features
+
+* add --json output support for CLI commands ([#131](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/131)) ([ab8ccc2](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/ab8ccc2bb9560581b35ad177d221e0a320c23e41))
+
 # [1.4.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.3.2...v1.4.0) (2026-06-01)
 
 
