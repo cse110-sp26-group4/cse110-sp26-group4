@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.3.1...v1.3.2) (2026-06-01)
+
+
+### Bug Fixes
+
+* ix rizzle ath (make it relative to db path, fixes baton init) ([#130](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/130)) ([57b1106](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/57b1106f8f0b820a19eb7c4a48ba02d26a57a6d4))
+
 ## [1.3.1](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.3.0...v1.3.1) (2026-05-31)
 
 
