@@ -1,3 +1,4 @@
+// AI was consulted for some portions of this file.
 // priority.js
 // Sets the priority of an issue.
 // Usage: baton priority <id> <priority>
