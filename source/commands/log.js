@@ -11,7 +11,7 @@
 //   baton log 5
 
 import { getActivityLog } from '../services/issuesService.js';
-import { formatTimestamp, hasFlag, renderOutput } from '../util.js';
+import { formatTimestamp, hasFlag } from '../util.js';
 
 /**
  * Serializes an activity log entry for JSON output.
@@ -57,21 +57,24 @@ export async function run(args) {
       entries,
     };
 
-    renderOutput(isJson, envelope, (data) => {
-      if (data.count === 0) {
-        console.log(`No activity history for issue #${id}.`);
-        return;
-      }
+    if (isJson) {
+      console.log(JSON.stringify(envelope, null, 2));
+      return 0;
+    }
 
-      console.log(`Activity log for issue #${id}`);
-      console.log('──────────────────────────────────────────');
-      for (const entry of data.entries) {
-        const timestamp = formatTimestamp(entry.created_at);
-        const details = entry.details ?? '';
-        console.log(`${timestamp}  ${entry.action}  ${details}`);
-      }
-      console.log('');
-    });
+    if (entries.length === 0) {
+      console.log(`No activity history for issue #${id}.`);
+      return 0;
+    }
+
+    console.log(`Activity log for issue #${id}`);
+    console.log('──────────────────────────────────────────');
+    for (const entry of entries) {
+      const timestamp = formatTimestamp(entry.created_at);
+      const details = entry.details ?? '';
+      console.log(`${timestamp}  ${entry.action}  ${details}`);
+    }
+    console.log('');
 
     return 0;
   } catch (error) {
