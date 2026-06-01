@@ -1,10 +1,14 @@
 import Database from "better-sqlite3";
+import { fileURLToPath } from 'url';
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import fs from "fs";
 import path from "path";
 
 import * as schema from "../models/schema.js"; 
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const dataDir = path.join(process.cwd(), ".baton");
 const dbPath = path.join(dataDir, "baton.db");
@@ -23,7 +27,7 @@ let db = drizzle(sqliteConnection, { schema });
 export function initDB() {
   // Apply Migrations dynamically on CLI startup
   // This looks for a folder named "drizzle" in your project root
-  const migrationsFolder = path.join(process.cwd(), "drizzle");
+  const migrationsFolder = path.join(__dirname, '../../drizzle');
   
   if (fs.existsSync(migrationsFolder)) {
     migrate(db, { migrationsFolder });
