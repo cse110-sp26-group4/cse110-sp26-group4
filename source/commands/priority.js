@@ -12,6 +12,18 @@
 
 import { Priority } from '../models/issue.js';
 import { setPriority } from '../services/issuesService.js';
+import { wantsHelp } from '../util.js';
+
+const HELP = `Usage:
+  baton priority <id> <priority>
+
+Options:
+  -h, --help             Show this help
+
+Examples:
+  baton priority 5 high
+  baton priority 3 low
+`;
 
 /**
  * Normalize CLI priority input to a canonical Priority enum value.
@@ -29,6 +41,11 @@ function normalizePriority(input) {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args) {
+  if (wantsHelp(args)) {
+    console.log(HELP);
+    return 0;
+  }
+
   if (args.length < 2) {
     throw new Error(
       'Invalid input: Missing issue ID or priority.\nUsage: baton priority <id> <priority>'
