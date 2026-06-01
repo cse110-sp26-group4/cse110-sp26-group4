@@ -20,7 +20,7 @@ export class Issue {
     tokenLimit  = null,
     description = null,
     lastUpdated = new Date().toISOString(),
-    assignees = null,
+    assigneeId  = null,
     // Auto-generated fields
     id          = 0,
     createdAt  = new Date().toISOString(),
@@ -32,7 +32,7 @@ export class Issue {
     this.tokenLimit  = tokenLimit;
     this.description = description;
     this.lastUpdated = lastUpdated;
-    this.assignees = assignees;
+    this.assigneeId  = assigneeId;
     this.id          = id;
     this.createdAt  = createdAt;
     this.attemptNum = attemptNum;
@@ -68,5 +68,3 @@ export class Issue {
     return {isValid: errors.length == 0, errors: errors}
   }
 }
-
-

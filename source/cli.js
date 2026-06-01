@@ -25,6 +25,9 @@ import { run as runList } from './commands/list.js';
 import { run as runCreate } from './commands/create.js'
 import { run as runUpdate } from './commands/update.js';
 import { run as runLog } from './commands/log.js';
+import { run as runRegister } from './commands/register.js';
+
+import { authenticateContext } from './services/authService.js';
 
 const HELP = `baton — AI agent issue tracker CLI
 
@@ -33,6 +36,7 @@ Usage:
 
 Commands:
   init     Initialize storage and seed issues from product specs
+  register Register a new AI agent or human user
   next     Work on the highest-priority open issue
   loop     Run the agent autonomously for multiple steps
   status   Show issue counts and overall progress
@@ -50,6 +54,8 @@ Options:
   init --json                     Output as JSON (for AI agents)
   init <path>                     Same as --specs <path> (positional)
   Default specs: docs/specs/project-requirements.md
+  register --name <name>          Name of the agent or user
+  register --type <type>          agent | human (default: agent)
   loop --steps <n>                Number of autonomous steps (alias: -n)
   loop -n <n>
   loop --json                     Output as JSON (for AI agents)
@@ -81,6 +87,7 @@ Examples:
   baton init --specs ./my-specs.md
   baton init ./my-specs.md
   baton init --force
+  baton register --name claude-dev --type agent
   baton next
   baton loop --steps 5
   baton status
@@ -110,8 +117,12 @@ async function main() {
     return;
   }
 
+  // Authenticate the user and context before executing any command.
+  authenticateContext(command);
+
   const handlers = {
     init: () => runInit(args),
+    register: () => runRegister(args),
     next: () => runNext(args),
     loop: () => runLoop(args),
     status: () => runStatus(args),

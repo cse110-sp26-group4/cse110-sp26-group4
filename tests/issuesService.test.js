@@ -18,7 +18,7 @@ import {
   approveIssue, rejectIssue, submitForReview, setStatus, setPriority,
   incrementAttempt, deleteIssue, getActivityLog, getRecentActivity,
   isTrackerReady, getIssueStats, getAllIssues, selectNextIssue,
-  workOnIssue, clearAllIssues
+  claimIssue, clearAllIssues
 } from '../source/services/issuesService.js';
 
 // ─── Test Helpers ────────────────────────────────────────────────────────────
@@ -199,12 +199,12 @@ describe('Issue Tracker Operations', () => {
     });
   });
 
-  // ── workOnIssue ────────────────────────────────────────────────────────────
+  // ── claimIssue ────────────────────────────────────────────────────────────
 
-  describe('workOnIssue', () => {
+  describe('claimIssue', () => {
     it('should mark IN_PROGRESS, increment attempts, and log atomically', () => {
       const { id } = createIssue({ title: 'Work Test' });
-      const issue = workOnIssue(id);
+      const issue = claimIssue(id);
 
       assert.equal(issue.status, Status.IN_PROGRESS);
       assert.equal(issue.attemptNum, 1);
@@ -221,7 +221,7 @@ describe('Issue Tracker Operations', () => {
       approveIssue(id);
 
       assert.throws(
-        () => workOnIssue(id),
+        () => claimIssue(id),
         { message: `Issue #${id} is closed and cannot be worked on.` }
       );
     });
