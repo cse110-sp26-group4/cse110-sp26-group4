@@ -25,9 +25,10 @@ import { writeFileSync, readFileSync, unlinkSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 
-// Derived from issueSchema
+const ALLOWED_CREATE_FIELDS = ['title', 'priority', 'tokenLimit', 'description'];
+
 const VALID_FLAGS = new Set([
-  ...Object.values(issueSchema).map((c) => c.flag),
+  ...ALLOWED_CREATE_FIELDS.map(key => issueSchema[key].flag),
   "--json",
 ]);
 

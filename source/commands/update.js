@@ -26,9 +26,10 @@ import { writeFileSync, readFileSync, unlinkSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 
-// Derived from issueSchema -- stays current if fields are added or renamed there.
+const ALLOWED_UPDATE_FIELDS = ['title', 'status', 'priority', 'tokenLimit', 'description'];
+
 const VALID_FLAGS = new Set([
-  ...Object.values(issueSchema).map((c) => c.flag),
+  ...ALLOWED_UPDATE_FIELDS.map(key => issueSchema[key].flag),
   "--json",
 ]);
 const FLAGS_HINT = [...VALID_FLAGS].join(", ");
