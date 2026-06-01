@@ -17,7 +17,7 @@ import { confirm } from '@inquirer/prompts';
 
 const USAGE = "Usage: baton delete <id> [options]\n\nOptions:\n  --yes        Skip confirmation prompt\n  -h, --help   Show this help";
 const VALID_FLAGS = new Set(['--yes', '--help', '-h']);
-const MAX_FLAGS = 3; // <id>, --yes, --help
+const MAX_ARGS = 3; // <id>, --yes, --help
 
 /**
  * Deletes an issue for a specified ID.
