@@ -11,7 +11,7 @@
 //  baton loop -n 5
 
 import { isTrackerReady } from '../services/issuesService.js';
-import { getNumericFlag, reportTrackerNotReady } from '../util.js';
+import { getNumericFlag, hasFlag, renderOutput, reportTrackerNotReady } from '../util.js';
 import { run as runNext } from './next.js';
 
 /**
@@ -30,7 +30,9 @@ function parseLoopFlags(args) {
  * @returns {Promise<number>}
  */
 export async function run(args = []) {
-  const { steps } = parseLoopFlags(args);
+  const isJson = hasFlag(args, '--json');
+  const loopArgs = args.filter((arg) => arg !== '--json');
+  const { steps } = parseLoopFlags(loopArgs);
 
   if (!isTrackerReady()) {
     reportTrackerNotReady();
@@ -58,6 +60,8 @@ export async function run(args = []) {
     }
   }
 
-  console.log(`\nCompleted ${completed} autonomous step(s).`);
+  renderOutput(isJson, { status: 'success', steps, completed }, () => {
+    console.log(`\nCompleted ${completed} autonomous step(s).`);
+  });
   return 0;
 }

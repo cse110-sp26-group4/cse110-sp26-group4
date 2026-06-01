@@ -4,6 +4,7 @@
 // Usage: baton approve <id>
 
 import { approveIssue } from '../services/issuesService.js';
+import { hasFlag, renderOutput, serializeIssue } from '../util.js';
 
 /**
  * Approves an issue and moves it to the closed state.
@@ -11,14 +12,17 @@ import { approveIssue } from '../services/issuesService.js';
  * @returns {Promise<number>} the exit code: 0 is success, 1 is error
  */
 export async function run(args) {
+    const isJson = hasFlag(args, '--json');
+    const idArgs = args.filter((arg) => arg !== '--json');
+
     //check if id argument is empty
-    if (args.length == 0) {
+    if (idArgs.length == 0) {
         throw new Error(
             'Invalid input: Missing issue ID.\nUsage: baton approve <id>'
         );
     }
 
-    const id = args.join(' ');
+    const id = idArgs.join(' ');
 
     //check if ID argument isn't a number
     if (isNaN(id)) {
@@ -30,9 +34,13 @@ export async function run(args) {
   //try to approve the issue
     try {
         const issue = await approveIssue(id);
-        console.log(
-            `Issue #${issue.id} approved and moved to ${issue.status}.`
-        );
+        const envelope = { status: 'success', issue: serializeIssue(issue) };
+
+        renderOutput(isJson, envelope, () => {
+            console.log(
+                `Issue #${issue.id} approved and moved to ${issue.status}.`
+            );
+        });
 
         return 0;
     } catch (error) {
