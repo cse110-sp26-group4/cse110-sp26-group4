@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.6.0...v1.7.0) (2026-06-01)
+
+
+### Features
+
+* **cli:** add user auth and tracking, add agents table, add actorId … ([#142](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/142)) ([8450eeb](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/8450eebb70067cec195b24bcec27cd9dbbd14e83))
+
 # [1.6.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.5.0...v1.6.0) (2026-06-01)
 
 
