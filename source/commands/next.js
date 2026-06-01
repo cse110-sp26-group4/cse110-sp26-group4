@@ -8,7 +8,7 @@ import {
   selectNextIssue,
   workOnIssue,
 } from '../services/issuesService.js';
-import { formatTimestamp, reportTrackerNotReady } from '../util.js';
+import { formatTimestamp, hasFlag, renderOutput, reportTrackerNotReady, serializeIssue } from '../util.js';
 
 /**
  * Moves the AI agent to work on the next issue. 
@@ -17,7 +17,9 @@ import { formatTimestamp, reportTrackerNotReady } from '../util.js';
  * Stats are updated on the issue through workOnIssue function from init.js.
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
-export async function run() {
+export async function run(args = []) {
+  const isJson = hasFlag(args, '--json');
+
   if (!isTrackerReady()) {
     reportTrackerNotReady();
     return 1;
@@ -25,22 +27,27 @@ export async function run() {
 
   const issue = selectNextIssue();
   if (!issue) {
-    console.log('No open issues available. All work is complete or the backlog is empty.');
+    renderOutput(isJson, { status: 'success', issue: null }, () => {
+      console.log('No open issues available. All work is complete or the backlog is empty.');
+    });
     return 0;
   }
 
   const updated = workOnIssue(issue.id);
+  const envelope = { status: 'success', issue: serializeIssue(updated) };
 
-  console.log('Working on next issue:');
-  console.log(`  ID:          #${updated.id}`);
-  console.log(`  Title:       ${updated.title}`);
-  console.log(`  Priority:    ${updated.priority}`);
-  console.log(`  Status:      ${updated.status}`);
-  console.log(`  Attempts:    ${updated.attemptNum}`);
-  console.log(`  Created:     ${formatTimestamp(updated.createdAt)}`);
-  if (updated.description) {
-    console.log(`  Description: ${updated.description}`);
-  }
+  renderOutput(isJson, envelope, () => {
+    console.log('Working on next issue:');
+    console.log(`  ID:          #${updated.id}`);
+    console.log(`  Title:       ${updated.title}`);
+    console.log(`  Priority:    ${updated.priority}`);
+    console.log(`  Status:      ${updated.status}`);
+    console.log(`  Attempts:    ${updated.attemptNum}`);
+    console.log(`  Created:     ${formatTimestamp(updated.createdAt)}`);
+    if (updated.description) {
+      console.log(`  Description: ${updated.description}`);
+    }
+  });
 
   return 0;
 }

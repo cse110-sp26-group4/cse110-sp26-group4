@@ -17,7 +17,7 @@
 //   -h, --help             Show this help
 
 import { createIssue } from "../services/issuesService.js";
-import { parseArgs } from "../util.js";
+import { hasFlag, parseArgs, renderOutput, serializeIssue } from "../util.js";
 import { issueSchema } from "../models/schema.js";
 import { input, select, confirm, editor } from "@inquirer/prompts";
 import { spawnSync } from "child_process";
@@ -26,7 +26,10 @@ import { tmpdir } from "os";
 import { join } from "path";
 
 // Derived from issueSchema
-const VALID_FLAGS = new Set(Object.values(issueSchema).map((c) => c.flag));
+const VALID_FLAGS = new Set([
+  ...Object.values(issueSchema).map((c) => c.flag),
+  "--json",
+]);
 
 // Build select choices from issueSchema.priority.values so the list stays in
 // sync with the Priority enum without any duplication.
@@ -180,7 +183,6 @@ async function runInteractiveMode() {
   return { title, priority, tokenLimit, description };
 }
 
-
 /**
  * Initializes a new issue in the database with the specified fields
  * Drops into interactive mode when no flags are provided
@@ -189,6 +191,8 @@ async function runInteractiveMode() {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error
  */
 export async function run(args) {
+  const isJson = hasFlag(args, "--json");
+
   // Flag validation -- VALID_FLAGS is derived from issueSchema, so this stays
   // current automatically when fields are added or renamed there
   const providedFlags = args.filter((a) => a.startsWith("--"));
@@ -205,18 +209,23 @@ export async function run(args) {
   try {
     // Interactive mode: no flags provided (human at a keyboard)
     // Flag mode:        at least one flag present (scripts, CI, power users)
-    const isInteractive = providedFlags.length === 0;
+    const nonJsonFlags = providedFlags.filter((f) => f !== "--json");
+    const isInteractive = nonJsonFlags.length === 0;
 
     const options = isInteractive
       ? await runInteractiveMode()
       : parseArgs(args);
 
     const issue = await createIssue(options);
+    const envelope = { status: "success", issue: serializeIssue(issue) };
 
-    console.log(`\nCreated issue #${issue.id}: "${issue.title}"`);
+    renderOutput(isJson, envelope, () => {
+      console.log(`\nCreated issue #${issue.id}: "${issue.title}"`);
+    });
+
     return 0;
   } catch (error) {
-    // when user hitsCtrl+C
+    // when user hits Ctrl+C
     if (error.name === "ExitPromptError") {
       console.log("\nAborted.");
       return 0;

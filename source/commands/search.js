@@ -4,7 +4,13 @@
 // Usage: baton search "login bug"
 
 import { searchIssues } from "../services/issuesService.js";
-import { printIssueTable, printTableHeader } from '../util.js';
+import {
+  hasFlag,
+  printIssueTable,
+  printTableHeader,
+  renderOutput,
+  serializeIssue,
+} from '../util.js';
 
 /**
  * Searches for a title or description matching the command line argument
@@ -12,27 +18,31 @@ import { printIssueTable, printTableHeader } from '../util.js';
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args) {
-    if (args.length === 0 || args === '') {
+    const isJson = hasFlag(args, '--json');
+    const queryArgs = args.filter((arg) => arg !== '--json');
+
+    if (queryArgs.length === 0 || queryArgs === '') {
         throw new Error("Invalid input: No search term entered.\nUsage: baton search <query>");
     }
 
     try {
-        const query = args.join(' ');
+        const query = queryArgs.join(' ');
         const result = await searchIssues(query);
+        const issues = result.map(serializeIssue);
+        const envelope = { status: 'success', count: issues.length, issues };
 
-        // If no issues with matching title or desc was found
-        if (result.length == 0) {
-            console.log(`No issues containing "${query}" were found.`);
-            return 0;
-        }
+        renderOutput(isJson, envelope, (data) => {
+            if (data.count === 0) {
+                console.log(`No issues containing "${query}" were found.`);
+                return;
+            }
 
-        console.log(`\nFound ${result.length} issue(s) containing "${query}":\n`);
+            console.log(`\nFound ${data.count} issue(s) containing "${query}":\n`);
+            printTableHeader();
+            result.forEach((issue) => printIssueTable(issue));
+            console.log('');
+        });
 
-        // Logic for table formatting 
-        printTableHeader();
-        result.forEach(issue => printIssueTable(issue));
-
-        console.log("");
         return 0;
     } catch (error) {
         // Failed to query database

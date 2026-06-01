@@ -1,3 +1,31 @@
+# [1.5.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.4.0...v1.5.0) (2026-06-01)
+
+
+### Features
+
+* add --json output support for CLI commands ([#131](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/131)) ([ab8ccc2](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/ab8ccc2bb9560581b35ad177d221e0a320c23e41))
+
+# [1.4.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.3.2...v1.4.0) (2026-06-01)
+
+
+### Features
+
+* automatic npm publishing (completed cd pipeline) ([#132](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/132)) ([6078163](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/60781633b751e9226344145819b80afbbf8f17ea))
+
+## [1.3.2](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.3.1...v1.3.2) (2026-06-01)
+
+
+### Bug Fixes
+
+* ix rizzle ath (make it relative to db path, fixes baton init) ([#130](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/130)) ([57b1106](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/57b1106f8f0b820a19eb7c4a48ba02d26a57a6d4))
+
+## [1.3.1](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.3.0...v1.3.1) (2026-05-31)
+
+
+### Bug Fixes
+
+* Rename baton generated files w/ baton ([#124](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/124)) ([9955bd0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/9955bd0606bbb6cb2745b9d54d2a8b002d8c8bcb))
+
 # [1.3.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.2.2...v1.3.0) (2026-05-31)
 
 
