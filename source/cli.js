@@ -24,6 +24,7 @@ import { run as runSearch } from './commands/search.js';
 import { run as runList } from './commands/list.js';
 import { run as runCreate } from './commands/create.js'
 import { run as runUpdate } from './commands/update.js';
+import { run as runDelete } from './commands/delete.js';
 import { run as runPriority } from './commands/priority.js';
 import { run as runLog } from './commands/log.js';
 
@@ -44,6 +45,7 @@ Commands:
   approve  Move an issue from in-review to closed
   priority Set an issue's priority level
   update   Updates an issue's specified fields
+  delete   Deletes an issue
   log      Show activity history for an issue
 
 Options:
@@ -77,6 +79,7 @@ Options:
   update --status <s>             open | in-progress | closed
   update --priority <level>       low | medium | high
   update --json                   Output as JSON (for AI agents)
+  delete <id> [--yes]
   log <id> [--json]
 
 Examples:
@@ -121,6 +124,7 @@ async function main() {
     priority: () => runPriority(args),
     create: () => runCreate(args),
     update: () => runUpdate(args),
+    delete: () => runDelete(args),
     log: () => runLog(args),
   };
 
