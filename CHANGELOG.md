@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.7.0...v1.8.0) (2026-06-01)
+
+
+### Features
+
+* added delete functionality to CLI ([#157](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/157)) ([4f3356c](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/4f3356cf2266eb2f502892489e68bdee80c94713))
+
 # [1.7.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.6.0...v1.7.0) (2026-06-01)
 
 
