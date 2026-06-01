@@ -141,12 +141,6 @@ async function main() {
     log: () => runLog(args),
   };
 
-  if (!command || command === 'help' || command === '--help') {
-    console.log(HELP);
-    process.exit(command ? 0 : 1);
-    return;
-  }
-
   const handler = handlers[command];
   if (!handler) {
     if (wantsHelp(args)) {

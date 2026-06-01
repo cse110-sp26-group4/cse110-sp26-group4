@@ -19,15 +19,26 @@ export function authenticateContext(command) {
   // Identify who is running the CLI
   const activeName = process.env.BATON_AGENT || os.userInfo().username;
   
-  // Look them up in the database
-  const agent = getAgentByName(activeName);
+  try {
+    // Look them up in the database
+    const agent = getAgentByName(activeName);
 
-  if (!agent) {
-    console.error(`Error: Agent/User "${activeName}" is not registered in this Baton tracker.`);
-    console.error(`Please run 'baton register --name "${activeName}" --type "human"' (or "agent") first.`);
-    process.exit(1);
+    if (!agent) {
+      console.error(`Error: Agent/User "${activeName}" is not registered in this Baton tracker.`);
+      console.error(`Please run 'baton register --name "${activeName}" --type "human"' (or "agent") first.`);
+      process.exit(1);
+    }
+
+    // Set the global state for the remainder of this command's lifecycle
+    setActiveActor(agent.id);
+  } catch (error) {
+    // Gracefully handle the scenario where the database hasn't been initialized yet
+    if (error.message && error.message.includes('no such table: agents')) {
+      console.error("Error: Tracker is not initialized. Please run 'baton init' first.");
+      process.exit(1);
+    }
+    
+    // Rethrow if it's a completely different error
+    throw error;
   }
-
-  // Set the global state for the remainder of this command's lifecycle
-  setActiveActor(agent.id);
 }

@@ -15,7 +15,6 @@ export class Agent {
     this.name      = name;
     this.type      = type;
     this.id        = id;
-    this.createdAt = createdAt;
   }
 
   /**
