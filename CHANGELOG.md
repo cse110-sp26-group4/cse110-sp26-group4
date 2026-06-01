@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.3.2...v1.4.0) (2026-06-01)
+
+
+### Features
+
+* automatic npm publishing (completed cd pipeline) ([#132](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/132)) ([6078163](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/60781633b751e9226344145819b80afbbf8f17ea))
+
 ## [1.3.2](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.3.1...v1.3.2) (2026-06-01)
 
 
