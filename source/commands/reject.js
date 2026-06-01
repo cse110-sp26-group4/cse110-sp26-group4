@@ -1,22 +1,23 @@
 // reject.js
 // supports rejecting an issue.
+// 
+// AI Was used in generating this file.
 // Usage:
 //   baton reject <id> [options]
 //
 // Options:
 //   --reason <text>        Reason for rejection (required)
+//   --json                 Output in JSON format
 //   -h, --help             Show this help
 //
 // Examples:
 //   baton reject 5 --reason "Needs more detail"
 
-import { rejectIssue } from '../services/issuesService.js';
-import { hasFlag, getFlagValue, wantsHelp } from '../util.js';
-import { confirm } from '@inquirer/prompts';
+import { rejectIssue, getIssue } from '../services/issuesService.js';
+import { Status } from '../models/issue.js';
+import { hasFlag, getFlagValue, wantsHelp, renderOutput, renderError, serializeIssue } from '../util.js';
 
-const USAGE = "Usage:\n  baton reject <id> [options]\n\nOptions:\n  --reason <text>        Reason for rejection (required)\n  -h, --help   Show this help";
-const VALID_FLAGS = new Set(['--reason', '--help', '-h']);
-const MAX_ARGS = 3; // <id>, --reason, --help
+const USAGE = "Usage:\n  baton reject <id> [options]\n\nOptions:\n  --reason <text>        Reason for rejection (required)\n  --json                 Output in JSON format\n  -h, --help             Show this help";
 
 /**
  * Rejects an issue for a specified ID.
@@ -25,6 +26,8 @@ const MAX_ARGS = 3; // <id>, --reason, --help
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args) {
+    const isJson = hasFlag(args, '--json');
+
     // (0) Help check
     if (wantsHelp(args)) {
         console.log(USAGE);
@@ -32,54 +35,65 @@ export async function run(args) {
     }
 
     // (1) Parse arguments
-    if (args.length === 0) {
-        console.error(`Error: No ID provided.\n${USAGE}`);
+    const idArgs = args.filter(arg => !arg.startsWith('-'));
+    if (idArgs.length === 0) {
+        renderError(isJson, `No ID provided.\n${USAGE}`, 'MISSING_ID');
         return 1;
     }
 
-    if (args.length > MAX_ARGS) {
-        console.error(`Error: Too many arguments. Are you sure all of them are valid?\n${USAGE}`);
+    const id = Number(idArgs[0]);
+    if (!Number.isInteger(id)) {
+        renderError(isJson, `Invalid ID "${idArgs[0]}". ID must be an integer.`, 'INVALID_ID');
         return 1;
     }
 
-    const id = Number(args[0]);
-    if (!Number.isInteger(id)) { // check id is valid
-        console.error(`Error: Invalid ID "${args[0]}". ID must be an integer.\n${USAGE}`);
-        return 1;
-    }
-
-    let i = 1;
-    while (i < args.length) { // validate args
-        const flag = args[i];
-        if (!flag.startsWith('-')) {
-            console.error(`Error: Expected a flag, instead got positional argument ${flag}.\n${USAGE}`);
-            return 1;
-        }
-        if (!VALID_FLAGS.has(flag)) { // invalid flag
-            console.error(`Error: Unknown flag ${flag}.`);
-            return 1;
-        }
-
-        i += 1; // move to positional args, if any
-
-        switch (flag) {
-            case "--reason":
-                i += 1;
-        }
-    }
-
-    // required flags
     if (!hasFlag(args, "--reason")) {
-        console.error(`Error: Missing reason for reject.\n${USAGE}`);
+        renderError(isJson, `Missing reason for reject.\n${USAGE}`, 'MISSING_REASON');
         return 1;
     }
-    const reasonText = getFlagValue(args, "--reason");
-    
+
+    let reasonText;
     try {
-        rejectIssue(id, reasonText);
-        console.log(`Issue #${id} rejected successfully.`);
+        reasonText = getFlagValue(args, "--reason");
     } catch (error) {
-        console.error(`Error: ${error.message}`);
+        renderError(isJson, error.message, 'INVALID_REASON');
+        return 1;
+    }
+
+    if (!reasonText || reasonText.trim() === "") {
+        renderError(isJson, "Reason for rejection cannot be empty.", 'EMPTY_REASON');
+        return 1;
+    }
+    
+    let issue;
+    try {
+        issue = await getIssue(id);
+    } catch (error) {
+        if (error.message.includes("not found")) {
+            renderError(isJson, error.message, 'NOT_FOUND');
+        } else {
+            renderError(isJson, error.message);
+        }
+        return 1;
+    }
+
+    if (issue.status !== Status.IN_REVIEW) {
+        renderError(isJson, `Issue #${id} is currently "${issue.status}". Only issues in "${Status.IN_REVIEW}" status can be rejected.`, 'INVALID_STATE');
+        return 1;
+    }
+
+    try {
+        // (3) Perform rejection
+        const updatedIssue = await rejectIssue(id, reasonText);
+        const envelope = { status: 'success', issue: serializeIssue(updatedIssue) };
+
+        renderOutput(isJson, envelope, () => {
+            console.log(`Issue #${id} rejected successfully and moved back to "${updatedIssue.status}".`);
+        });
+
+        return 0;
+    } catch (error) {
+        renderError(isJson, error.message);
         return 1;
     }
 }
