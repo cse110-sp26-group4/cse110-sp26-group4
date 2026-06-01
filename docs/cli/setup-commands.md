@@ -1,229 +1,216 @@
-# Setup CLI Commands
+# Setup & Workflow Commands
 
-All setup commands follow the pattern: `baton <group> <command> [arguments] [flags]`
+Commands for initializing the tracker and driving the agent workflow.
+
+See [README](README.md) for the data model, status values, and exit codes.
 
 ---
 
-## `<tool> init`
+## `baton init`
 
 ```
-<tool> init [options]
+baton init [--force] [--specs <path>] [<specs-path>]
 ```
 
-Initializes a new issue tracker in the current directory. Creates the `.tracker/` folder and all required files with default values.
+Initializes the tracker in the current directory. Creates `.baton/baton.db`, runs schema migrations, and seeds issues from a product specs file.
+
+### Options
+
+| Flag / argument | Type | Default | Description |
+|---|---|---|---|
+| `--force` | boolean | false | Re-initialize an existing tracker. Clears all issues (activity log is preserved). |
+| `--specs <path>` | string | `docs/specs/project-requirements.md` | Path to the specs markdown file |
+| `<specs-path>` | string | — | Positional alias for `--specs` (use one or the other, not both) |
+
+### Behavior
+
+- Creates `.baton/` and applies Drizzle migrations to create the `issues` and `activity` tables.
+- Parses the specs file for rows marked `Must` with IDs like `FR-1`, and creates one issue per requirement.
+- Seeded issues default to `Medium` priority.
+
+### Terminal output
+
+On success:
+
+```
+Tracker initialized at /your-project/.baton/baton.db
+Specs: /your-project/docs/specs/project-requirements.md
+Created 12 issue(s) from product specs.
+Issues:
+  #1 [Medium] FR-1.1
+  ...
+Run `baton status` to review progress or `baton next` to start work.
+```
+
+If the tracker already exists and `--force` is not passed:
+
+```
+Error: Tracker already initialized in this directory.
+Run `baton init --force` to re-initialize.
+```
+
+### Examples
+
+```bash
+baton init
+baton init --specs ./my-specs.md
+baton init ./my-specs.md
+baton init --force
+```
+
+---
+
+## `baton status`
+
+```
+baton status
+```
+
+Prints issue counts by status and overall completion percentage. Requires an initialized tracker.
+
+### Example output
+
+```
+Issue Tracker Status
+──────────────────────────────────────────
+Total issues:     12
+Open:             8
+In progress:      2
+In review:        1
+Closed:           1
+Overall progress: 8% complete
+
+Open issues by priority:
+  High:   1
+  Medium: 5
+  Low:    2
+```
+
+### Errors
+
+```
+Error: No tracker found in this directory.
+Run `baton init` first.
+```
+
+---
+
+## `baton next`
+
+```
+baton next
+```
+
+Selects the highest-priority open issue and marks it `In-Progress`. Increments `attemptNum` and writes activity log entries. Requires an initialized tracker.
+
+Selection order: priority (`High` → `Medium` → `Low`), then lowest ID.
+
+### Example output
+
+```
+Working on next issue:
+  ID:          #3
+  Title:       FR-1.2
+  Priority:    Medium
+  Status:      In-Progress
+  Attempts:    1
+  Created:     14:32:01 2026-05-17
+  Description: The system shall allow a human supervisor to read/view issues...
+```
+
+If no open issues remain:
+
+```
+No open issues available. All work is complete or the backlog is empty.
+```
+
+---
+
+## `baton loop`
+
+```
+baton loop [--steps <n>]
+baton loop -n <n>
+```
+
+Runs `baton next` repeatedly for autonomous agent steps. Requires an initialized tracker.
 
 ### Options
 
 | Flag | Type | Default | Description |
-|------|------|---------|-------------|
-| `--force` | boolean | false | Re-initialize an existing tracker. Preserves existing data unless `--reset` is also passed. |
-| `--reset` | boolean | false | Must be used with `--force`. Wipes all existing issues and config and starts fresh. Prompts for confirmation. |
+|---|---|---|---|
+| `--steps <n>` | integer ≥ 1 | `1` | Number of steps to run |
+| `-n <n>` | integer ≥ 1 | — | Alias for `--steps` |
 
-### Behavior
-
-- Creates `.tracker/` in the current working directory.
-- Writes a `config.json` with all default values.
-- Creates an empty `issues.json` for issue storage.
-- Creates an empty `agents.json` for agent registration.
-
-### Terminal Messages
-
-- If `.tracker/` already exists and `--force` is not passed, exits with an error:
-  ```
-  Error: Tracker already initialized in this directory.
-  Run `<tool> init --force` to re-initialize without losing data.
-  ```
-- If `--force --reset` is passed, prompts:
-  ```
-  Warning: This will permanently delete all issues and configuration. Type "reset" to confirm:
-  ```
-- On success:
-  ```
-  Tracker initialized in /your-project/.tracker/
-  Run `<tool> config list` to review default settings.
-  Run `<tool> agent register <id>` to register your first agent.
-  ```
-
-### Directory Structure on Init
+### Example output
 
 ```
-your-project/
-└── .tracker/
-    ├── config.json   # Project-level configuration
-    ├── issues.json   # JSON database
-    └── agents.json   # Registered agent identities
+Running baton for 3 step(s)...
+
+--- Step 1/3 ---
+Working on next issue:
+  ID:          #1
+  ...
+
+Completed 3 autonomous step(s).
 ```
 
 ---
 
-## `<tool> config set <key> <value>`
+## `baton config`
+
+> **Not yet implemented.** Service layer and storage for project configuration do not exist yet.
 
 ```
-<tool> config set <key> <value>
+baton config set <key> <value>
+baton config list
 ```
 
-Sets a configuration value for this project.
+Planned commands for setting and viewing project-level defaults (FR-11.2).
 
-### Arguments
+### Planned keys
 
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `key` | Yes | The configuration key to set (see [Config Keys](#config-keys) below). |
-| `value` | Yes | The value to assign. Type is validated against the key's expected type. |
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `defaultTimeoutMinutes` | integer ≥ 1 | `120` | Max time an agent may hold an issue before escalation |
+| `duplicateCheckEnabled` | boolean | `true` | Warn on potential duplicate issues at creation time |
+| `duplicateCheckThreshold` | float 0–1 | `0.8` | Similarity score above which a duplicate warning is triggered |
 
-### Behavior
-
-- Writes the value to `.tracker/config.json`.
-- Validates the value type and range before writing. Rejects invalid values with an error message.
-- If the key does not exist, exits with an error listing valid keys.
-
-### Terminal Messages
-
-- If value does not match key type or range:
-  ```
-  Error: Invalid value for "<key>": expected a <key_type> in <key_range>, got "<value>".
-  Run `<tool> config list` to see valid keys and their expected types.
-  ```
-- If `.tracker/` does not exist:
-  ```
-  Error: No tracker found in this directory.
-  Run `<tool> init` first.
-  ```
-
----
-
-## `<tool> config list`
+### Planned example output (`config list`)
 
 ```
-<tool> config list
-```
-
-Prints all current configuration values with their descriptions.
-
-### Example Output
-
-```
-Project Tracker Configuration (.tracker/config.json)
+Project Tracker Configuration
 ──────────────────────────────────────────
-defaultTimeoutMinutes     60     Max time an agent may hold an issue before escalation
+defaultTimeoutMinutes     120    Max time an agent may hold an issue before escalation
 duplicateCheckEnabled     true   Warn on potential duplicate issues at creation time
 duplicateCheckThreshold   0.8    Similarity score (0–1) to trigger duplicate warning
 ```
 
 ---
 
-## `<tool> agent register <id>`
+## `baton agent`
+
+> **Not yet implemented.** Agent registration and authentication are not part of the current CLI.
 
 ```
-<tool> agent register <id> [options]
+baton agent register <id> [--description <text>]
+baton agent list
+baton agent remove <id> [--force]
 ```
 
-Registers a new agent identity with the tracker so it can make authenticated SDK calls.
+Planned commands for registering agent identities used by the SDK.
 
-### Arguments
+### `baton agent register <id>`
 
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `id` | Yes | A unique string identifier for the agent (e.g. `gpt-worker-1`, `claude-dev`). Alphanumeric, hyphens allowed, max 64 chars. |
+| Argument / flag | Required | Description |
+|---|---|---|
+| `<id>` | yes | Unique agent identifier (alphanumeric, hyphens, max 64 chars) |
+| `--description <text>` | no | Human-readable description of the agent's role |
 
-### Options
-
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
-| `--description <text>` | string | Empty | Optional human-readable description of the agent's role. |
-
-### Behavior
-
-- Appends the agent entry to `.tracker/agents.json`.
-- Generates and returns an agent token the agent must include in all SDK calls.
-
-### Terminal Messages
-
-- If the ID is already registered:
-  ```
-  Error: Agent "<id>" is already registered.
-  Run `<tool> agent list` to see all registered agents.
-  ```
-
----
-
-## `<tool> agent list`
-
-```
-<tool> agent list
-```
+### `baton agent list`
 
 Lists all registered agents and their metadata.
 
-### Example Output
+### `baton agent remove <id>`
 
-```
-Registered Agents
-──────────────────────────────────────────
-ID             Description            Registered
-gpt-worker-1   Primary coding agent   2026-05-10
-claude-dev     QA agent               2026-05-11
-```
-
----
-
-## `<tool> agent remove <id>`
-
-```
-<tool> agent remove <id> [options]
-```
-
-Removes a registered agent from the tracker.
-
-### Options
-
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
-| `--force` | boolean | false | Removes agent entry from `agents.json` regardless of agent working status. |
-
-### Behavior
-
-- Removes the agent entry from `agents.json`.
-- Activity log entries made by this agent are preserved (history is immutable).
-
-### Terminal Messages
-
-- If the agent has open or in-progress issues assigned to it:
-  ```
-  Warning: Agent "<id>" has <num_issues> open issue(s) assigned.
-  Removing this agent will leave those issues unassigned.
-  Pass --force to proceed anyway.
-  ```
-
----
-
-## Config Keys
-
-Valid keys for `<tool> config set <key> <value>` and `<tool> config list`.
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `defaultTimeoutMinutes` | integer ≥ 1 | 120 | Default max time (minutes) an agent may hold an issue before the system escalates it to the supervisor. Can be overridden per-issue. |
-| `duplicateCheckEnabled` | boolean | true | Whether to warn on potential duplicate issues at creation time. |
-| `duplicateCheckThreshold` | float 0–1 | 0.8 | Similarity score above which a duplicate warning is triggered. 1.0 = exact match only. |
-
----
-
-## Error Handling Standards
-
-All setup commands follow these conventions:
-
-- Error messages begin with `Error:`.
-- Commands validate required options and print a helpful usage hint on failure.
-- Missing tracker state prints:
-  ```
-  Error: No tracker found in this directory.
-  Run `<tool> init` first.
-  ```
-- Invalid input prints the expected type or permitted values.
-
-- **Exit code 0** on success.
-- **Exit code 1** on user error (bad args, already initialized, unknown key, etc.).
-- **Exit code 2** on unexpected system/runtime error.
-- All errors are printed to **stderr**, not stdout, so they don't interfere with scripted use.
-- Every error message ends with a suggested corrective action.
+Removes a registered agent. Warns if the agent has open or in-progress issues assigned unless `--force` is passed.
