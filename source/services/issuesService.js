@@ -446,12 +446,11 @@ export function selectNextIssue() {
 }
 
 /**
- * Mark an issue in-progress, assign it to an agent, increment attempts, and log activity (atomic).
+ * Mark an issue in-progress, assign it to the current actor, increment attempts, and log activity.
  * @param {number} issueId
- * @param {number} agentId
  * @returns {object}
  */
-export function claimIssue(issueId, agentId) {
+export function claimIssue(issueId) {
   const db = getDB();
   const issue = findById(db, issueId);
 
@@ -460,12 +459,12 @@ export function claimIssue(issueId, agentId) {
   }
 
   db.transaction((tx) => {
-    logActivity(tx, issueId, Action.READ, `Agent accessed issue #${issueId}`, agentId);
+    logActivity(tx, issueId, Action.READ, `Agent accessed issue #${issueId}`);
     
     tx.update(issuesTable)
       .set({ 
         status: Status.IN_PROGRESS,
-        assigneeId: agentId,
+        assigneeId: currentActorId, 
         attemptNum: sql`${issuesTable.attemptNum} + 1` 
       })
       .where(eq(issuesTable.id, issueId))
@@ -475,16 +474,14 @@ export function claimIssue(issueId, agentId) {
       tx,
       issueId,
       Action.STATE_CHANGE,
-      `Status changed from ${issue.status} to ${Status.IN_PROGRESS}`,
-      agentId
+      `Status changed from ${issue.status} to ${Status.IN_PROGRESS}`
     );
     
     logActivity(
       tx,
       issueId,
       Action.EDIT,
-      `Agent attempt #${issue.attemptNum + 1} on issue #${issueId}`,
-      agentId
+      `Agent attempt #${issue.attemptNum + 1} on issue #${issueId}`
     );
   });
 
