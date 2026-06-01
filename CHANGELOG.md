@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.8.0...v1.9.0) (2026-06-01)
+
+
+### Features
+
+* added functionality to reject an issue in-review ([#159](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/159)) ([e626ca5](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/e626ca5ec1c2d0bc2d7ef3d0f4ae46a1c472c9f6))
+
 # [1.8.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.7.0...v1.8.0) (2026-06-01)
 
 
