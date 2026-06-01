@@ -8,11 +8,20 @@
 //  --priority <p>    Filter by priority: low | medium | high
 //  --limit <n>       Max results (default: 50)
 //  --offset <n>      Skip first n results (default: 0)
+//  --json            Output as JSON (for AI agents)
 //  -h, --help        Show this help
 
 import { listIssues } from '../services/issuesService.js';
-import { getFlagValue, getNumericFlag } from '../util.js';
-import { parseArgs, printIssueTable, printTableHeader } from '../util.js';
+import {
+  getFlagValue,
+  getNumericFlag,
+  hasFlag,
+  parseArgs,
+  printIssueTable,
+  printTableHeader,
+  renderOutput,
+  serializeIssue,
+} from '../util.js';
 
 /**
  * Lists issues matching the filters and pagination settings 
@@ -21,12 +30,13 @@ import { parseArgs, printIssueTable, printTableHeader } from '../util.js';
  */
 
 export async function run(args) {
-    const validFlags = ['--status', '--priority', '--limit', '--offset'];
+    const isJson = hasFlag(args, '--json');
+    const validFlags = ['--status', '--priority', '--limit', '--offset', '--json'];
     // Check if user misspelled a flag
     for (const arg of args) {
         if (arg.startsWith('--')) {
             if (!validFlags.includes(arg)) {
-                throw new Error(`Unknown flag provided: ${arg}. \nFlags: --status <s>, --priority <p>, --limit <n>, --offset <n>`);
+                throw new Error(`Unknown flag provided: ${arg}. \nFlags: --status <s>, --priority <p>, --limit <n>, --offset <n>, --json`);
             }
         }
     }
@@ -35,25 +45,29 @@ export async function run(args) {
         const options = parseArgs(args);
 
         const result = await listIssues(options);
+        const issues = result.map(serializeIssue);
+        const envelope = { status: 'success', count: issues.length, issues };
 
-        if (result.length == 0) {
-            console.log("No issues matching those filters were found.");
-            return 0;
-        } else {
-           //Logic for table formatting
+        renderOutput(isJson, envelope, (data) => {
+            if (data.count === 0) {
+                console.log('No issues matching those filters were found.');
+                return;
+            }
+
             const activeFilters = Object.entries(options)
                 .map(([key, value]) => `${key}: ${value}`)
                 .join(', ');
 
-            const filterLog = activeFilters ? `matching filters: [${activeFilters}]` : "with no filters applied";
-            console.log(`\nFound ${result.length} issue(s) ${filterLog}.`);
-            console.log("");
+            const filterLog = activeFilters ? `matching filters: [${activeFilters}]` : 'with no filters applied';
+            console.log(`\nFound ${data.count} issue(s) ${filterLog}.`);
+            console.log('');
 
             printTableHeader();
-            result.forEach(issue => printIssueTable(issue));
-            console.log("");
-            return 0;
-        }
+            result.forEach((issue) => printIssueTable(issue));
+            console.log('');
+        });
+
+        return 0;
     } catch (error) {
         // Separate error message for missing value
         if (error.message.includes('Missing value')) {

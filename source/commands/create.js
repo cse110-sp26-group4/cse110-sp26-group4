@@ -15,7 +15,7 @@
 
 import { createIssue } from "../services/issuesService.js";
 import { getFlagValue, getNumericFlag } from "../util.js";
-import { parseArgs } from '../util.js';
+import { hasFlag, parseArgs, renderOutput, serializeIssue } from '../util.js';
 
 /**
  * Initializes a new issue in the database with the specified fields
@@ -23,7 +23,8 @@ import { parseArgs } from '../util.js';
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args) {
-    const validFlags = ['--title', '--description', '--priority', '--token-limit'];
+    const isJson = hasFlag(args, '--json');
+    const validFlags = ['--title', '--description', '--priority', '--token-limit', '--json'];
     // Check if user misspelled a flag
     for (const arg of args) {
         if (arg.startsWith('--')) {
@@ -37,9 +38,12 @@ export async function run(args) {
         const options = parseArgs(args);
 
         const issue = await createIssue(options);
+        const envelope = { status: 'success', issue: serializeIssue(issue) };
 
-        // program reaches this line if issue was successfully created
-        console.log(`Successfully created issue #${issue.id}: "${issue.title}"`);
+        renderOutput(isJson, envelope, () => {
+            console.log(`Successfully created issue #${issue.id}: "${issue.title}"`);
+        });
+
         return 0;
     } catch (error) {
         console.error(`Failed to create issue: ${error.message}`);
