@@ -18,6 +18,7 @@ import { run as runNext } from './commands/next.js';
 import { run as runLoop } from './commands/loop.js';
 import { run as runStatus } from './commands/status.js';
 import { run as runApprove } from './commands/approve.js';
+import { run as runReject } from './commands/reject.js';
 import { wantsHelp } from './util.js';
 import { run as runView} from './commands/view.js';
 import { run as runSearch } from './commands/search.js';
@@ -78,6 +79,7 @@ Options:
   create --token-limit <n>        Optional token budget for this issue
   create --json                   Output as JSON (for AI agents)
   approve <id> [--json]
+  reject <id> --reason <text>     Reject an issue with a given reason
   priority <id> <level> [--json]  low | medium | high
   update --title <text>           New title
   update --description <text>     New description
@@ -138,6 +140,7 @@ async function main() {
     search: () => runSearch(args),
     list: () => runList(args),
     approve: () => runApprove(args),
+    reject: () => runReject(args),
     priority: () => runPriority(args),
     create: () => runCreate(args),
     update: () => runUpdate(args),
