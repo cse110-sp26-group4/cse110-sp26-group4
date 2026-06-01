@@ -3,6 +3,12 @@ import { sql } from "drizzle-orm";
 import { Status, Priority } from "./issue.js";
 import { Action } from "./activityLog.js";
 
+export const agentsTable = sqliteTable("agents", {
+  id:   int().primaryKey({ autoIncrement: true }),
+  name: text().notNull().unique(),
+  type: text({ enum: ['agent', 'human'] }).notNull(),
+});
+
 export const issuesTable = sqliteTable("issues", {
   id:          int().primaryKey({ autoIncrement: true }),
   createdAt:   text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
@@ -13,7 +19,7 @@ export const issuesTable = sqliteTable("issues", {
   priority:    text({ enum: Object.values(Priority) }).default(Priority.LOW),
   tokenLimit:  int("token_limit"),
   description: text(),
-  assignees:   text({mode: "json"}).default(sql`'[]'`),
+  assigneeId:  int("assignee_id").references(() => agentsTable.id),
 });
 
 export const activityTable = sqliteTable(
@@ -21,6 +27,7 @@ export const activityTable = sqliteTable(
   {
     logId:     int("log_id").primaryKey({ autoIncrement: true }),
     issueId:   int("issue_id"),
+    actorId:   int("actor_id").references(() => agentsTable.id),
     createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
     action:    text({ enum: Object.values(Action) }).notNull(),
     details:   text(),
@@ -46,8 +53,8 @@ export const issueSchema = {
     tokenLimit: { flag: '--token-limit', type: 'number' },
     priority:   { flag: '--priority', type: 'enum', values: Object.values(Priority) },
     description:{ flag: '--description', type: 'string' },
-    //assignees:   { flag: '--assignees', type: 'json'},
+    assigneeId: { flag: '--assignee-id', type: 'number'},
     // Pagination options 
     limit:      { flag: '--limit', type: 'number' },
-    offset:       { flag: '--offset', type: 'number' }
+    offset:     { flag: '--offset', type: 'number' }
 };

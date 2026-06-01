@@ -6,7 +6,7 @@
 import {
   isTrackerReady,
   selectNextIssue,
-  workOnIssue,
+  claimIssue,
 } from '../services/issuesService.js';
 import { formatTimestamp, hasFlag, renderOutput, reportTrackerNotReady, serializeIssue } from '../util.js';
 
@@ -14,7 +14,7 @@ import { formatTimestamp, hasFlag, renderOutput, reportTrackerNotReady, serializ
  * Moves the AI agent to work on the next issue. 
  * Checks if the tracker is ready and if there are any open issues.
  * Prompts user to initialize the tracker if it is not ready.
- * Stats are updated on the issue through workOnIssue function from init.js.
+ * Stats are updated on the issue through claimIssue function from init.js.
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args = []) {
@@ -33,7 +33,7 @@ export async function run(args = []) {
     return 0;
   }
 
-  const updated = workOnIssue(issue.id);
+  const updated = claimIssue(issue.id);
   const envelope = { status: 'success', issue: serializeIssue(updated) };
 
   renderOutput(isJson, envelope, () => {

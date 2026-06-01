@@ -8,6 +8,17 @@ import {
 } from "../models/issue.js";
 import { ActivityLog, Action } from '../models/activityLog.js';
 
+// Internal variable to hold the active agent's ID for logging purposes. Set via setActiveActor() during authentication.
+let currentActorId = null;
+
+/**
+ * Sets the active actor ID for logging purposes.
+ * @param {number} id - The ID of the active actor.
+ */
+export function setActiveActor(id) {
+    currentActorId = id;
+}
+
 /**
  * Internal helper to log actions.
  * @private
@@ -18,7 +29,7 @@ import { ActivityLog, Action } from '../models/activityLog.js';
  */
 function logActivity(db, issueId, action, details = null) {
   db.insert(activityTable)
-    .values({ issueId, action, details })
+    .values({ issueId, action, details, actorId: currentActorId })
     .run();
 }
 
@@ -65,6 +76,7 @@ function findById(db, id) {
  * @property {string} [priority] - The priority level.
  * @property {number} [tokenLimit] - The maximum token limit for the issue.
  * @property {string} [description] - The detailed description of the issue.
+ * @property {number} [assigneeId] - The assigned agent ID.
  */
 
 /**
@@ -78,6 +90,7 @@ export function createIssue({
   priority,
   tokenLimit,
   description,
+  assigneeId,
 } = {}) {
 
   const db = getDB();
@@ -87,6 +100,7 @@ export function createIssue({
       priority: priority ?? Priority.LOW,
       tokenLimit: tokenLimit ?? null,
       description: description ?? null,
+      assigneeId: assigneeId ?? null,
     })
     .returning({ id: issuesTable.id })
     .get();
@@ -116,6 +130,7 @@ export function getIssue(id) {
  * @property {string} [priority] - Filter issues by their priority level.
  * @property {number} [limit] - Maximum number of issues to return.
  * @property {number} [offset] - Pagination offset.
+ * @property {number} [assigneeId] - Filter by assigned agent.
  */
 
 /**
@@ -123,7 +138,7 @@ export function getIssue(id) {
  * @param {ListIssuesOptions} options - Filtering and pagination options.
  * @returns {Issue[]}
  */
-export async function listIssues({ status, priority, limit, offset } = {}) {
+export async function listIssues({ status, priority, limit, offset, assigneeId } = {}) {
   const db = getDB();
   const filters = [];
 
@@ -134,6 +149,10 @@ export async function listIssues({ status, priority, limit, offset } = {}) {
   
   if (priority) {
     filters.push(sql`${issuesTable.priority} COLLATE NOCASE = ${priority}`);
+  }
+
+  if (assigneeId !== undefined) {
+    filters.push(eq(issuesTable.assigneeId, assigneeId));
   }
 
   // set defaults if limit or offset is NULL
@@ -180,6 +199,7 @@ export function searchIssues(query) {
  * @property {number} [tokenLimit] - The updated token limit.
  * @property {string} [status] - The updated status.
  * @property {string} [priority] - The updated priority.
+ * @property {number} [assigneeId] - The updated assignee ID.
  */
 
 /**
@@ -190,13 +210,14 @@ export function searchIssues(query) {
  * @param {UpdateIssueFields} fields - The fields to update.
  * @returns {Issue}
  */
-export function updateIssue(id, oldIssue, { title, description, tokenLimit, status, priority } = {}) {
+export function updateIssue(id, oldIssue, { title, description, tokenLimit, status, priority, assigneeId } = {}) {
   const db = getDB();
   const updates = {};
 
   if (title !== undefined) updates.title = title;
   if (description !== undefined) updates.description = description;
   if (tokenLimit !== undefined) updates.tokenLimit = tokenLimit;
+  if (assigneeId !== undefined) updates.assigneeId = assigneeId;
 
   // Normalize status argument
   if (status !== undefined) {
@@ -350,12 +371,12 @@ export function getRecentActivity({ limit = 20 } = {}) {
   return db.select().from(activityTable).orderBy(sql`${activityTable.logId} DESC`).limit(limit).all();
 }
 // =============================================================================
-// Tracker operations (CLI: init / next / status / loop)
+// Tracker operations (CLI: init / next / status / claim)
 // To be edited later if needed.
 // =============================================================================
 
 /**
- * True when both `issues` and `activity` tables exist (matches initDB schema).
+ * True when both `issues`, `activity`, and `agents` tables exist.
  * @returns {boolean}
  */
 export function isTrackerReady() {
@@ -365,9 +386,9 @@ export function isTrackerReady() {
     const row = db.get(sql`
         SELECT COUNT(*) AS table_count
         FROM sqlite_master
-        WHERE type = 'table' AND name IN ('issues', 'activity')
+        WHERE type = 'table' AND name IN ('issues', 'activity', 'agents')
       `);
-    return (row?.table_count ?? 0) === 2;
+    return (row?.table_count ?? 0) === 3;
   } catch (error) {
     return false;
   }
@@ -425,12 +446,11 @@ export function selectNextIssue() {
 }
 
 /**
- * Mark an issue in-progress, increment attempts, and log activity (atomic).
- * Uses existing `findById` / `logActivity` from above; does not modify lines 1–187.
+ * Mark an issue in-progress, assign it to the current actor, increment attempts, and log activity.
  * @param {number} issueId
  * @returns {object}
  */
-export function workOnIssue(issueId) {
+export function claimIssue(issueId) {
   const db = getDB();
   const issue = findById(db, issueId);
 
@@ -444,6 +464,7 @@ export function workOnIssue(issueId) {
     tx.update(issuesTable)
       .set({ 
         status: Status.IN_PROGRESS,
+        assigneeId: currentActorId, 
         attemptNum: sql`${issuesTable.attemptNum} + 1` 
       })
       .where(eq(issuesTable.id, issueId))
@@ -453,14 +474,14 @@ export function workOnIssue(issueId) {
       tx,
       issueId,
       Action.STATE_CHANGE,
-      `Status changed from ${issue.status} to ${Status.IN_PROGRESS}`,
+      `Status changed from ${issue.status} to ${Status.IN_PROGRESS}`
     );
     
     logActivity(
       tx,
       issueId,
       Action.EDIT,
-      `Agent attempt #${issue.attemptNum + 1} on issue #${issueId}`,
+      `Agent attempt #${issue.attemptNum + 1} on issue #${issueId}`
     );
   });
 

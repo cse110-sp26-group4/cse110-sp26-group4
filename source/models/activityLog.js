@@ -12,11 +12,13 @@ export class ActivityLog {
   constructor({
     logId     = null,
     issueId,
+    actorId   = null,
     action,
     createdAt = new Date().toISOString(),
   } = {}) {
     this.logId     = logId;
     this.issueId   = issueId;
+    this.actorId   = actorId;
     this.action    = action;
     this.createdAt = createdAt;
   }
