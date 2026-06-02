@@ -40,3 +40,13 @@ export function getAgentByName(name) {
     return null;
   }
 }
+
+/**
+ * Lists all registered agents and humans, ordered by id.
+ * @returns {Agent[]}
+ */
+export function listAgents() {
+  const db = getDB();
+  const rows = db.select().from(agentsTable).orderBy(agentsTable.id).all();
+  return rows.map((row) => new Agent(row));
+}

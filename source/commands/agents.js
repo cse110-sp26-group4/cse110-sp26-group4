@@ -4,6 +4,7 @@
 //
 // Options:
 //   --json                 Output as JSON (for AI agents)
+//   -h, --help             Show this help
 //
 // Examples:
 //   baton agents
