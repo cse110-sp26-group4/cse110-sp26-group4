@@ -17,7 +17,7 @@ const VALID_FLAGS = ['--json'];
 const COL = { id: 4, name: 14, type: 5 };
 
 /**
- * @param {import('../models/agents.js').Agent} agent
+ * @param {Agent} agent
  * @returns {{ id: number, name: string, type: string }}
  */
 function serializeAgent(agent) {
@@ -29,7 +29,7 @@ function serializeAgent(agent) {
 }
 
 /**
- * @param {import('../models/agents.js').Agent[]} agents
+ * @param {Agent[]} agents
  */
 function printAgentsTable(agents) {
   console.log(
