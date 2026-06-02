@@ -26,11 +26,20 @@ export function setActiveActor(id) {
  * @param {number} issueId - The ID of the issue.
  * @param {string} action - The action type.
  * @param {string|null} [details=null] - Optional details.
+ * @param {number|null} [actorId=currentActorId] - Agent or user performing the action.
  */
-function logActivity(db, issueId, action, details = null) {
+function logActivity(db, issueId, action, details = null, actorId = currentActorId) {
   db.insert(activityTable)
-    .values({ issueId, action, details, actorId: currentActorId })
+    .values({ issueId, action, details, actorId })
     .run();
+}
+
+/**
+ * Returns the active actor ID set during authentication.
+ * @returns {number|null}
+ */
+export function getActiveActor() {
+  return currentActorId;
 }
 
 /**
@@ -280,16 +289,42 @@ export function rejectIssue(id, reason) {
 }
 
 /**
- * Change the status of an issue to in-review.
- * Logs a state_change_event.
- * @param {number} id
+ * Change the status of an issue from in-progress to in-review.
+ * Logs a state_change event attributed to the submitting actor.
+ * @param {number} issueId
+ * @param {number} actorId - Registered agent or user submitting the work
  * @returns {Issue}
+ * @throws {Error} If issueId or actorId is invalid, issue is not found, or status is not in-progress
  */
-export function submitForReview(id) {
+export function submitForReview(issueId, actorId) {
+  if (!Number.isInteger(issueId)) {
+    throw new Error('issueId must be an integer');
+  }
+  if (!Number.isInteger(actorId)) {
+    throw new Error('actorId is required');
+  }
+
   const db = getDB();
-  db.update(issuesTable).set({ status: Status.IN_REVIEW }).where(eq(issuesTable.id, id)).run();
-  logActivity(db, id, Action.STATE_CHANGE, `Issue #${id} was submitted for review.`);
-  return getIssue(id);
+  const existing = findById(db, issueId);
+
+  if (existing.status !== Status.IN_PROGRESS) {
+    throw new Error(
+      `Issue #${issueId} is currently "${existing.status}". Only issues in "${Status.IN_PROGRESS}" can be submitted for review.`,
+    );
+  }
+
+  db.update(issuesTable)
+    .set({ status: Status.IN_REVIEW })
+    .where(eq(issuesTable.id, issueId))
+    .run();
+  logActivity(
+    db,
+    issueId,
+    Action.STATE_CHANGE,
+    `Issue #${issueId} was submitted for review.`,
+    actorId,
+  );
+  return getIssue(issueId);
 }
 
 /**

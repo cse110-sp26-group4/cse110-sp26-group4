@@ -8,10 +8,15 @@ import Database from 'better-sqlite3';
 
 import { Status } from '../source/models/issue.js';
 import * as schema from '../source/models/schema.js';
-import { setTestDB } from '../source/db/index.js'; 
-import { createIssue, submitForReview, claimIssue, setActiveActor } from '../source/services/issuesService.js';
+import { setTestDB } from '../source/db/index.js';
+import {
+  createIssue,
+  claimIssue,
+  getIssue,
+  setActiveActor,
+} from '../source/services/issuesService.js';
 import { registerAgent } from '../source/services/agentsService.js';
-import { run as rejectCommand } from '../source/commands/reject.js';
+import { run as submitCommand } from '../source/commands/submit.js';
 
 // ─── Test Helpers ────────────────────────────────────────────────────────────
 
@@ -19,11 +24,11 @@ function makeDb() {
   const sqlite = new Database(':memory:');
   const db = drizzle(sqlite, { schema });
   const migrationsFolder = path.join(process.cwd(), 'drizzle');
-  
+
   if (fs.existsSync(migrationsFolder)) {
     migrate(db, { migrationsFolder });
   } else {
-    throw new Error("Migrations folder not found!");
+    throw new Error('Migrations folder not found!');
   }
 
   return { sqlite, db };
@@ -50,11 +55,11 @@ function captureConsole() {
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
-describe('Reject Command', () => {
+describe('Submit Command', () => {
   let sqlite;
   let testDb;
   let capture;
-  /** @type {number} */
+  /** @type {number} Registered agent ID for valid activity.actor_id FK */
   let testActorId;
 
   beforeEach(() => {
@@ -63,7 +68,7 @@ describe('Reject Command', () => {
     testDb = setup.db;
     setTestDB(testDb);
     testActorId = registerAgent('test-agent', 'agent').id;
-    setActiveActor(testActorId);
+    setActiveActor(null);
     capture = captureConsole();
   });
 
@@ -73,84 +78,93 @@ describe('Reject Command', () => {
     sqlite.close();
   });
 
-  /** @param {number} issueId */
-  function prepareInReviewIssue(issueId) {
-    claimIssue(issueId);
-    submitForReview(issueId, testActorId);
-  }
+  it('should successfully submit an In-Progress issue for review', async () => {
+    setActiveActor(testActorId);
+    const issue = createIssue({ title: 'Submit Me' });
+    claimIssue(issue.id);
 
-  it('should successfully reject an In-Review issue', async () => {
-    const issue = createIssue({ title: 'Test Issue' });
-    prepareInReviewIssue(issue.id);
-
-    const exitCode = await rejectCommand([String(issue.id), '--reason', 'Test Reason']);
+    const exitCode = await submitCommand([String(issue.id)]);
 
     assert.equal(exitCode, 0);
-    assert.ok(capture.logs[0].includes(`Issue #${issue.id} rejected successfully`));
-    assert.ok(capture.logs[0].includes('In-Progress'));
+    assert.ok(capture.logs[0].includes(`Success: Issue #${issue.id} submitted for review.`));
+
+    const updated = getIssue(issue.id);
+    assert.equal(updated.status, Status.IN_REVIEW);
   });
 
-  it('should fail if the issue is not In-Review', async () => {
-    const issue = createIssue({ title: 'Test Issue' });
-    // Issue is currently "Open"
+  it('should fail if the issue is not In-Progress', async () => {
+    const issue = createIssue({ title: 'Open Issue' });
+    setActiveActor(testActorId);
 
-    const exitCode = await rejectCommand([String(issue.id), '--reason', 'Test Reason']);
+    const exitCode = await submitCommand([String(issue.id)]);
 
     assert.equal(exitCode, 1);
-    assert.ok(capture.errors[0].includes('Only issues in "In-Review" status can be rejected'));
+    assert.ok(
+      capture.errors[0].includes(
+        `Only issues in "${Status.IN_PROGRESS}" can be submitted for review.`,
+      ),
+    );
   });
 
   it('should fail if the issue does not exist', async () => {
-    const exitCode = await rejectCommand(['999', '--reason', 'Test Reason']);
+    setActiveActor(testActorId);
+
+    const exitCode = await submitCommand(['999']);
 
     assert.equal(exitCode, 1);
     assert.ok(capture.errors[0].includes('Issue #999 not found'));
   });
 
-  it('should fail if --reason is missing', async () => {
-    const exitCode = await rejectCommand(['1']);
+  it('should fail if no issue ID is provided', async () => {
+    setActiveActor(testActorId);
+
+    const exitCode = await submitCommand([]);
 
     assert.equal(exitCode, 1);
-    assert.ok(capture.errors[0].includes('Missing reason for reject'));
+    assert.ok(capture.errors[0].includes('Missing issue ID'));
   });
 
-  it('should fail if --reason is empty', async () => {
-    const exitCode = await rejectCommand(['1', '--reason', '']);
+  it('should fail if the ID is not an integer', async () => {
+    setActiveActor(testActorId);
+
+    const exitCode = await submitCommand(['abc']);
 
     assert.equal(exitCode, 1);
-    assert.ok(capture.errors[0].includes('Reason for rejection cannot be empty'));
+    assert.ok(capture.errors[0].includes('ID must be an integer'));
+  });
+
+  it('should fail if no active agent is set', async () => {
+    const issue = createIssue({ title: 'No Actor' });
+    claimIssue(issue.id);
+
+    const exitCode = await submitCommand([String(issue.id)]);
+
+    assert.equal(exitCode, 1);
+    assert.ok(capture.errors[0].includes('No active agent'));
   });
 
   it('should support --json output on success', async () => {
-    const issue = createIssue({ title: 'Test Issue' });
-    prepareInReviewIssue(issue.id);
+    setActiveActor(testActorId);
+    const issue = createIssue({ title: 'JSON Submit' });
+    claimIssue(issue.id);
 
-    const exitCode = await rejectCommand([String(issue.id), '--reason', 'Test Reason', '--json']);
+    const exitCode = await submitCommand([String(issue.id), '--json']);
 
     assert.equal(exitCode, 0);
     const output = JSON.parse(capture.logs[0]);
     assert.equal(output.status, 'success');
     assert.equal(output.issue.id, issue.id);
-    assert.equal(output.issue.status, 'in_progress');
+    assert.equal(output.issue.status, 'in_review');
   });
 
   it('should support --json output on error', async () => {
-    const exitCode = await rejectCommand(['999', '--reason', 'Test Reason', '--json']);
+    setActiveActor(testActorId);
+
+    const exitCode = await submitCommand(['999', '--json']);
 
     assert.equal(exitCode, 1);
     const output = JSON.parse(capture.errors[0]);
     assert.equal(output.status, 'error');
     assert.equal(output.code, 'NOT_FOUND');
-  });
-
-  it('should handle multi-word reasons without quotes', async () => {
-    const issue = createIssue({ title: 'Test Issue' });
-    prepareInReviewIssue(issue.id);
-
-    // Baton's getFlagValue handles multi-word if they are subsequent args
-    const exitCode = await rejectCommand([String(issue.id), '--reason', 'This', 'is', 'a', 'long', 'reason']);
-
-    assert.equal(exitCode, 0);
-    assert.ok(capture.logs[0].includes(`Issue #${issue.id} rejected successfully`));
   });
 });

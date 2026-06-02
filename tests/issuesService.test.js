@@ -18,8 +18,9 @@ import {
   approveIssue, rejectIssue, submitForReview, setStatus, setPriority,
   incrementAttempt, deleteIssue, getActivityLog, getRecentActivity,
   isTrackerReady, getIssueStats, getAllIssues, selectNextIssue,
-  claimIssue, clearAllIssues
+  claimIssue, clearAllIssues, setActiveActor,
 } from '../source/services/issuesService.js';
+import { registerAgent } from '../source/services/agentsService.js';
 
 // ─── Test Helpers ────────────────────────────────────────────────────────────
 
@@ -70,6 +71,8 @@ function makeDb() {
 describe('Issue Tracker Operations', () => {
   let sqlite;
   let testDb;
+  /** @type {number} */
+  let testActorId;
 
   beforeEach(() => {
     const setup = makeDb();
@@ -79,9 +82,12 @@ describe('Issue Tracker Operations', () => {
     // Inject the in-memory database into the application
     // This forces getDB() inside issuesService to return this instance.
     setTestDB(testDb);
+    testActorId = registerAgent('test-agent', 'agent').id;
+    setActiveActor(null);
   });
 
   afterEach(() => {
+    setActiveActor(null);
     sqlite.close();
   });
 
@@ -194,7 +200,9 @@ describe('Issue Tracker Operations', () => {
     });
 
     it('should submit for review', () => {
-      const issue = submitForReview(issueId);
+      setActiveActor(testActorId);
+      claimIssue(issueId);
+      const issue = submitForReview(issueId, testActorId);
       assert.equal(issue.status, Status.IN_REVIEW);
     });
   });
