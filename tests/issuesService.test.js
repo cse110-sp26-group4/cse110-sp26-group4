@@ -202,7 +202,7 @@ describe('Issue Tracker Operations', () => {
     it('should submit for review', () => {
       setActiveActor(testActorId);
       claimIssue(issueId);
-      const issue = submitForReview(issueId, testActorId);
+      const issue = submitForReview(issueId);
       assert.equal(issue.status, Status.IN_REVIEW);
     });
   });
