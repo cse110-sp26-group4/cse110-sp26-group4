@@ -10,7 +10,7 @@
 // Examples:
 //   baton submit 14
 
-import { getIssue, submitForReview, getActiveActor } from '../services/issuesService.js';
+import { getIssue, submitForReview } from '../services/issuesService.js';
 import { Status } from '../models/issue.js';
 import {
   hasFlag,
@@ -61,13 +61,7 @@ export async function run(args) {
   }
 
   try {
-    const actorId = getActiveActor();
-    if (actorId == null) {
-      renderError(isJson, 'No active agent. Run baton register first.', 'NO_ACTOR');
-      return 1;
-    }
-
-    const updatedIssue = submitForReview(id, actorId);
+    const updatedIssue = submitForReview(id);
     const envelope = { status: 'success', issue: serializeIssue(updatedIssue) };
 
     renderOutput(isJson, envelope, () => {

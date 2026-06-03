@@ -133,16 +133,6 @@ describe('Submit Command', () => {
     assert.ok(capture.errors[0].includes('ID must be an integer'));
   });
 
-  it('should fail if no active agent is set', async () => {
-    const issue = createIssue({ title: 'No Actor' });
-    claimIssue(issue.id);
-
-    const exitCode = await submitCommand([String(issue.id)]);
-
-    assert.equal(exitCode, 1);
-    assert.ok(capture.errors[0].includes('No active agent'));
-  });
-
   it('should support --json output on success', async () => {
     setActiveActor(testActorId);
     const issue = createIssue({ title: 'JSON Submit' });

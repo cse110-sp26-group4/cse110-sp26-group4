@@ -76,7 +76,7 @@ describe('Reject Command', () => {
   /** @param {number} issueId */
   function prepareInReviewIssue(issueId) {
     claimIssue(issueId);
-    submitForReview(issueId, testActorId);
+    submitForReview(issueId);
   }
 
   it('should successfully reject an In-Review issue', async () => {
