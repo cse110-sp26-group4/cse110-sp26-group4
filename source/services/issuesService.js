@@ -34,6 +34,14 @@ function logActivity(db, issueId, action, details = null) {
 }
 
 /**
+ * Returns the active actor ID set during authentication.
+ * @returns {number|null}
+ */
+export function getActiveActor() {
+  return currentActorId;
+}
+
+/**
  * Convert a raw database row to an Issue instance.
  * @private
  * @param {object|null} row - The raw database row.
@@ -280,16 +288,37 @@ export function rejectIssue(id, reason) {
 }
 
 /**
- * Change the status of an issue to in-review.
- * Logs a state_change_event.
- * @param {number} id
+ * Change the status of an issue from in-progress to in-review.
+ * Logs a state_change event attributed to the current actor.
+ * @param {number} issueId
  * @returns {Issue}
+ * @throws {Error} If issueId is invalid, issue is not found, or status is not in-progress
  */
-export function submitForReview(id) {
+export function submitForReview(issueId) {
+  if (!Number.isInteger(issueId)) {
+    throw new Error('issueId must be an integer');
+  }
+
   const db = getDB();
-  db.update(issuesTable).set({ status: Status.IN_REVIEW }).where(eq(issuesTable.id, id)).run();
-  logActivity(db, id, Action.STATE_CHANGE, `Issue #${id} was submitted for review.`);
-  return getIssue(id);
+  const existing = findById(db, issueId);
+
+  if (existing.status !== Status.IN_PROGRESS) {
+    throw new Error(
+      `Issue #${issueId} is currently "${existing.status}". Only issues in "${Status.IN_PROGRESS}" can be submitted for review.`,
+    );
+  }
+
+  db.update(issuesTable)
+    .set({ status: Status.IN_REVIEW })
+    .where(eq(issuesTable.id, issueId))
+    .run();
+  logActivity(
+    db,
+    issueId,
+    Action.STATE_CHANGE,
+    `Issue #${issueId} was submitted for review.`,
+  );
+  return getIssue(issueId);
 }
 
 /**
