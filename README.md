@@ -1,7 +1,8 @@
 # Fantastic Four
 
-## Developer Guide
-[Contributing guide](CONTRIBUTING.md)
+## Documentation
+- [User Guide](docs/USER_GUIDE.md) — How to use Baton CLI.
+- [Developer Guide](docs/CONTRIBUTING.md) — Setting up the development environment.
 
 ## Project Details: 
 TBD
