@@ -1,56 +1,72 @@
 # Baton User Guide
 
-Baton is a terminal-based issue tracker designed for human supervisors and AI agents. It provides a simple CLI to manage issues, track progress, and facilitate collaboration between humans and automated agents.
+Baton is a terminal-based issue tracker designed for human supervisors and AI agents. It provides a robust CLI to manage issues, track progress, and facilitate seamless collaboration between humans and automated agents.
 
 ## Table of Contents
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
+  - [Initialization](#initialization)
   - [Registration](#registration)
   - [Configuration](#configuration)
-  - [Initialization](#initialization)
 - [Core Concepts](#core-concepts)
   - [Issue Data Model](#issue-data-model)
-  - [Status Values & State Machine](#status-values--state-machine)
+  - [Lifecycle & State Machine](#lifecycle--state-machine)
   - [Priority Levels](#priority-levels)
 - [Command Reference](cli/README.md)
 - [Agent Integration](#agent-integration)
+  - [Agent Setup](#agent-setup)
+  - [Instruction Files](#instruction-files)
 
 ---
 
 ## Getting Started
 
+**Please follow the below steps in order.**
+
 ### Prerequisites
 - **Node.js**: Version 22.0.0 or higher.
-- **npm**: Stands for Node Package Manager. Installed with Node.js.
+- **npm**: Node Package Manager (comes bundled with Node.js).
 
 ### Installation
-Clone the repository and install dependencies:
+Baton is available as an npm package. You can install it directly using:
+
 ```bash
-git clone https://github.com/cse110-sp26-group4/cse110-sp26-group4.git
-cd cse110-sp26-group4
-npm install
+npm install baton-issue-tracker
 ```
 
-To use the `baton` command directly from anywhere in your terminal, run:
+Note that the above command only installs the package in the local directory. If you'd like to use Baton globally, use 
 ```bash
-npm link
+npm install -g baton-issue-tracker
 ```
 
-Now you can run Baton simply by typing:
+Once installed, you can run Baton:
+
 ```bash
 baton <command> [options]
 ```
 
-### Registration
-Before you can manage issues, you must register yourself (or your agent) in the tracker. Baton uses this identity for audit logging.
+### Initialization
+**Before any other actions**, you must first initialize the database:
 
 ```bash
-# Register yourself as a human supervisor
+baton init
+```
+
+This command:
+1. Creates a local database at `.baton/baton.db`.
+2. (Optional) Seeds the database with issues from a requirements file (defaults to `docs/specs/project-requirements.md`).
+
+
+### Registration
+Once initialized, before you can manage issues, you must register your identity. Baton uses this for audit logging and to track who is performing each action.
+
+```bash
+# Register yourself as a human. Humans act as supervisors and have more permissions than agents.
 baton register --name "your-name" --type human
 ```
 
-By default, Baton will look for a registered user that matches your **OS Username**. If you register with a different name, see the [Configuration](#configuration) section to set your identity.
+By default, Baton identifies you by your **OS Username**. If you register with a different name, you must configure your identity as described in the [Configuration](#configuration) section.
 
 ### Configuration
 Baton uses environment variables to identify the active user and set preferences for interactive tasks.
@@ -66,12 +82,12 @@ The `BATON_AGENT` variable is used to attribute actions in the audit log. It mus
 - **Format**: Alphanumeric characters and hyphens (e.g., `agent-007`, `John-Doe`).
 - **Usage**: Setting agent name
 
-  Linux/MacOS
+  Linux/MacOS:
   ```bash
   export BATON_AGENT="my-registered-name"
   ```
   
-  Windows Powershell
+  Windows:
   ```bash
   $env:BATON_AGENT="my-registered-name"
   ```
@@ -94,21 +110,6 @@ When creating or updating issues, you might want to provide a multi-line descrip
   ```bash
   $env:EDITOR="code --wait"
   ```
-
-### Initialization
-To start using Baton in a project, run the `init` command. This creates a local SQLite database at `.baton/baton.db` and can seed issues from a product requirements file.
-
-```bash
-baton init
-```
-By default, it looks for requirements at `docs/specs/project-requirements.md`.
-
-### Usage
-Please consult the issue-data model, or run 
-
-```bash
-baton --help
-```
 
 ---
 
@@ -146,29 +147,37 @@ Baton prioritizes issues with `High` priority first, then by ID.
 
 ## Agent Integration
 
-Baton is built to be used by both humans and AI agents.
+Baton is built to be used by both humans and AI agents. For AI agents, Baton is designed to be a "source of truth" for your codebase.
 
-### Audit Logging & Identity
-Baton records every change in an activity log. To ensure accurate logging, agents should be registered and the `BATON_AGENT` environment variable should be set to the agent's registered name.
-
-1. **Register the agent:**
-   ```bash
-   baton register --name "my-ai-agent" --type agent
-   ```
-2. **Set the identity:**
-   ```bash
-   export BATON_AGENT="my-ai-agent"
-   ```
-
-### Use Your Own Agent 
-Baton acts as the **source of truth** for issues and requirements, but it does not execute agent logic itself. If you are building an agent to work with Baton:
-- **API Keys**: Your agent implementation (e.g., using OpenAI or Anthropic) will require its own API keys. These should be managed via your own `.env` files or environment settings.
-- **SDK**: Use the `baton` CLI with the `--json` flag to programmatically read and update issues.
-
-### Machine-Readable Output
-Most commands support a `--json` flag to provide machine-readable output.
+### Agent Setup
+Make sure you have [initialized](#initialization) Baton before this. To integrate an agent:
+1. **Register the agent**: 
 ```bash
-baton list --status open --json
+baton register --name <my-agent> --type agent
+```
+2. **Set identity**: Ensure `BATON_AGENT` is set to `<my-agent>` in the     agent's environment, as seen in [configuration](#configuration).
+
+Linux/MacOS:
+```bash
+export BATON_AGENT="my-registered-name"
+```
+Windows Powershell:
+```bash
+$env:BATON_AGENT="my-registered-name"
+```
+3. **Use JSON output**: Use the `--json` flag for machine-readable data. For example, 
+
+```bash
+baton create --title "Fix login bug" --priority high --json
 ```
 
-For more advanced integration, refer to the [Developer Guide](../CONTRIBUTING.md).
+### Instruction Files
+When configuring an agent environment (e.g. `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`), you should include a reference to `BATON_AGENT_INSTRUCTIONS.md`, found [here](BATON_AGENT_INSTRUCTIONS).
+
+**Example reference in `AGENTS.md`:**
+> Follow the issue tracking protocols defined in `BATON_AGENT_INSTRUCTIONS`. Always update issue status when starting or finishing a task.
+
+This ensures the agent maintains consistency across different models and tools while adhering to your team's workflow.
+
+### Development
+See the [Developer Guide](CONTRIBUTING.md).
