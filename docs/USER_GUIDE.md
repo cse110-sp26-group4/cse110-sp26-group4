@@ -172,10 +172,10 @@ baton create --title "Fix login bug" --priority high --json
 ```
 
 ### Instruction Files
-When configuring an agent environment (e.g. `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`), you should include a reference to `BATON_AGENT_INSTRUCTIONS.md`, found [here](BATON_AGENT_INSTRUCTIONS).
+When configuring an agent environment (e.g. `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`), you should include a reference to `BATON_AGENT_RULES.md`, found [here](BATON_AGENT_RULES).
 
 **Example reference in `AGENTS.md`:**
-> Follow the issue tracking protocols defined in `BATON_AGENT_INSTRUCTIONS`. Always update issue status when starting or finishing a task.
+> Follow the issue tracking protocols defined in `BATON_AGENT_RULES`. Always update issue status when starting or finishing a task.
 
 This ensures the agent maintains consistency across different models and tools while adhering to your team's workflow.
 
