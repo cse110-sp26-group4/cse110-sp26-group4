@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.9.0...v1.10.0) (2026-06-03)
+
+
+### Features
+
+* create submit command + refactor affected files ([#162](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/162)) ([386f369](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/386f369e9cec29b4d7be53a53bad5ce927680153))
+
 # [1.9.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.8.0...v1.9.0) (2026-06-01)
 
 

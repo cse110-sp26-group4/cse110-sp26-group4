@@ -30,6 +30,7 @@ import { run as runPriority } from './commands/priority.js';
 import { run as runLog } from './commands/log.js';
 import { run as runRegister } from './commands/register.js';
 import { run as runAgents } from './commands/agents.js';
+import { run as runSubmit } from './commands/submit.js';
 
 import { authenticateContext } from './services/authService.js';
 
@@ -50,6 +51,7 @@ Commands:
   list     Lists issues filtered by status and priority
   create   Creates an issue with specified fields
   approve  Move an issue from in-review to closed
+  submit   Submit finished work for human review
   priority Set an issue's priority level
   update   Updates an issue's specified fields
   delete   Deletes an issue
@@ -82,6 +84,7 @@ Options:
   create --token-limit <n>        Optional token budget for this issue
   create --json                   Output as JSON (for AI agents)
   approve <id> [--json]
+  submit <id> [--json]
   reject <id> --reason <text>     Reject an issue with a given reason
   priority <id> <level> [--json]  low | medium | high
   update --title <text>           New title
@@ -111,6 +114,7 @@ Examples:
   baton create --title "Fix login bug" --priority high
   baton create --title "Refactor auth" --description "Clean up JWT logic" --token-limit 4000
   baton approve 5
+  baton submit 14
   baton priority 5 high
   baton priority 3 low
   baton update 3 --title "Revised title"
@@ -151,6 +155,7 @@ async function main() {
     update: () => runUpdate(args),
     delete: () => runDelete(args),
     log: () => runLog(args),
+    submit: () => runSubmit(args),
   };
 
   const handler = handlers[command];
