@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.10.0...v1.11.0) (2026-06-03)
+
+
+### Features
+
+* create agents command and test file ([#163](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/163)) ([d7b8725](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/d7b87259abf406578f141e94250b3f203208dbd5))
+
 # [1.10.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.9.0...v1.10.0) (2026-06-03)
 
 
