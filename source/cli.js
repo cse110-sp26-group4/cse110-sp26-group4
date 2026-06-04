@@ -13,24 +13,24 @@
 /**
  * Imports the run functions from each command.
  */
-import { run as runInit } from './commands/init.js';
-import { run as runNext } from './commands/next.js';
-import { run as runLoop } from './commands/loop.js';
-import { run as runStatus } from './commands/status.js';
-import { run as runApprove } from './commands/approve.js';
-import { run as runReject } from './commands/reject.js';
+import * as initCmd from './commands/init.js';
+import * as nextCmd from './commands/next.js';
+import * as loopCmd from './commands/loop.js';
+import * as statusCmd from './commands/status.js';
+import * as approveCmd from './commands/approve.js';
+import * as rejectCmd from './commands/reject.js';
+import * as viewCmd from './commands/view.js';
+import * as searchCmd from './commands/search.js';
+import * as listCmd from './commands/list.js';
+import * as createCmd from './commands/create.js';
+import * as updateCmd from './commands/update.js';
+import * as deleteCmd from './commands/delete.js';
+import * as priorityCmd from './commands/priority.js';
+import * as logCmd from './commands/log.js';
+import * as registerCmd from './commands/register.js';
+import * as agentsCmd from './commands/agents.js';
+import * as submitCmd from './commands/submit.js';
 import { wantsHelp } from './util.js';
-import { run as runView} from './commands/view.js';
-import { run as runSearch } from './commands/search.js';
-import { run as runList } from './commands/list.js';
-import { run as runCreate } from './commands/create.js'
-import { run as runUpdate } from './commands/update.js';
-import { run as runDelete } from './commands/delete.js';
-import { run as runPriority } from './commands/priority.js';
-import { run as runLog } from './commands/log.js';
-import { run as runRegister } from './commands/register.js';
-import { run as runAgents } from './commands/agents.js';
-import { run as runSubmit } from './commands/submit.js';
 
 import { authenticateContext } from './services/authService.js';
 
@@ -129,9 +129,43 @@ Examples:
 async function main() {
   const [, , command, ...args] = process.argv;
 
-  if (!command || command === 'help' || wantsHelp(args) || command === '--help') {
+  if (!command || command === 'help' || command === '--help' || command === '-h') {
     console.log(HELP);
-    process.exit(command ? 0 : 1);
+    process.exit(0);
+    return;
+  }
+
+  // If user requested help for a specific subcommand (e.g. `baton list -h`)
+  const modules = {
+    init: initCmd,
+    register: registerCmd,
+    agents: agentsCmd,
+    next: nextCmd,
+    loop: loopCmd,
+    status: statusCmd,
+    view: viewCmd,
+    search: searchCmd,
+    list: listCmd,
+    approve: approveCmd,
+    reject: rejectCmd,
+    priority: priorityCmd,
+    create: createCmd,
+    update: updateCmd,
+    delete: deleteCmd,
+    log: logCmd,
+    submit: submitCmd,
+  };
+
+  if (wantsHelp(args)) {
+    const mod = modules[command];
+    if (mod && mod.HELP) {
+      console.log(mod.HELP);
+      process.exit(0);
+      return;
+    }
+    // Fallback to global help
+    console.log(HELP);
+    process.exit(0);
     return;
   }
 
@@ -139,23 +173,23 @@ async function main() {
   authenticateContext(command);
 
   const handlers = {
-    init: () => runInit(args),
-    register: () => runRegister(args),
-    agents: () => runAgents(args),
-    next: () => runNext(args),
-    loop: () => runLoop(args),
-    status: () => runStatus(args),
-    view: () => runView(args),
-    search: () => runSearch(args),
-    list: () => runList(args),
-    approve: () => runApprove(args),
-    reject: () => runReject(args),
-    priority: () => runPriority(args),
-    create: () => runCreate(args),
-    update: () => runUpdate(args),
-    delete: () => runDelete(args),
-    log: () => runLog(args),
-    submit: () => runSubmit(args),
+    init: () => initCmd.run(args),
+    register: () => registerCmd.run(args),
+    agents: () => agentsCmd.run(args),
+    next: () => nextCmd.run(args),
+    loop: () => loopCmd.run(args),
+    status: () => statusCmd.run(args),
+    view: () => viewCmd.run(args),
+    search: () => searchCmd.run(args),
+    list: () => listCmd.run(args),
+    approve: () => approveCmd.run(args),
+    reject: () => rejectCmd.run(args),
+    priority: () => priorityCmd.run(args),
+    create: () => createCmd.run(args),
+    update: () => updateCmd.run(args),
+    delete: () => deleteCmd.run(args),
+    log: () => logCmd.run(args),
+    submit: () => submitCmd.run(args),
   };
 
   const handler = handlers[command];

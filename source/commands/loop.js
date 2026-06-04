@@ -11,8 +11,22 @@
 //  baton loop -n 5
 
 import { isTrackerReady } from '../services/issuesService.js';
-import { getNumericFlag, hasFlag, renderOutput, reportTrackerNotReady } from '../util.js';
+import { getNumericFlag, hasFlag, renderOutput, reportTrackerNotReady, wantsHelp } from '../util.js';
 import { run as runNext } from './next.js';
+
+export const HELP = `Usage:
+  baton loop [--steps <n>] [--json]
+
+Options:
+  --steps <n>            Number of autonomous steps (alias: -n)
+  -n <n>                 Alias for --steps <n>
+  --json                 Output as JSON (for AI agents)
+  -h, --help             Show this help
+
+Examples:
+  baton loop --steps 5
+  baton loop -n 5
+`;
 
 /**
  * Parses the flags in the command line argument
@@ -30,6 +44,10 @@ function parseLoopFlags(args) {
  * @returns {Promise<number>}
  */
 export async function run(args = []) {
+  if (wantsHelp(args)) {
+    console.log(HELP);
+    return 0;
+  }
   const isJson = hasFlag(args, '--json');
   const loopArgs = args.filter((arg) => arg !== '--json');
   const { steps } = parseLoopFlags(loopArgs);

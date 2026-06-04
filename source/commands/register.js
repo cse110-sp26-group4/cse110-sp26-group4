@@ -11,10 +11,24 @@
 
 import { registerAgent } from '../services/agentsService.js';
 import {
-  getFlagValue,
-  hasFlag,
-  renderOutput,
+    getFlagValue,
+    hasFlag,
+    renderOutput,
+    wantsHelp,
 } from '../util.js';
+
+export const HELP = `Usage:
+    baton register --name <name> [--type <type>]
+
+Options:
+    --name <n>             Name of the agent or human (required)
+    --type <t>             agent | human (default: agent)
+    --json                 Output as JSON (for AI agents)
+    -h, --help             Show this help
+
+Examples:
+    baton register --name claude-dev --type agent
+`;
 
 /**
  * Registers a new agent or human user
@@ -22,6 +36,10 @@ import {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error
  */
 export async function run(args) {
+    if (wantsHelp(args)) {
+        console.log(HELP);
+        return 0;
+    }
     const isJson = hasFlag(args, '--json');
     const validFlags = ['--name', '--type', '--json'];
     

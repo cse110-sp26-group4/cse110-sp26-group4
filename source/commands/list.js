@@ -13,15 +13,33 @@
 
 import { listIssues } from '../services/issuesService.js';
 import {
-  getFlagValue,
-  getNumericFlag,
-  hasFlag,
-  parseArgs,
-  printIssueTable,
-  printTableHeader,
-  renderOutput,
-  serializeIssue,
+    getFlagValue,
+    getNumericFlag,
+    hasFlag,
+    parseArgs,
+    printIssueTable,
+    printTableHeader,
+    renderOutput,
+    serializeIssue,
+    wantsHelp,
 } from '../util.js';
+
+export const HELP = `Usage:
+    baton list [--status <s>] [--priority <p>] [--limit <n>] [--offset <n>] [--json]
+
+Options:
+    --status <s>          Filter by status: open | in-progress | closed
+    --priority <p>        Filter by priority: low | medium | high
+    --limit <n>           Max results (default: 50)
+    --offset <n>          Skip first n results (default: 0)
+    --json                Output as JSON (for AI agents)
+    -h, --help            Show this help
+
+Examples:
+    baton list
+    baton list --status open --priority high
+    baton list --limit 10 --offset 20
+`;
 
 /**
  * Lists issues matching the filters and pagination settings 
@@ -30,6 +48,10 @@ import {
  */
 
 export async function run(args) {
+    if (wantsHelp(args)) {
+        console.log(HELP);
+        return 0;
+    }
     const isJson = hasFlag(args, '--json');
     const validFlags = ['--status', '--priority', '--limit', '--offset', '--json'];
     // Check if user misspelled a flag

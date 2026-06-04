@@ -8,7 +8,18 @@ import {
   selectNextIssue,
   claimIssue,
 } from '../services/issuesService.js';
-import { formatTimestamp, hasFlag, renderOutput, reportTrackerNotReady, serializeIssue } from '../util.js';
+import { formatTimestamp, hasFlag, renderOutput, reportTrackerNotReady, serializeIssue, wantsHelp } from '../util.js';
+
+export const HELP = `Usage:
+  baton next [--json]
+
+Options:
+  --json                 Output as JSON (for AI agents)
+  -h, --help             Show this help
+
+Examples:
+  baton next
+`;
 
 /**
  * Moves the AI agent to work on the next issue. 
@@ -18,6 +29,10 @@ import { formatTimestamp, hasFlag, renderOutput, reportTrackerNotReady, serializ
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args = []) {
+  if (wantsHelp(args)) {
+    console.log(HELP);
+    return 0;
+  }
   const isJson = hasFlag(args, '--json');
 
   if (!isTrackerReady()) {

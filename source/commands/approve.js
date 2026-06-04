@@ -4,7 +4,18 @@
 // Usage: baton approve <id>
 
 import { approveIssue } from '../services/issuesService.js';
-import { hasFlag, renderOutput, serializeIssue } from '../util.js';
+import { hasFlag, renderOutput, serializeIssue, wantsHelp } from '../util.js';
+
+export const HELP = `Usage:
+    baton approve <id> [--json]
+
+Options:
+    --json                 Output as JSON (for AI agents)
+    -h, --help             Show this help
+
+Examples:
+    baton approve 5
+`;
 
 /**
  * Approves an issue and moves it to the closed state.
@@ -12,6 +23,10 @@ import { hasFlag, renderOutput, serializeIssue } from '../util.js';
  * @returns {Promise<number>} the exit code: 0 is success, 1 is error
  */
 export async function run(args) {
+    if (wantsHelp(args)) {
+        console.log(HELP);
+        return 0;
+    }
     const isJson = hasFlag(args, '--json');
     const idArgs = args.filter((arg) => arg !== '--json');
 

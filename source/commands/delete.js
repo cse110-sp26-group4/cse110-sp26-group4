@@ -19,7 +19,18 @@ import { deleteIssue, getIssue } from '../services/issuesService.js';
 import { hasFlag, wantsHelp, renderOutput, renderError } from '../util.js';
 import { confirm } from '@inquirer/prompts';
 
-const USAGE = "Usage: baton delete <id> [options]\n\nOptions:\n  --yes        Skip confirmation prompt\n  --json       Output in JSON format\n  -h, --help   Show this help";
+export const HELP = `Usage:
+    baton delete <id> [--yes] [--json]
+
+Options:
+    --yes                 Skip confirmation prompt
+    --json                Output as JSON (for AI agents)
+    -h, --help            Show this help
+
+Examples:
+    baton delete 4
+    baton delete 4 --yes
+`;
 
 /**
  * Deletes an issue for a specified ID.
@@ -32,14 +43,14 @@ export async function run(args) {
 
     // (0) Help check
     if (wantsHelp(args)) {
-        console.log(USAGE);
+        console.log(HELP);
         return 0;
     }
 
     // (1) Parse arguments
     const idArgs = args.filter(arg => !arg.startsWith('-'));
     if (idArgs.length === 0) {
-        renderError(isJson, `No ID provided.\n${USAGE}`, 'MISSING_ID');
+        renderError(isJson, `No ID provided.\n${HELP}`, 'MISSING_ID');
         return 1;
     }
 

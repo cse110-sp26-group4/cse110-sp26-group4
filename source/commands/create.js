@@ -17,7 +17,7 @@
 //   -h, --help             Show this help
 
 import { createIssue } from "../services/issuesService.js";
-import { hasFlag, parseArgs, renderOutput, serializeIssue } from "../util.js";
+import { hasFlag, parseArgs, renderOutput, serializeIssue, wantsHelp } from "../util.js";
 import { issueSchema } from "../models/schema.js";
 import { input, select, confirm, editor } from "@inquirer/prompts";
 import { spawnSync } from "child_process";
@@ -55,6 +55,23 @@ const DESCRIPTION_PLACEHOLDER = [
   "## Additional context",
   "",
 ].join("\n");
+
+export const HELP = `Usage:
+  baton create [--title <text>] [--description <text>] [--priority <level>] [--token-limit <n>] [--json]
+
+Options:
+  --title <text>         Issue title (defaults to "Issue #<id>" if omitted)
+  --description <text>   Issue description
+  --priority <level>     low | medium | high  (default: low)
+  --token-limit <n>      Optional token budget for this issue
+  --json                 Output as JSON (for AI agents)
+  -h, --help             Show this help
+
+Examples:
+  baton create --title "Fix login bug" --priority high
+  baton create --title "Refactor auth" --description "Clean up JWT logic" --token-limit 4000
+  baton create
+`;
 
 /**
  * Opens the user's $EDITOR with an optional seed template and returns the
@@ -192,6 +209,11 @@ async function runInteractiveMode() {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error
  */
 export async function run(args) {
+  if (wantsHelp(args)) {
+    console.log(HELP);
+    return 0;
+  }
+
   const isJson = hasFlag(args, "--json");
 
   // Flag validation -- VALID_FLAGS is derived from issueSchema, so this stays

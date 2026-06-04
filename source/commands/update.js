@@ -18,7 +18,7 @@
 //  baton update 7 --status closed --priority medium
 
 import { updateIssue, getIssue } from "../services/issuesService.js";
-import { hasFlag, parseArgs, renderOutput, serializeIssue } from "../util.js";
+import { hasFlag, parseArgs, renderOutput, serializeIssue, wantsHelp } from "../util.js";
 import { issueSchema } from "../models/schema.js";
 import { input, select, confirm, editor } from "@inquirer/prompts";
 import { spawnSync } from "child_process";
@@ -33,7 +33,24 @@ const VALID_FLAGS = new Set([
   "--json",
 ]);
 const FLAGS_HINT = [...VALID_FLAGS].join(", ");
-const USAGE = "Usage: baton update <id> [options]";
+export const HELP = `Usage:
+  baton update <id> [options]
+
+Options:
+  --title <text>         New title
+  --description <text>   New description
+  --token-limit <n>      New token budget
+  --status <s>           open | in-progress | closed
+  --priority <p>         low | medium | high
+  --json                 Output as JSON (for AI agents)
+  -h, --help             Show this help
+
+Examples:
+  baton update 3                        # interactive mode
+  baton update 3 --title "Revised title"
+  baton update 7 --status closed --priority medium
+`;
+const USAGE = 'Usage: baton update <id> [options]';
 
 // Build select choices from issueSchema enums so they stay in sync automatically.
 const PRIORITY_HINTS = {
@@ -199,6 +216,11 @@ async function runInteractiveMode(issue) {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args) {
+  if (wantsHelp(args)) {
+    console.log(HELP);
+    return 0;
+  }
+
   const isJson = hasFlag(args, "--json");
   const cmdArgs = args.filter((arg) => arg !== "--json");
 
