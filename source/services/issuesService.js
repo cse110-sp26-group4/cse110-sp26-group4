@@ -7,17 +7,7 @@ import {
   Priority,
 } from "../models/issue.js";
 import { ActivityLog, Action } from '../models/activityLog.js';
-
-// Internal variable to hold the active agent's ID for logging purposes. Set via setActiveActor() during authentication.
-let currentActorId = null;
-
-/**
- * Sets the active actor ID for logging purposes.
- * @param {number} id - The ID of the active actor.
- */
-export function setActiveActor(id) {
-    currentActorId = id;
-}
+import { getCurrentActorId } from './context.js';
 
 /**
  * Internal helper to log actions.
@@ -29,16 +19,8 @@ export function setActiveActor(id) {
  */
 function logActivity(db, issueId, action, details = null) {
   db.insert(activityTable)
-    .values({ issueId, action, details, actorId: currentActorId })
+    .values({ issueId, action, details, actorId: getCurrentActorId() })
     .run();
-}
-
-/**
- * Returns the active actor ID set during authentication.
- * @returns {number|null}
- */
-export function getActiveActor() {
-  return currentActorId;
 }
 
 /**
@@ -491,10 +473,10 @@ export function claimIssue(issueId) {
     logActivity(tx, issueId, Action.READ, `Agent accessed issue #${issueId}`);
     
     tx.update(issuesTable)
-      .set({ 
+      .set({
         status: Status.IN_PROGRESS,
-        assigneeId: currentActorId, 
-        attemptNum: sql`${issuesTable.attemptNum} + 1` 
+        assigneeId: getCurrentActorId(),
+        attemptNum: sql`${issuesTable.attemptNum} + 1`
       })
       .where(eq(issuesTable.id, issueId))
       .run();

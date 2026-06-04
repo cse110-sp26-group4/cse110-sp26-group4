@@ -10,8 +10,8 @@
 // Examples:
 //   baton unclaim 14
 
-import { getIssue, unclaimIssue, getActiveActor } from '../services/issuesService.js';
-import { getAgentById } from '../services/agentsService.js';
+import { getIssue, unclaimIssue } from '../services/issuesService.js';
+import { getCurrentActor } from '../services/context.js';
 import { AgentType } from '../models/agents.js';
 import {
   hasFlag,
@@ -60,8 +60,7 @@ export async function run(args) {
     return 1;
   }
 
-  const actorId = getActiveActor();
-  const actor = getAgentById(actorId);
+  const actor = getCurrentActor();
 
   if (!actor || actor.type !== AgentType.AGENT) {
     renderError(isJson, 'Only agents can unclaim issues.', 'FORBIDDEN');
@@ -80,7 +79,7 @@ export async function run(args) {
     return 1;
   }
 
-  if (issue.assigneeId !== actorId) {
+  if (issue.assigneeId !== actor.id) {
     renderError(
       isJson,
       `Issue #${id} is not assigned to you. Only the current assignee can unclaim an issue.`,

@@ -13,8 +13,8 @@ import {
   createIssue,
   claimIssue,
   getIssue,
-  setActiveActor,
 } from '../source/services/issuesService.js';
+import { setCurrentActor } from '../source/services/context.js';
 import { registerAgent } from '../source/services/agentsService.js';
 import { run as unclaimCommand } from '../source/commands/unclaim.js';
 
@@ -59,21 +59,21 @@ describe('Unclaim Command', () => {
   let sqlite;
   let testDb;
   let capture;
-  let agentId;
+  let agent;
 
   beforeEach(() => {
     const setup = makeDb();
     sqlite = setup.sqlite;
     testDb = setup.db;
     setTestDB(testDb);
-    agentId = registerAgent('claude-dev', 'agent').id;
-    setActiveActor(agentId);
+    agent = registerAgent('claude-dev', 'agent');
+    setCurrentActor(agent);
     capture = captureConsole();
   });
 
   afterEach(() => {
     capture.restore();
-    setActiveActor(null);
+    setCurrentActor(null);
     sqlite.close();
   });
 
@@ -117,8 +117,8 @@ describe('Unclaim Command', () => {
     const issue = createIssue({ title: 'Someone Elses Issue' });
     claimIssue(issue.id);
 
-    const otherId = registerAgent('other-agent', 'agent').id;
-    setActiveActor(otherId);
+    const otherAgent = registerAgent('other-agent', 'agent');
+    setCurrentActor(otherAgent);
 
     const exitCode = await unclaimCommand([String(issue.id)]);
 
@@ -130,8 +130,8 @@ describe('Unclaim Command', () => {
     const issue = createIssue({ title: 'Human Tries to Unclaim' });
     claimIssue(issue.id);
 
-    const humanId = registerAgent('alice', 'human').id;
-    setActiveActor(humanId);
+    const humanActor = registerAgent('alice', 'human');
+    setCurrentActor(humanActor);
 
     const exitCode = await unclaimCommand([String(issue.id)]);
 
@@ -174,8 +174,8 @@ describe('Unclaim Command', () => {
     const issue = createIssue({ title: 'Not Mine' });
     claimIssue(issue.id);
 
-    const otherId = registerAgent('stranger', 'agent').id;
-    setActiveActor(otherId);
+    const stranger = registerAgent('stranger', 'agent');
+    setCurrentActor(stranger);
 
     const exitCode = await unclaimCommand([String(issue.id), '--json']);
 
@@ -186,8 +186,8 @@ describe('Unclaim Command', () => {
   });
 
   it('should support --json output on error (human actor)', async () => {
-    const humanId = registerAgent('bob', 'human').id;
-    setActiveActor(humanId);
+    const bob = registerAgent('bob', 'human');
+    setCurrentActor(bob);
     const issue = createIssue({ title: 'Human Error' });
 
     const exitCode = await unclaimCommand([String(issue.id), '--json']);

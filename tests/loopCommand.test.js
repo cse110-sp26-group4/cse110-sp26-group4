@@ -12,8 +12,8 @@ import { setTestDB } from '../source/db/index.js';
 import {
   createIssue,
   getIssue,
-  setActiveActor,
 } from '../source/services/issuesService.js';
+import { setCurrentActor } from '../source/services/context.js';
 import { registerAgent } from '../source/services/agentsService.js';
 import { run as loopCommand } from '../source/commands/loop.js';
 
@@ -63,8 +63,8 @@ function captureConsole() {
 describe('Loop Command', () => {
   let sqlite;
   let capture;
-  /** @type {number} */
-  let testActorId;
+  /** @type {object} */
+  let testActor;
 
   beforeEach(() => {
     capture = captureConsole();
@@ -72,7 +72,7 @@ describe('Loop Command', () => {
 
   afterEach(() => {
     capture.restore();
-    setActiveActor(null);
+    setCurrentActor(null);
     if (sqlite) {
       sqlite.close();
     }
@@ -93,8 +93,8 @@ describe('Loop Command', () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
     setTestDB(setup.db);
-    testActorId = registerAgent('loop-agent', 'agent').id;
-    setActiveActor(testActorId);
+    testActor = registerAgent('loop-agent', 'agent');
+    setCurrentActor(testActor);
 
     createIssue({ title: 'Loop Once', priority: Priority.HIGH });
 
@@ -110,8 +110,8 @@ describe('Loop Command', () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
     setTestDB(setup.db);
-    testActorId = registerAgent('loop-agent', 'agent').id;
-    setActiveActor(testActorId);
+    testActor = registerAgent('loop-agent', 'agent');
+    setCurrentActor(testActor);
 
     createIssue({ title: 'First', priority: Priority.HIGH });
     createIssue({ title: 'Second', priority: Priority.MEDIUM });
@@ -128,8 +128,8 @@ describe('Loop Command', () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
     setTestDB(setup.db);
-    testActorId = registerAgent('loop-agent', 'agent').id;
-    setActiveActor(testActorId);
+    testActor = registerAgent('loop-agent', 'agent');
+    setCurrentActor(testActor);
 
     createIssue({ title: 'Alias Step' });
 
@@ -143,8 +143,8 @@ describe('Loop Command', () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
     setTestDB(setup.db);
-    testActorId = registerAgent('loop-agent', 'agent').id;
-    setActiveActor(testActorId);
+    testActor = registerAgent('loop-agent', 'agent');
+    setCurrentActor(testActor);
 
     const issue = createIssue({ title: 'Only One' });
 
@@ -160,8 +160,8 @@ describe('Loop Command', () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
     setTestDB(setup.db);
-    testActorId = registerAgent('loop-agent', 'agent').id;
-    setActiveActor(testActorId);
+    testActor = registerAgent('loop-agent', 'agent');
+    setCurrentActor(testActor);
 
     createIssue({ title: 'JSON Loop' });
 

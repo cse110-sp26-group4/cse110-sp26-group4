@@ -13,8 +13,8 @@ import {
   createIssue,
   approveIssue,
   getIssue,
-  setActiveActor,
 } from '../source/services/issuesService.js';
+import { setCurrentActor } from '../source/services/context.js';
 import { registerAgent } from '../source/services/agentsService.js';
 import { run as nextCommand } from '../source/commands/next.js';
 
@@ -64,8 +64,8 @@ function captureConsole() {
 describe('Next Command', () => {
   let sqlite;
   let capture;
-  /** @type {number} */
-  let testActorId;
+  /** @type {object} */
+  let testActor;
 
   beforeEach(() => {
     capture = captureConsole();
@@ -73,7 +73,7 @@ describe('Next Command', () => {
 
   afterEach(() => {
     capture.restore();
-    setActiveActor(null);
+    setCurrentActor(null);
     if (sqlite) {
       sqlite.close();
     }
@@ -94,8 +94,8 @@ describe('Next Command', () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
     setTestDB(setup.db);
-    testActorId = registerAgent('next-agent', 'agent').id;
-    setActiveActor(testActorId);
+    testActor = registerAgent('next-agent', 'agent');
+    setCurrentActor(testActor);
 
     const closed = createIssue({ title: 'Already Done' });
     approveIssue(closed.id);
@@ -110,8 +110,8 @@ describe('Next Command', () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
     setTestDB(setup.db);
-    testActorId = registerAgent('next-agent', 'agent').id;
-    setActiveActor(testActorId);
+    testActor = registerAgent('next-agent', 'agent');
+    setCurrentActor(testActor);
 
     const low = createIssue({ title: 'Low Priority', priority: Priority.LOW });
     const high = createIssue({ title: 'High Priority', priority: Priority.HIGH });
@@ -133,8 +133,8 @@ describe('Next Command', () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
     setTestDB(setup.db);
-    testActorId = registerAgent('next-agent', 'agent').id;
-    setActiveActor(testActorId);
+    testActor = registerAgent('next-agent', 'agent');
+    setCurrentActor(testActor);
 
     createIssue({
       title: 'Detailed Issue',
@@ -152,8 +152,8 @@ describe('Next Command', () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
     setTestDB(setup.db);
-    testActorId = registerAgent('next-agent', 'agent').id;
-    setActiveActor(testActorId);
+    testActor = registerAgent('next-agent', 'agent');
+    setCurrentActor(testActor);
 
     const issue = createIssue({ title: 'JSON Next', priority: Priority.MEDIUM });
 

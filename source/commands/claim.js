@@ -3,7 +3,7 @@
 // Usage: baton claim <id> [--json]
 
 import { isTrackerReady, claimIssue } from '../services/issuesService.js';
-import { getCurrentActor } from '../services/authService.js';
+import { getCurrentActor } from '../services/context.js';
 import {
   hasFlag,
   renderOutput,
