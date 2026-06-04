@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { runBaton as _runBaton, parseJSON } from './runBaton.test.js';
+import { runBaton as _runBaton, parseJSON, BatonResult } from './runBaton.test.js';
 import { beforeEach, afterEach } from 'node:test';
 
 /**
@@ -12,13 +12,6 @@ import { beforeEach, afterEach } from 'node:test';
  * @property {(args: string[]) => Promise<BatonResult>} runBaton - Runs the CLI inside the sandbox.
  * @property {(result: BatonResult) => unknown} parseJSON - Parses stdout as JSON.
  * @property {() => void} cleanup - Removes the temp directory.
- */
-
-/**
- * @typedef {Object} BatonResult - Results of running CLI 
- * @property {string} stdout
- * @property {string} stderr
- * @property {number} exitCode
  */
 
 /**
@@ -49,7 +42,6 @@ return { dir, specsPath, runBaton, parseJSON, cleanup };
 
 /**
  * Setup / teardown hook for test suites
- *
  * @returns {Sandbox} 
  */
 export function useSandbox() {

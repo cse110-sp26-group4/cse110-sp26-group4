@@ -1,6 +1,6 @@
 // runBaton.js
 // Helper function for e2e tests that runs the CLI 
-// test/helpers/runBaton.js
+
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
@@ -8,21 +8,26 @@ import path from 'node:path';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Adjust if your bin entry differs — check "bin" in package.json
 const BATON_BIN = path.resolve(__dirname, '../source/cli.js');
 
 /**
+ * @typedef {Object} BatonResult - Results of running CLI 
+ * @property {string} stdout
+ * @property {string} stderr
+ * @property {number} exitCode
+ */
+
+/**
  * Runs the Baton CLI with the given args in the given working directory.
- * Always resolves — never rejects — so tests can assert on failure cases.
  *
  * @param {string[]} args
  * @param {{ cwd?: string, env?: Record<string, string> }} options
- * @returns {Promise<{ stdout: string, stderr: string, exitCode: number }>}
+ * @returns {Promise<BatonResult>}
  */
 export function runBaton(args = [], options = {}) {
   return new Promise((resolve) => {
     const proc = spawn(
-      process.execPath,        // the same `node` binary running the tests
+      process.execPath,        
       [BATON_BIN, ...args],
       {
         cwd: options.cwd ?? process.cwd(),
@@ -44,10 +49,7 @@ export function runBaton(args = [], options = {}) {
 
 /**
  * Parses the stdout of a runBaton result as JSON.
- * Throws a descriptive error if parsing fails so you know it's a
- * format issue, not a logic issue.
- *
- * @param {{ stdout: string, stderr: string, exitCode: number }} result
+ * @param {BatonResult} 
  * @returns {unknown}
  */
 export function parseJSON(result) {
