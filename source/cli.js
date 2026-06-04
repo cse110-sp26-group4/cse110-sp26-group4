@@ -30,6 +30,8 @@ import * as logCmd from './commands/log.js';
 import * as registerCmd from './commands/register.js';
 import * as agentsCmd from './commands/agents.js';
 import * as submitCmd from './commands/submit.js';
+import * as claimCmd from './commands/claim.js';
+
 import { wantsHelp } from './util.js';
 
 import { authenticateContext } from './services/authService.js';
@@ -52,6 +54,7 @@ Commands:
   create   Creates an issue with specified fields
   approve  Move an issue from in-review to closed
   submit   Submit finished work for human review
+  claim    Claim an issue as the authenticated agent
   priority Set an issue's priority level
   update   Updates an issue's specified fields
   delete   Deletes an issue
@@ -85,6 +88,7 @@ Options:
   create --json                   Output as JSON (for AI agents)
   approve <id> [--json]
   submit <id> [--json]
+  claim <id> [--json]
   reject <id> --reason <text>     Reject an issue with a given reason
   priority <id> <level> [--json]  low | medium | high
   update --title <text>           New title
@@ -115,6 +119,7 @@ Examples:
   baton create --title "Refactor auth" --description "Clean up JWT logic" --token-limit 4000
   baton approve 5
   baton submit 14
+  baton claim 14
   baton priority 5 high
   baton priority 3 low
   baton update 3 --title "Revised title"
@@ -184,6 +189,7 @@ async function main() {
     list: () => listCmd.run(args),
     approve: () => approveCmd.run(args),
     reject: () => rejectCmd.run(args),
+    claim: () => claimCmd.run(args),
     priority: () => priorityCmd.run(args),
     create: () => createCmd.run(args),
     update: () => updateCmd.run(args),
