@@ -261,6 +261,20 @@ export function updateIssue(id, oldIssue, { title, description, tokenLimit, stat
 }
 
 /**
+ * 
+ * Sets assigneeId to null
+ * Logs the activity
+ * @param {number} issueId 
+ * @param {*} actorId 
+ */
+export function unassignIssue(issueId, actorId){
+  const db = getDB();
+  db.update(issuesTable).set({ });
+  logActivity(db, id, Action.STATE_CHANGE, `Success: Issue #${issueId} is now unassigned.`);
+  return getIssue(issueId);
+}
+
+/**
  * Change the status of an issue from in-review to closed
  * Logs a closed event.
  * @param {number} id
