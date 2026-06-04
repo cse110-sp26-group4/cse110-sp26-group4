@@ -31,6 +31,7 @@ import { run as runLog } from './commands/log.js';
 import { run as runRegister } from './commands/register.js';
 import { run as runAgents } from './commands/agents.js';
 import { run as runSubmit } from './commands/submit.js';
+import { run as runUnclaim } from './commands/unclaim.js';
 
 import { authenticateContext } from './services/authService.js';
 
@@ -52,6 +53,7 @@ Commands:
   create   Creates an issue with specified fields
   approve  Move an issue from in-review to closed
   submit   Submit finished work for human review
+  unclaim  Release a claimed issue back to Open
   priority Set an issue's priority level
   update   Updates an issue's specified fields
   delete   Deletes an issue
@@ -85,6 +87,7 @@ Options:
   create --json                   Output as JSON (for AI agents)
   approve <id> [--json]
   submit <id> [--json]
+  unclaim <id> [--json]
   reject <id> --reason <text>     Reject an issue with a given reason
   priority <id> <level> [--json]  low | medium | high
   update --title <text>           New title
@@ -115,6 +118,7 @@ Examples:
   baton create --title "Refactor auth" --description "Clean up JWT logic" --token-limit 4000
   baton approve 5
   baton submit 14
+  baton unclaim 14
   baton priority 5 high
   baton priority 3 low
   baton update 3 --title "Revised title"
@@ -156,6 +160,7 @@ async function main() {
     delete: () => runDelete(args),
     log: () => runLog(args),
     submit: () => runSubmit(args),
+    unclaim: () => runUnclaim(args),
   };
 
   const handler = handlers[command];

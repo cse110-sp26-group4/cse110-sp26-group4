@@ -518,6 +518,36 @@ export function claimIssue(issueId) {
 }
 
 /**
+ * Release an issue back to Open status, clearing the assignee.
+ * Logs a STATE_CHANGE activity entry.
+ * @param {number} issueId
+ * @returns {Issue}
+ * @throws {Error} If issueId is invalid or issue is not found
+ */
+export function unclaimIssue(issueId) {
+  if (!Number.isInteger(issueId)) {
+    throw new Error('issueId must be an integer');
+  }
+
+  const db = getDB();
+  findById(db, issueId);
+
+  db.update(issuesTable)
+    .set({ status: Status.OPEN, assigneeId: null })
+    .where(eq(issuesTable.id, issueId))
+    .run();
+
+  logActivity(
+    db,
+    issueId,
+    Action.STATE_CHANGE,
+    `Issue #${issueId} was released and returned to Open.`,
+  );
+
+  return getIssue(issueId);
+}
+
+/**
  * Remove all issues (`baton init --force`). Activity rows are kept for audit.
  */
 export function clearAllIssues() {
