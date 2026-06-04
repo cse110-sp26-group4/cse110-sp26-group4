@@ -11,7 +11,7 @@ Baton is a terminal-based issue tracker designed for human supervisors and AI ag
   - [Configuration](#configuration)
 - [Core Concepts](#core-concepts)
   - [Issue Data Model](#issue-data-model)
-  - [Lifecycle & State Machine](#lifecycle--state-machine)
+  - [State Machine](#state-machine)
   - [Priority Levels](#priority-levels)
 - [Command Reference](cli/README.md)
 - [Agent Integration](#agent-integration)
@@ -126,14 +126,14 @@ Key fields include:
 - **Token Limit**: Optional budget for AI agent work.
 - **Attempt Num**: Number of times an agent has attempted the issue.
 
-### Status Values & State Machine
+### State Machine
 Issues move through a defined lifecycle:
 - `Open`: Available for work.
 - `In-Progress`: Active work is being done.
 - `In-Review`: Work submitted; awaiting human approval.
 - `Closed`: Approved and complete.
 
-**State Machine:**
+**Workflow:**
 `Open` → `In-Progress` → `In-Review` → `Closed`
 *(Issues can be returned from `In-Review` to `In-Progress` if changes are requested).*
 
