@@ -4,34 +4,21 @@ import os from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
-import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
-import Database from 'better-sqlite3';
 
 import * as schema from '../source/models/schema.js';
-import { setTestDB } from '../source/db/index.js';
+import { getSQLiteDB, setTestDB } from '../source/db/index.js';
 import { getAllIssues, isTrackerReady } from '../source/services/issuesService.js';
 import { run as initCommand } from '../source/commands/init.js';
 
 // ─── Test Helpers ────────────────────────────────────────────────────────────
 
-function makeDb() {
-  const sqlite = new Database(':memory:');
-  const db = drizzle(sqlite, { schema });
-  const migrationsFolder = path.join(process.cwd(), 'drizzle');
-
-  if (fs.existsSync(migrationsFolder)) {
-    migrate(db, { migrationsFolder });
-  } else {
-    throw new Error('Migrations folder not found!');
-  }
-
-  return { sqlite, db };
-}
-
-function makeEmptyDb() {
-  const sqlite = new Database(':memory:');
-  const db = drizzle(sqlite, { schema });
-  return { sqlite, db };
+/**
+ * initDB() migrates `db` and installs triggers on `sqliteConnection` (the
+ * on-disk .baton/baton.db). Other tests swap in an in-memory DB via setTestDB();
+ * restore the production connection before exercising init.
+ */
+function useProductionDb() {
+  setTestDB(drizzle(getSQLiteDB(), { schema }));
 }
 
 function captureConsole() {
@@ -72,37 +59,31 @@ function writeTempSpecs(content = SAMPLE_SPECS) {
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
 describe('Init Command', () => {
-  let sqlite;
   let capture;
   /** @type {string[]} */
   let tempDirs;
 
   beforeEach(() => {
+    useProductionDb();
     capture = captureConsole();
     tempDirs = [];
   });
 
   afterEach(() => {
     capture.restore();
-    if (sqlite) {
-      sqlite.close();
-      sqlite = undefined;
-    }
     for (const dir of tempDirs) {
       fs.rmSync(dir, { recursive: true, force: true });
     }
   });
 
   it('should initialize a fresh tracker from a specs file', async () => {
-    const empty = makeEmptyDb();
-    sqlite = empty.sqlite;
-    setTestDB(empty.db);
-    assert.equal(isTrackerReady(), false);
-
     const { dir, filePath } = writeTempSpecs();
     tempDirs.push(dir);
 
-    const exitCode = await initCommand(['--specs', filePath]);
+    const args = isTrackerReady()
+      ? ['--force', '--specs', filePath]
+      : ['--specs', filePath];
+    const exitCode = await initCommand(args);
 
     assert.equal(exitCode, 0);
     assert.ok(capture.logs.some((line) => line.includes('Tracker initialized')));
@@ -115,28 +96,20 @@ describe('Init Command', () => {
   });
 
   it('should accept a positional specs path', async () => {
-    const empty = makeEmptyDb();
-    sqlite = empty.sqlite;
-    setTestDB(empty.db);
-
     const { dir, filePath } = writeTempSpecs();
     tempDirs.push(dir);
 
-    const exitCode = await initCommand([filePath]);
+    const exitCode = await initCommand(['--force', filePath]);
 
     assert.equal(exitCode, 0);
     assert.equal(getAllIssues().length, 2);
   });
 
   it('should support --json output', async () => {
-    const empty = makeEmptyDb();
-    sqlite = empty.sqlite;
-    setTestDB(empty.db);
-
     const { dir, filePath } = writeTempSpecs();
     tempDirs.push(dir);
 
-    const exitCode = await initCommand(['--specs', filePath, '--json']);
+    const exitCode = await initCommand(['--force', '--specs', filePath, '--json']);
 
     assert.equal(exitCode, 0);
     const output = JSON.parse(capture.logs[0]);
@@ -147,9 +120,10 @@ describe('Init Command', () => {
   });
 
   it('should fail when the tracker is already initialized without --force', async () => {
-    const setup = makeDb();
-    sqlite = setup.sqlite;
-    setTestDB(setup.db);
+    const { dir, filePath } = writeTempSpecs('| FR-0 | Must | Warm up tracker |');
+    tempDirs.push(dir);
+
+    await initCommand(['--force', '--specs', filePath]);
     assert.equal(isTrackerReady(), true);
 
     const exitCode = await initCommand([]);
@@ -159,9 +133,10 @@ describe('Init Command', () => {
   });
 
   it('should re-initialize with --force and replace seeded issues', async () => {
-    const setup = makeDb();
-    sqlite = setup.sqlite;
-    setTestDB(setup.db);
+    const { dir: firstDir, filePath: firstPath } = writeTempSpecs();
+    tempDirs.push(firstDir);
+    await initCommand(['--force', '--specs', firstPath]);
+    assert.equal(getAllIssues().length, 2);
 
     const { dir, filePath } = writeTempSpecs('| FR-9 | Must | Forced seed issue |');
     tempDirs.push(dir);
@@ -175,10 +150,6 @@ describe('Init Command', () => {
   });
 
   it('should fail when both --specs and a positional path are provided', async () => {
-    const empty = makeEmptyDb();
-    sqlite = empty.sqlite;
-    setTestDB(empty.db);
-
     const { dir, filePath } = writeTempSpecs();
     tempDirs.push(dir);
 
@@ -189,28 +160,20 @@ describe('Init Command', () => {
   });
 
   it('should fail when the specs file does not exist', async () => {
-    const empty = makeEmptyDb();
-    sqlite = empty.sqlite;
-    setTestDB(empty.db);
-
     await assert.rejects(
-      () => initCommand(['--specs', path.join(os.tmpdir(), 'missing-specs.md')]),
+      () => initCommand(['--force', '--specs', path.join(os.tmpdir(), 'missing-specs.md')]),
       (err) => err.message.includes('Specs file not found'),
     );
   });
 
   it('should succeed with zero issues when specs contain no Must requirements', async () => {
-    const empty = makeEmptyDb();
-    sqlite = empty.sqlite;
-    setTestDB(empty.db);
-
     const { dir, filePath } = writeTempSpecs(`# Empty
 | FR-1 | Should | Not a must row |
 | NFR-1 | Must | Missing FR prefix |
 `);
     tempDirs.push(dir);
 
-    const exitCode = await initCommand(['--specs', filePath]);
+    const exitCode = await initCommand(['--force', '--specs', filePath]);
 
     assert.equal(exitCode, 0);
     assert.ok(capture.logs.some((line) => line.includes('Created 0 issue(s)')));
