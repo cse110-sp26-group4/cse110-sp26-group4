@@ -32,6 +32,7 @@ import { run as runRegister } from './commands/register.js';
 import { run as runAgents } from './commands/agents.js';
 import { run as runSubmit } from './commands/submit.js';
 import { run as runUnclaim } from './commands/unclaim.js';
+import { run as runClaim } from './commands/claim.js';
 
 import { authenticateContext } from './services/authService.js';
 
@@ -54,6 +55,7 @@ Commands:
   approve  Move an issue from in-review to closed
   submit   Submit finished work for human review
   unclaim  Release a claimed issue back to Open
+  claim    Claim an issue as the authenticated agent
   priority Set an issue's priority level
   update   Updates an issue's specified fields
   delete   Deletes an issue
@@ -88,6 +90,7 @@ Options:
   approve <id> [--json]
   submit <id> [--json]
   unclaim <id> [--json]
+  claim <id> [--json]
   reject <id> --reason <text>     Reject an issue with a given reason
   priority <id> <level> [--json]  low | medium | high
   update --title <text>           New title
@@ -119,6 +122,7 @@ Examples:
   baton approve 5
   baton submit 14
   baton unclaim 14
+  baton claim 14
   baton priority 5 high
   baton priority 3 low
   baton update 3 --title "Revised title"
@@ -133,7 +137,7 @@ Examples:
 async function main() {
   const [, , command, ...args] = process.argv;
 
-  if (!command || command === 'help' || wantsHelp(args) || command === '--help') {
+  if (!command || command === 'help' || command === '--help') {
     console.log(HELP);
     process.exit(command ? 0 : 1);
     return;
@@ -154,6 +158,7 @@ async function main() {
     list: () => runList(args),
     approve: () => runApprove(args),
     reject: () => runReject(args),
+    claim: () => runClaim(args),
     priority: () => runPriority(args),
     create: () => runCreate(args),
     update: () => runUpdate(args),

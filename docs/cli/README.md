@@ -12,8 +12,7 @@ Run `baton --help` for a quick summary.
 
 | Document | Contents |
 |---|---|
-| [Setup & Workflow](setup-commands.md) | `init`, `status`, `next`, `loop`, and planned config/agent commands |
-| [Issue Commands](issue-commands.md) | Issue CRUD, search, review, and planned commands |
+| [Commands Reference](commands-reference.md) | Comprehensive reference for all CLI commands, flags, and JSON outputs. |
 
 ## Storage
 
@@ -80,21 +79,21 @@ Error messages are printed to **stderr** and include a suggested corrective acti
 
 ## Command Index
 
-| Command | Status | Document |
+| Command | Status | Description |
 |---|---|---|
-| `init` | Implemented | [Setup & Workflow](setup-commands.md#baton-init) |
-| `status` | Implemented | [Setup & Workflow](setup-commands.md#baton-status) |
-| `next` | Implemented | [Setup & Workflow](setup-commands.md#baton-next) |
-| `loop` | Implemented | [Setup & Workflow](setup-commands.md#baton-loop) |
-| `create` | Implemented | [Issue Commands](issue-commands.md#baton-create) |
-| `list` | Implemented | [Issue Commands](issue-commands.md#baton-list) |
-| `view` | Implemented | [Issue Commands](issue-commands.md#baton-view-id) |
-| `search` | Implemented | [Issue Commands](issue-commands.md#baton-search-query) |
-| `update` | Implemented | [Issue Commands](issue-commands.md#baton-update-id) |
-| `approve` | Implemented | [Issue Commands](issue-commands.md#baton-approve-id) |
-| `log` | Planned | [Issue Commands](issue-commands.md#baton-log-id) |
-| `delete` | Planned | [Issue Commands](issue-commands.md#baton-delete-id) |
-| `reject` | Planned | [Issue Commands](issue-commands.md#baton-reject-id) |
-| `priority` | Planned | [Issue Commands](issue-commands.md#baton-priority-id-priority) |
-| `config` | Planned | [Setup & Workflow](setup-commands.md#baton-config) |
-| `agent` | Planned | [Setup & Workflow](setup-commands.md#baton-agent) |
+| `init` | Implemented | Initialize storage and seed issues |
+| `register` | Implemented | Register a new AI agent or human user |
+| `status` | Implemented | Show issue counts and progress |
+| `next` | Implemented | Work on the next highest-priority issue |
+| `loop` | Implemented | Run autonomous agent steps |
+| `create` | Implemented | Create a new issue |
+| `list` | Implemented | List issues with filters |
+| `view` | Implemented | View all fields for a single issue |
+| `search` | Implemented | Search issues by keyword |
+| `update` | Implemented | Update one or more issue fields |
+| `approve` | Implemented | Approve an issue and close it |
+| `reject` | Implemented | Reject an issue with a reason |
+| `priority` | Implemented | Quickly set an issue's priority |
+| `log` | Implemented | Show activity history for an issue |
+| `delete` | Implemented | Permanently remove an issue |
+| `config` | Planned | Project-level configuration |
