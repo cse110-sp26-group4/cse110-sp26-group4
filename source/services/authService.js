@@ -2,6 +2,8 @@ import os from 'os';
 import { getAgentByName } from './agentsService.js';
 import { setActiveActor } from './issuesService.js';
 
+let currentActor = null;
+
 /**
  * Authenticates the current execution context.
  * Looks for BATON_AGENT in the environment, falling back to the OS username.
@@ -30,6 +32,7 @@ export function authenticateContext(command) {
     }
 
     // Set the global state for the remainder of this command's lifecycle
+    currentActor = agent;
     setActiveActor(agent.id);
   } catch (error) {
     // Gracefully handle the scenario where the database hasn't been initialized yet
@@ -41,4 +44,12 @@ export function authenticateContext(command) {
     // Rethrow if it's a completely different error
     throw error;
   }
+}
+
+/**
+ * Returns the authenticated actor object for this session.
+ * @returns {object|null}
+ */
+export function getCurrentActor() {
+  return currentActor;
 }
