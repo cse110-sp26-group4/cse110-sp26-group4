@@ -12,8 +12,6 @@ This document provides a comprehensive reference for all commands available in t
   - [`baton init`](#baton-init)
   - [`baton register`](#baton-register)
   - [`baton status`](#baton-status)
-  - [`baton next`](#baton-next)
-  - [`baton loop`](#baton-loop)
 - [Issue Management Commands](#issue-management-commands)
   - [`baton create`](#baton-create)
   - [`baton list`](#baton-list)
@@ -87,7 +85,7 @@ baton init --force
 Created 1 issue(s) from product specs.
 Issues:
   #60 [Medium] FR-1.1
-Run `baton status` to review progress or `baton next` to start work.
+Run `baton status` to review progress.
 ```
 
 **Example (JSON):**
@@ -223,107 +221,6 @@ baton status --json
 
 ---
 
-### `baton next`
-
-Selects the highest-priority open issue and marks it as `In-Progress`.
-
-**Selection Order:** Priority (`high` → `medium` → `low`), then lowest ID.
-
-**Syntax:**
-```bash
-baton next [--json]
-```
-**Example:**
-```bash
-baton next
-```
-
-**Expected Output:**
-```bash
-Working on next issue:
-  ID:          #62
-  Title:       FR-1.1
-  Priority:    Medium
-  Status:      In-Progress
-  Attempts:    1
-  Created:     04:27:08 2026-06-04
-  Description: The system shall allow a human supervisor to **create** a new issue via the CLI, providing at minimum a title, description, and priority level.
-```
-
-**Example (JSON):**
-```bash
-baton next --json
-```
-**Expected Output (JSON):**
-```json
-{
-  "status": "success",
-  "issue": {
-    "id": 62,
-    "title": "FR-1.1",
-    "status": "in_progress",
-    "priority": "medium",
-    "description": "The system shall allow a human supervisor to **create** a new issue via the CLI, providing at minimum a title, description, and priority level.",
-    "token_limit": null,
-    "attempt_num": 2,
-    "created_at": "2026-06-04 04:27:08",
-    "last_updated": "2026-06-04 04:32:25",
-    "assignees": null
-  }
-}
-```
-
----
-
-### `baton loop`
-
-Runs `baton next` repeatedly for autonomous agent steps.
-
-**Syntax:**
-```bash
-baton loop [--steps <n>] [-n <n>] [--json]
-```
-
-**Options:**
-| Flag | Type | Default | Description |
-|---|---|---|---|
-| `--steps <n>` | integer | `1` | Number of autonomous steps to run. |
-| `-n <n>` | integer | — | Alias for `--steps`. |
-
-**Example:**
-```bash
-baton loop -n 2
-```
-
-**Expected Output:**
-```bash
-Running baton for 2 step(s)...
-
---- Step 1/2 ---
-Working on next issue:
-  ID:          #62
-  Title:       FR-1.1
-  Priority:    Medium
-  Status:      In-Progress
-  Attempts:    3
-  Created:     04:27:08 2026-06-04
-  Description: The system shall allow a human supervisor to **create** a new issue via the CLI, providing at minimum a title, description, and priority level.
-
---- Step 2/2 ---
-No open issues available. All work is complete or the backlog is empty.
-
-Completed 2 autonomous step(s).
-```
-
-**Example (JSON):**
-```bash
-baton loop -n 2 --json
-```
-
-**Expected Output (JSON):**
-TODO
-
----
 
 ## Issue Management Commands
 
