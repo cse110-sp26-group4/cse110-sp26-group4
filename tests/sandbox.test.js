@@ -11,8 +11,7 @@ import { beforeEach, afterEach } from 'node:test';
  * @property {string} specsPath - Path to the minimal specs.md inside the sandbox.
  * @property {string} humanName - The name of the human actor.
  * @property {string} agentName - The name of the AI agent actor.
- * @property {(args: string[]) => Promise<BatonResult>} runBaton - Runs the CLI inside the sandbox.
- * @property {(args: string[]) => Promise<BatonResult>} runAsHuman - Runs the CLI as the human actor.
+ * @property {(args: string[]) => Promise<BatonResult>} runBaton - Default runs the CLI as the human actor.
  * @property {(args: string[]) => Promise<BatonResult>} runAsAgent - Runs the CLI as the AI agent.
  * @property {(result: BatonResult) => unknown} parseJSON - Parses stdout as JSON.
  * @property {() => void} cleanup - Removes the temp directory.
@@ -53,7 +52,6 @@ export function createSandbox() {
     agentName: 'E2E-Sandbox-Agent',
     // config for different agent types:
     runBaton(args) { return execute(args, this.humanName); }, 
-    runAsHuman(args) { return execute(args, this.humanName); },
     runAsAgent(args) { return execute(args, this.agentName); },
     parseJSON,
     cleanup,
@@ -64,7 +62,7 @@ export function createSandbox() {
 
 /**
  * Setup / teardown hook for test suites
- * @returns {Sandbox} 
+ * @returns {sandbox} 
  */
 export function useSandbox() {
   const ref = /** @type {ReturnType<typeof createSandbox>} */ ({});
