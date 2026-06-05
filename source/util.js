@@ -200,24 +200,35 @@ function toJsonEnum(value) {
 }
 
 /**
+ * Converts a camelCase string to snake_case.
+ * @param {string} str
+ * @returns {string}
+ */
+function camelToSnake(str) {
+  return str.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
+}
+
+/**
  * Normalizes a DB row or Issue instance into a stable JSON-friendly shape.
- * All commands should serialize through this before building their envelope.
+ * Dynamically built from issueSchema so the output always matches the schema.
  * @param {object} issue
  * @returns {object}
  */
 export function serializeIssue(issue) {
-  return {
-    id: issue.id,
-    title: issue.title,
-    status: toJsonEnum(issue.status),
-    priority: toJsonEnum(issue.priority),
-    description: issue.description ?? null,
-    token_limit: issue.tokenLimit ?? issue.token_limit ?? null,
-    attempt_num: issue.attemptNum ?? issue.attempt_num ?? 0,
-    created_at: issue.createdAt ?? issue.created_at ?? null,
-    last_updated: issue.lastUpdated ?? issue.last_updated ?? null,
-    assignees: issue.assignees ?? null,
-  };
+  const skip = new Set(['limit', 'offset']);
+  const result = {};
+
+  for (const [key, config] of Object.entries(issueSchema)) {
+    if (skip.has(key)) continue;
+    const snakeKey = camelToSnake(key);
+    const value = issue[key] ?? issue[snakeKey] ?? null;
+    result[snakeKey] = config.type === 'enum' ? toJsonEnum(value) : value;
+  }
+
+  result.created_at = issue.createdAt ?? issue.created_at ?? null;
+  result.last_updated = issue.lastUpdated ?? issue.last_updated ?? null;
+
+  return result;
 }
 
 /**

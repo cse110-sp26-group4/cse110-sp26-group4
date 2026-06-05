@@ -39,7 +39,7 @@ describe('serializeIssue', () => {
       attemptNum: 2,
       createdAt: '2026-05-17 10:00:00',
       lastUpdated: '2026-05-18 09:00:00',
-      assignees: [],
+      assigneeId: null,
     });
 
     assert.equal(result.status, 'in_progress');
