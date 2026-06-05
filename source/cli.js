@@ -133,8 +133,6 @@ async function main() {
     init: initCmd,
     register: registerCmd,
     agents: agentsCmd,
-    next: nextCmd,
-    loop: loopCmd,
     status: statusCmd,
     view: viewCmd,
     search: searchCmd,
