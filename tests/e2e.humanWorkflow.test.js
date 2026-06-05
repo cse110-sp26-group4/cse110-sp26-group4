@@ -12,7 +12,7 @@ describe('E2E: Human project manager workflow', () => {
       assert.equal(initResult.exitCode, 0, '1. Setup: baton init should succeed');
 
       // 2. register user and create issue
-      await sb.runBaton(['register', '--name', sb.agentName, '--type', 'human']);
+      await sb.runBaton(['register', '--name', sb.humanName, '--type', 'human']);
       const createResult = await sb.runBaton(['create', '--title', 'E2E Bug', '--priority', 'high', '--json']);
       assert.equal(createResult.exitCode, 0, '2. Log an issue: baton create should succeed');
       const created = sb.parseJSON(createResult);
