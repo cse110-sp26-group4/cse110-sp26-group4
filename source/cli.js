@@ -26,7 +26,9 @@ import { run as runPriority } from './commands/priority.js';
 import { run as runLog } from './commands/log.js';
 import { run as runRegister } from './commands/register.js';
 import { run as runAgents } from './commands/agents.js';
+import { run as runWhoami } from './commands/whoami.js';
 import { run as runSubmit } from './commands/submit.js';
+import { run as runUnclaim } from './commands/unclaim.js';
 import { run as runClaim } from './commands/claim.js';
 
 import { authenticateContext } from './services/authService.js';
@@ -40,6 +42,7 @@ Commands:
   init     Initialize storage and seed issues from product specs
   register Register a new AI agent or human user
   agents   List all registered agents and humans
+  whoami   Show the currently authenticated agent or user
   status   Show issue counts and overall progress
   view     View all issue fields for a given issue ID
   search   Search issues by title and description (case insensitive)
@@ -47,6 +50,7 @@ Commands:
   create   Creates an issue with specified fields
   approve  Move an issue from in-review to closed
   submit   Submit finished work for human review
+  unclaim  Release a claimed issue back to Open
   claim    Claim an issue as the authenticated agent
   priority Set an issue's priority level
   update   Updates an issue's specified fields
@@ -62,6 +66,7 @@ Options:
   register --name <name>          Name of the agent or user
   register --type <type>          agent | human (default: agent)
   agents [--json]
+  whoami [--json]
   status --json                   Output as JSON (for AI agents)
   view <id> [--json]
   search <query> [--json]
@@ -77,6 +82,7 @@ Options:
   create --json                   Output as JSON (for AI agents)
   approve <id> [--json]
   submit <id> [--json]
+  unclaim <id> [--json]
   claim <id> [--json]
   reject <id> --reason <text>     Reject an issue with a given reason
   priority <id> <level> [--json]  low | medium | high
@@ -96,6 +102,7 @@ Examples:
   baton init --force
   baton register --name claude-dev --type agent
   baton agents
+  baton whoami
   baton status
   baton view 29
   baton search system
@@ -106,6 +113,7 @@ Examples:
   baton create --title "Refactor auth" --description "Clean up JWT logic" --token-limit 4000
   baton approve 5
   baton submit 14
+  baton unclaim 14
   baton claim 14
   baton priority 5 high
   baton priority 3 low
@@ -134,6 +142,7 @@ async function main() {
     init: () => runInit(args),
     register: () => runRegister(args),
     agents: () => runAgents(args),
+    whoami: () => runWhoami(args),
     status: () => runStatus(args),
     view: () => runView(args),
     search: () => runSearch(args),
@@ -147,6 +156,7 @@ async function main() {
     delete: () => runDelete(args),
     log: () => runLog(args),
     submit: () => runSubmit(args),
+    unclaim: () => runUnclaim(args),
   };
 
   const handler = handlers[command];

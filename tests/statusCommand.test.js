@@ -14,8 +14,8 @@ import {
   approveIssue,
   claimIssue,
   submitForReview,
-  setActiveActor,
 } from '../source/services/issuesService.js';
+import { setCurrentActor } from '../source/services/context.js';
 import { registerAgent } from '../source/services/agentsService.js';
 import { run as statusCommand } from '../source/commands/status.js';
 
@@ -65,8 +65,8 @@ function captureConsole() {
 describe('Status Command', () => {
   let sqlite;
   let capture;
-  /** @type {number} */
-  let testActorId;
+  /** @type {object} */
+  let testActor;
 
   beforeEach(() => {
     capture = captureConsole();
@@ -74,7 +74,7 @@ describe('Status Command', () => {
 
   afterEach(() => {
     capture.restore();
-    setActiveActor(null);
+    setCurrentActor(null);
     if (sqlite) {
       sqlite.close();
     }
@@ -107,8 +107,8 @@ describe('Status Command', () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
     setTestDB(setup.db);
-    testActorId = registerAgent('status-agent', 'agent').id;
-    setActiveActor(testActorId);
+    testActor = registerAgent('status-agent', 'agent');
+    setCurrentActor(testActor);
 
     const openIssue = createIssue({ title: 'Open', priority: Priority.HIGH });
     const inProgress = createIssue({ title: 'Working' });

@@ -1,8 +1,8 @@
 import os from 'os';
 import { getAgentByName } from './agentsService.js';
-import { setActiveActor } from './issuesService.js';
+import { setCurrentActor, getCurrentActor } from './context.js';
 
-let currentActor = null;
+export { getCurrentActor };
 
 /**
  * Authenticates the current execution context.
@@ -12,17 +12,14 @@ let currentActor = null;
  * @param {string} command - The command being executed
  */
 export function authenticateContext(command) {
-  // Commands that don't require an active agent signed in
   const exemptCommands = ['init', 'register', 'help'];
   if (exemptCommands.includes(command)) {
     return;
   }
 
-  // Identify who is running the CLI
   const activeName = process.env.BATON_AGENT || os.userInfo().username;
-  
+
   try {
-    // Look them up in the database
     const agent = getAgentByName(activeName);
 
     if (!agent) {
@@ -31,25 +28,12 @@ export function authenticateContext(command) {
       process.exit(1);
     }
 
-    // Set the global state for the remainder of this command's lifecycle
-    currentActor = agent;
-    setActiveActor(agent.id);
+    setCurrentActor(agent);
   } catch (error) {
-    // Gracefully handle the scenario where the database hasn't been initialized yet
     if (error.message && error.message.includes('no such table: agents')) {
       console.error("Error: Tracker is not initialized. Please run 'baton init' first.");
       process.exit(1);
     }
-    
-    // Rethrow if it's a completely different error
     throw error;
   }
-}
-
-/**
- * Returns the authenticated actor object for this session.
- * @returns {object|null}
- */
-export function getCurrentActor() {
-  return currentActor;
 }
