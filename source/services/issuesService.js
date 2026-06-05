@@ -266,6 +266,7 @@ export function updateIssue(id, oldIssue, { title, description, tokenLimit, stat
  * Logs an edit event.
  * @param {number} issueId 
  * @param {number} assigneeId 
+ * @param {number} actorId
  * @returns {Issue} - the issue that matches the ID
  */
 export function assignIssue(issueId, assigneeId, actorId) {
