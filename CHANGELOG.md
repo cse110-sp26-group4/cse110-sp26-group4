@@ -1,3 +1,17 @@
+## [1.11.2](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.11.1...v1.11.2) (2026-06-05)
+
+
+### Bug Fixes
+
+* serializeJson reads from schema and is now updated ([#187](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/187)) ([be0dabf](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/be0dabf4df9b4ce77c0dcc2ed7fffda94cfbb113))
+
+## [1.11.1](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.11.0...v1.11.1) (2026-06-05)
+
+
+### Bug Fixes
+
+* remove baton next and baton loop ([#179](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/179)) ([98d8e70](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/98d8e70544fcd2e5d6177b693ec18de27d8e9d66))
+
 # [1.11.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.10.0...v1.11.0) (2026-06-03)
 
 
