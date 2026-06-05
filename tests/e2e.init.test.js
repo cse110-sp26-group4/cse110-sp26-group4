@@ -46,6 +46,8 @@ describe('E2E: baton init', () => {
 
   it('will not reinit without --force', async () => {
     await sb.runBaton(['init', '--specs', sb.specsPath]);
+    // TODO: remove register step once init auto-registers the user
+    await sb.runBaton(['register', '--name', sb.humanName, '--type', 'human']);
     const result = await sb.runBaton(['init', '--specs', sb.specsPath]);
     assert.notEqual(result.exitCode, 0);
     assert.match(result.stderr, /already initialized/i);
@@ -53,13 +55,15 @@ describe('E2E: baton init', () => {
 
   it('re-inits with --force', async () => {
     await sb.runBaton(['init', '--specs', sb.specsPath]);
+    // TODO: remove register step once init auto-registers the user
+    await sb.runBaton(['register', '--name', sb.humanName, '--type', 'human']);
     const result = await sb.runBaton(['init', '--specs', sb.specsPath, '--force']);
     assert.equal(result.exitCode, 0);
   });
 
   it('resets issues when run with --force', async () => {
     await sb.runBaton(['init', '--specs', sb.specsPath]);
-    await sb.runBaton(['register', '--name', 'test-user', '--type', 'human']);
+    await sb.runBaton(['register', '--name', sb.humanName, '--type', 'human']);
     await sb.runBaton(['create', '--title', 'Extra issue']);
     const result = await sb.runBaton(['init', '--specs', sb.specsPath, '--force', '--json']);
     const data = sb.parseJSON(result);
@@ -89,7 +93,7 @@ describe('E2E: baton init', () => {
   it('creates 0 issues when specs has no issues with Must priority', async () => {
     const emptySpecsPath = path.join(sb.dir, 'empty-specs.md');
     fs.writeFileSync(emptySpecsPath, 
-      `| ID | Priority | Requirement |
+      `| TITLE | Priority | Requirement |
        |--------|----------|-------------|
        | FR-1.1 | Should | This should be ignored. |
     `);
