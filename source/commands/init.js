@@ -13,7 +13,7 @@
 
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { initDB , getDB } from '../db/index.js';
+import { initDB } from '../db/index.js';
 import os from 'node:os';
 import { registerAgent } from '../services/agentsService.js';
 import { Priority } from '../models/issue.js';
