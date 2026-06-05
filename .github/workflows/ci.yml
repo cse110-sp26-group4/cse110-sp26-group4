@@ -1,11 +1,9 @@
 name: CI
-on: 
+on:
   pull_request:
-    paths:
-      - 'source/**'
-      - 'tests/**'
-      - 'package.json'
-      - 'package-lock.json'
+  push:
+    branches:
+      - main
 jobs:
   lint:
     name: Lint
@@ -28,3 +26,20 @@ jobs:
           node-version: "20"
       - run: npm ci
       - run: npm test
+
+  check-docs:
+    name: Validate docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+            node-version: "20"
+      - run: npm ci
+      - run: |
+          npm run build-docs > jsdoc.log 2>&1
+          cat jsdoc.log
+          if grep -iq "error" jsdoc.log; then
+            echo "JSDoc validation failed! Syntax errors detected."
+            exit 1
+          fi

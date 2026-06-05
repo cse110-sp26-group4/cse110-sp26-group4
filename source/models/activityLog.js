@@ -10,14 +10,16 @@ export const Action = Object.freeze({
 
 export class ActivityLog {
   constructor({
-    log_id = null,
-    id, // The issue that was addressed
+    logId = null,
+    issueId = null,
     action,
-    created_at = new Date().toISOString(),
+    createdAt = new Date().toISOString(),
+    details = null,
   } = {}) {
-    this.log_id = log_id;
-    this.id = id;
+    this.logId = logId;
+    this.issueId = issueId;
     this.action = action;
-    this.created_at = created_at;
+    this.createdAt = createdAt;
+    this.details = details;
   }
 }

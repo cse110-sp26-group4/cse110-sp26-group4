@@ -1,105 +1,45 @@
-import { getDB } from "../db.js";
-import {
-  Issue,
-  ActivityLog,
-  Status,
-  Priority,
-  Action,
-} from "../models/issue.js";
+import { getDB } from '../db/index.js';
+import { eq, and, or, like, sql } from 'drizzle-orm';
+import { issuesTable, activityTable } from '../models/schema.js';
+import { Issue, Status, Priority } from '../models/issue.js';
+import { ActivityLog, Action } from '../models/activityLog.js';
 
-/**
- * Internal helper to log actions.
- * @private
- * @param {object} db - The database instance.
- * @param {number} issueId - The ID of the issue.
- * @param {string} action - The action type.
- * @param {string|null} [details=null] - Optional details.
- */
 function logActivity(db, issueId, action, details = null) {
-  db.prepare(
-    `
-    INSERT INTO activity (issue_id, action, details)
-    VALUES (?, ?, ?)
-  `,
-  ).run(issueId, action, details);
+  db.insert(activityTable).values({ issueId, action, details }).run();
 }
 
-/**
- * Convert a raw database row to an Issue instance.
- * @private
- * @param {object|null} row - The raw database row.
- * @returns {Issue|null}
- */
 function rowToIssue(row) {
   return row ? new Issue(row) : null;
 }
 
-/**
- * Convert a raw database row to an ActivityLog instance.
- * @private
- * @param {object|null} row - The raw database row.
- * @returns {ActivityLog|null}
- */
 function rowToLog(row) {
   return row ? new ActivityLog(row) : null;
 }
 
-/**
- * Fetch a raw issue row by ID, throwing if not found.
- * @private
- * @param {object} db - The database instance.
- * @param {number} id - The ID of the issue.
- * @returns {object} The raw database row.
- * @throws {Error} If no issue with the given ID exists.
- */
 function findById(db, id) {
-  const row = db.prepare(`SELECT * FROM issues WHERE id = ?`).get(id);
+  const row = db.select().from(issuesTable).where(eq(issuesTable.id, id)).get();
   if (!row) throw new Error(`Issue #${id} not found`);
   return row;
 }
 
-/**
- * Create a new issue.
- * Title defaults to "Issue #<id>" via SQL trigger if not provided.
- * @param {{ title?: string, priority?: string, tokenLimit?: number, description?: string }} fields
- * @returns {Issue}
- */
-export function createIssue({
-  title,
-  priority = Priority.LOW,
-  tokenLimit,
-  description,
-} = {}) {
-  Issue.validate({ title, priority, tokenLimit });
-
+export function createIssue({ title, priority, tokenLimit, description } = {}) {
   const db = getDB();
   const result = db
-    .prepare(
-      `
-    INSERT INTO issues (title, priority, token_limit, description)
-    VALUES (?, ?, ?, ?)
-  `,
-    )
-    .run(
-      title?.trim() || "PENDING",
-      priority,
-      tokenLimit ?? null,
-      description ?? null,
-    );
+    .insert(issuesTable)
+    .values({
+      title: title?.trim() || 'PENDING',
+      priority: priority ?? Priority.LOW,
+      tokenLimit: tokenLimit ?? null,
+      description: description ?? null,
+    })
+    .returning({ id: issuesTable.id })
+    .get();
 
-  const issue = rowToIssue(
-    db.prepare(`SELECT * FROM issues WHERE id = ?`).get(result.lastInsertRowid),
-  );
+  const issue = rowToIssue(findById(db, result.id));
   logActivity(db, issue.id, Action.CREATION, `"${issue.title}" was created.`);
-
   return issue;
 }
 
-/**
- * Get a single issue by id. Logs a read event.
- * @param {number} id
- * @returns {Issue}
- */
 export function getIssue(id) {
   const db = getDB();
   const issue = rowToIssue(findById(db, id));
@@ -107,255 +47,192 @@ export function getIssue(id) {
   return issue;
 }
 
-/**
- * List issues with optional filters. Does not log activity.
- * @param {{ status?: string, priority?: string, limit?: number, offset?: number }} options
- * @returns {Issue[]}
- */
-export function listIssues({ status, priority, limit = 50, offset = 0 } = {}) {}
-
-/**
- * Search issues by title or description. Does not log activity.
- * @param {string} query
- * @returns {Issue[]}
- */
-export function searchIssues(query) {}
-
-/**
- * Update editable fields: title, description, tokenLimit.
- * Logs an edit event.
- * @param {number} id
- * @param {{ title?: string, description?: string, tokenLimit?: number }} fields
- * @returns {Issue}
- */
-export function updateIssue(id, { title, description, tokenLimit } = {}) {
+export async function listIssues({ status, priority, limit, offset } = {}) {
   const db = getDB();
-  if (title !== undefined) {
-    db.prepare(
-      `
-        UPDATE issues
-        SET title = ?
-        WHERE id = ?
-      `,
-    ).run(title, id);
+  const filters = [];
+  if (status) filters.push(sql`${issuesTable.status} COLLATE NOCASE = ${status}`);
+  if (priority) filters.push(sql`${issuesTable.priority} COLLATE NOCASE = ${priority}`);
+  const limitVal = limit ?? 50;
+  const offsetVal = offset ?? 0;
+  return db.select().from(issuesTable).where(filters.length > 0 ? and(...filters) : undefined).limit(limitVal).offset(offsetVal).all();
+}
+
+export function searchIssues(query) {
+  const db = getDB();
+  if (!query || query.trim() == '') return [];
+  const searchTerm = `%${query.toLowerCase().trim()}%`;
+  return db.select().from(issuesTable).where(or(like(issuesTable.title, searchTerm), like(issuesTable.description, searchTerm))).all();
+}
+
+export function updateIssue(id, oldIssue, { title, description, tokenLimit, status, priority } = {}) {
+  const db = getDB();
+  const updates = {};
+  if (title !== undefined) updates.title = title;
+  if (description !== undefined) updates.description = description;
+  if (tokenLimit !== undefined) updates.tokenLimit = tokenLimit;
+  if (status !== undefined) {
+    const statusValues = Object.values(Status);
+    const toUpdate = statusValues.find((v) => v.trim().toLowerCase() === status.trim().toLowerCase());
+    updates.status = toUpdate || status;
   }
-  if (description !== undefined) {
-    db.prepare(
-      `
-        UPDATE issues
-        SET description = ?
-        WHERE id = ?
-      `,
-    ).run(description, id);
+  if (priority !== undefined) {
+    const priorityValues = Object.values(Priority);
+    const toUpdate = priorityValues.find((v) => v.toLowerCase().trim() === priority.trim().toLowerCase());
+    updates.priority = toUpdate || priority;
   }
-  if (tokenLimit !== undefined) {
-    db.prepare(
-      `
-        UPDATE issues
-        SET token_limit = ?
-        WHERE id = ?
-      `,
-    ).run(tokenLimit, id);
-  }
+  const proposedIssue = new Issue({ ...oldIssue, ...updates });
+  const { isValid, errors } = proposedIssue.validate();
+  if (!isValid) throw new Error(`Validation failed: ${errors.join(', ')}`);
+  if (Object.keys(updates).length > 0) db.update(issuesTable).set(updates).where(eq(issuesTable.id, id)).run();
   logActivity(db, id, Action.EDIT, `Issue #${id} was updated.`);
   return getIssue(id);
 }
 
-/**
- * Assign an issue to a user and log the assignment.
- * @param {number} id
- * @param {string} userId
- * @returns {Issue}
- */
 export function assignIssue(id, userId) {
   const db = getDB();
-  
   const assignTx = db.transaction(() => {
-
-    //checks if issue exists
-    //if issue doesn't exist, throws error and function terminates
-    findById(db, id);
-    db.prepare(`UPDATE issues SET assignee = ? WHERE id = ?`).run(userId, id);
+    const existing = findById(db, id);
+    const current = existing.assignees ?? [];
+    const newAssignees = Array.isArray(current) ? [...current, userId] : [userId];
+    db.update(issuesTable).set({ assignees: newAssignees }).where(eq(issuesTable.id, id)).run();
     logActivity(db, id, Action.EDIT, `Issue #${id} assigned to ${userId}.`);
   });
-  assignTx(); // runs steps as a single transaction
+  assignTx();
   return getIssue(id);
 }
 
-/**
- * Accept a user response on a blocked issue and transition it back to in-progress.
- * @param {number} id
- * @param {string} message
- * @param {string} userId
- * @returns {Issue}
- */
 export function respondToIssue(id, userId, message) {
   const db = getDB();
   const issue = rowToIssue(findById(db, id));
-  if (issue.status !== Status.BLOCKED) {
-    throw new Error(
-      `Cannot respond to Issue #${id} because it is not blocked; current status is ${issue.status}`,
-    );
-  }
-
-  db.prepare(
-    `
-    UPDATE issues
-    SET status = ?
-    WHERE id = ?
-  `,
-  ).run(Status.IN_PROGRESS, id);
-
-  logActivity(
-    db,
-    id,
-    Action.STATE_CHANGE,
-    `Issue #${id} unblocked. Response logged and agent notified. ${userId} message: "${message}"`,
-  );
+  if (issue.status !== Status.BLOCKED) throw new Error(`Cannot respond to Issue #${id} because it is not blocked; current status is ${issue.status}`);
+  db.update(issuesTable).set({ status: Status.IN_PROGRESS }).where(eq(issuesTable.id, id)).run();
+  logActivity(db, id, Action.STATE_CHANGE, `Issue #${id} unblocked. Response logged and agent notified. ${userId} message: "${message}"`);
   return getIssue(id);
 }
 
-/**
- * Change the status of an issue from in-review to closed
- * Logs a closed event.
- * @param {number} id
- * @returns {Issue}
- */
 export function approveIssue(id) {
   const db = getDB();
-  const status = "Closed";
-  db.prepare(
-    `
-    UPDATE issues
-    SET status = ?
-    WHERE id = ?
-  `,
-  ).run(status, id);
+  db.update(issuesTable).set({ status: Status.CLOSED }).where(eq(issuesTable.id, id)).run();
   logActivity(db, id, Action.STATE_CHANGE, `Issue #${id} has been closed`);
   return getIssue(id);
 }
 
-/**
- * Change the status of an issue from in-review to in-progress
- * Logs a reject event and reason.
- * @param {number} id
- * @param {string} reason
- * @returns {Issue}
- */
 export function rejectIssue(id, reason) {
   const db = getDB();
-  const status = "In-Progress";
-  db.prepare(
-    `
-    UPDATE issues
-    SET status = ?
-    WHERE id = ?
-  `,
-  ).run(status, id);
-  logActivity(
-    db,
-    id,
-    Action.REJECT,
-    `Issue #${id} has been rejected due to "${reason}"`,
-  );
+  db.update(issuesTable).set({ status: Status.IN_PROGRESS }).where(eq(issuesTable.id, id)).run();
+  logActivity(db, id, Action.REJECT, `Issue #${id} has been rejected due to "${reason}"`);
   return getIssue(id);
 }
 
-/**
- * Change the status of an issue (Open / Closed).
- * Logs a state_change event.
- * @param {number} id
- * @param {string} status
- * @returns {Issue}
- */
+export function submitForReview(id) {
+  const db = getDB();
+  db.update(issuesTable).set({ status: Status.IN_REVIEW }).where(eq(issuesTable.id, id)).run();
+  logActivity(db, id, Action.STATE_CHANGE, `Issue #${id} was submitted for review.`);
+  return getIssue(id);
+}
+
 export function setStatus(id, status) {
   const db = getDB();
-  db.prepare(
-    `
-    UPDATE issues
-    SET status = ?
-    WHERE id = ?
-  `,
-  ).run(status, id);
-  logActivity(
-    db,
-    id,
-    Action.STATE_CHANGE,
-    `Issue #${id} status changed to ${status}.`,
-  );
+  db.update(issuesTable).set({ status }).where(eq(issuesTable.id, id)).run();
+  logActivity(db, id, Action.STATE_CHANGE, `Issue #${id} status changed to ${status}.`);
   return getIssue(id);
 }
 
-/**
- * Change the priority of an issue (Low / Medium / High).
- * Logs a priority_change event.
- * @param {number} id
- * @param {string} priority
- * @returns {Issue}
- */
 export function setPriority(id, priority) {
   const db = getDB();
-  db.prepare(
-    `
-    UPDATE issues
-    SET priority = ?
-    WHERE id = ?
-  `,
-  ).run(priority, id);
-  logActivity(
-    db,
-    id,
-    Action.PRIORITY_CHANGE,
-    `Issue #${id} priority changed to ${priority}.`,
-  );
+  db.update(issuesTable).set({ priority }).where(eq(issuesTable.id, id)).run();
+  logActivity(db, id, Action.PRIORITY_CHANGE, `Issue #${id} priority changed to ${priority}.`);
   return getIssue(id);
 }
 
-/**
- * Increment the attempt counter for an issue.
- * Logs an edit event.
- * @param {number} id
- * @returns {Issue}
- */
 export function incrementAttempt(id) {
   const db = getDB();
-  db.prepare(
-    `
-    UPDATE issues
-    SET attempt_num = attempt_num + 1
-    WHERE id = ?
-  `,
-  ).run(id);
+  db.update(issuesTable).set({ attemptNum: sql`${issuesTable.attemptNum} + 1` }).where(eq(issuesTable.id, id)).run();
   logActivity(db, id, Action.EDIT, `Attempt count increased for Issue #${id}.`);
   return getIssue(id);
 }
 
-/**
- * Delete an issue. Activity log entry is written before deletion
- * to preserve the audit trail per schema spec.
- * @param {number} id
- * @returns {boolean}
- */
 export function deleteIssue(id) {
   const db = getDB();
   const existing = findById(db, id);
-
   logActivity(db, id, Action.DELETION, `"${existing.title}" was deleted.`);
-  db.prepare(`DELETE FROM issues WHERE id = ?`).run(id);
-
+  db.delete(issuesTable).where(eq(issuesTable.id, id)).run();
   return true;
 }
 
-/**
- * Get the full activity history for a specific issue.
- * @param {number} issueId
- * @returns {ActivityLog[]}
- */
-export function getActivityLog(issueId) {}
+export function getActivityLog(issueId) {
+  const db = getDB();
+  return db.select().from(activityTable).where(eq(activityTable.issueId, issueId)).all();
+}
 
-/**
- * Get the most recent activity across all issues.
- * @param {{ limit?: number }} options
- * @returns {ActivityLog[]}
- */
-export function getRecentActivity({ limit = 20 } = {}) {}
+export function getRecentActivity({ limit = 20 } = {}) {
+  const db = getDB();
+  return db.select().from(activityTable).orderBy(sql`${activityTable.logId} DESC`).limit(limit).all();
+}
+
+export function isTrackerReady() {
+  const db = getDB();
+  try {
+    const row = db.get(sql`
+        SELECT COUNT(*) AS table_count
+        FROM sqlite_master
+        WHERE type = 'table' AND name IN ('issues', 'activity')
+      `);
+    return (row?.table_count ?? 0) === 2;
+  } catch (error) {
+    return false;
+  }
+}
+
+export function getIssueStats() {
+  const db = getDB();
+  const row = db.get(sql`
+    SELECT
+      COUNT(*) AS total,
+      COALESCE(SUM(CASE WHEN status = 'Open' THEN 1 ELSE 0 END), 0) AS open_count,
+      COALESCE(SUM(CASE WHEN status = 'In-Progress' THEN 1 ELSE 0 END), 0) AS in_progress_count,
+      COALESCE(SUM(CASE WHEN status = 'In-Review' THEN 1 ELSE 0 END), 0) AS in_review_count,
+      COALESCE(SUM(CASE WHEN status = 'Closed' THEN 1 ELSE 0 END), 0) AS closed_count
+    FROM issues
+  `);
+  
+  return {
+    total: Number(row?.total ?? 0),
+    open: Number(row?.open_count ?? 0),
+    inProgress: Number(row?.in_progress_count ?? 0),
+    inReview: Number(row?.in_review_count ?? 0),
+    closed: Number(row?.closed_count ?? 0),
+  };
+}
+
+export function getAllIssues() {
+  const db = getDB();
+  return db.select().from(issuesTable).orderBy(issuesTable.id).all();
+}
+
+export function selectNextIssue() {
+  const db = getDB();
+  return db.select().from(issuesTable).where(eq(issuesTable.status, Status.OPEN)).orderBy(sql`CASE priority WHEN 'High' THEN 0 WHEN 'Medium' THEN 1 WHEN 'Low' THEN 2 ELSE 3 END`, issuesTable.id).limit(1).get() ?? null;
+}
+
+export function workOnIssue(issueId) {
+  const db = getDB();
+  const issue = findById(db, issueId);
+  if (issue.status === Status.CLOSED) {
+    throw new Error(`Issue #${issueId} is closed and cannot be worked on.`);
+  }
+
+  db.transaction((tx) => {
+    logActivity(tx, issueId, Action.READ, `Agent accessed issue #${issueId}`);
+    tx.update(issuesTable).set({ status: Status.IN_PROGRESS, attemptNum: sql`${issuesTable.attemptNum} + 1` }).where(eq(issuesTable.id, issueId)).run();
+    logActivity(tx, issueId, Action.STATE_CHANGE, `Status changed from ${issue.status} to ${Status.IN_PROGRESS}`);
+    logActivity(tx, issueId, Action.EDIT, `Agent attempt #${issue.attemptNum + 1} on issue #${issueId}`);
+  });
+
+  return findById(db, issueId);
+}
+
+export function clearAllIssues() {
+  const db = getDB();
+  db.delete(issuesTable).run();
+}

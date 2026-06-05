@@ -20,6 +20,8 @@ npm-debug.log*
 # Build output
 dist/
 out/
+data/
+.baton/
 
 # IDE / editor
 .vscode/
@@ -27,3 +29,6 @@ out/
 
 # Test coverage
 coverage/
+
+# JSDoc (automatically created by GitHub Actions)
+docs/jsdoc/

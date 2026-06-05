@@ -1,0 +1,147 @@
+# [1.5.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.4.0...v1.5.0) (2026-06-01)
+
+
+### Features
+
+* add --json output support for CLI commands ([#131](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/131)) ([ab8ccc2](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/ab8ccc2bb9560581b35ad177d221e0a320c23e41))
+
+# [1.4.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.3.2...v1.4.0) (2026-06-01)
+
+
+### Features
+
+* automatic npm publishing (completed cd pipeline) ([#132](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/132)) ([6078163](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/60781633b751e9226344145819b80afbbf8f17ea))
+
+## [1.3.2](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.3.1...v1.3.2) (2026-06-01)
+
+
+### Bug Fixes
+
+* ix rizzle ath (make it relative to db path, fixes baton init) ([#130](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/130)) ([57b1106](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/57b1106f8f0b820a19eb7c4a48ba02d26a57a6d4))
+
+## [1.3.1](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.3.0...v1.3.1) (2026-05-31)
+
+
+### Bug Fixes
+
+* Rename baton generated files w/ baton ([#124](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/124)) ([9955bd0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/9955bd0606bbb6cb2745b9d54d2a8b002d8c8bcb))
+
+# [1.3.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.2.2...v1.3.0) (2026-05-31)
+
+
+### Features
+
+* added update command ([#119](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/119)) ([b3a3fdd](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/b3a3fddb421d052dcbe3240a4cc5917be3ca018e))
+
+## [1.2.2](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.2.1...v1.2.2) (2026-05-30)
+
+
+### Bug Fixes
+
+* updated baton --help command ([#118](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/118)) ([affbe5a](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/affbe5a27cc5d0aa729f6b193e3c0484687f7e76))
+
+## [1.2.1](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.2.0...v1.2.1) (2026-05-30)
+
+
+### Bug Fixes
+
+* add back helper for parsing command line args ([#111](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/111)) ([49797d5](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/49797d556fdc6042c93f4505599bb390281a6c14))
+
+# [1.2.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.1.0...v1.2.0) (2026-05-29)
+
+
+### Features
+
+* add In-Review status and lastUpdated column to DB schema ([#108](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/108)) ([112766b](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/112766bc1cfb969cf0f94b202d03876c877f5c6b))
+
+# [1.1.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.0.1...v1.1.0) (2026-05-29)
+
+
+### Features
+
+* **issue:** add validate function ([#107](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/107)) ([602b86d](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/602b86d390f050cb5e3c78265abd686adc01af32))
+
+## [1.0.1](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.0.0...v1.0.1) (2026-05-29)
+
+
+### Bug Fixes
+
+* added failure to files, refactored naming to align with drizzle ([#109](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/109)) ([b3bc4c7](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/b3bc4c7d1374d2132d8ca47e4cfb9bd25cc8ad6a))
+
+# 1.0.0 (2026-05-29)
+
+
+### Bug Fixes
+
+* fix linting error ([af0d382](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/af0d3827c0bfb97ef1845a7f8c315fcec28c46c2))
+* fixing linting error stemming from eslint ([052c6af](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/052c6af6ed31439e2a154d66bce72ddce6fd75b5))
+* lint fix, added global process comment ([db851ec](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/db851ecf937eb7b311be5e36a2709fcbee3c5dbf))
+* refactor flag functions to make them consistent and updated positional arg according to comments ([11927a8](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/11927a84e129d3b887b6f1ebdbbe125f0bfedefd))
+* refactor model dir to models, added REJECT to action ([a4091c0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/a4091c0cbb7c7435f9fdfe4489c1b21271afe026))
+* refactored commands to remove any interaction with db ([75733b3](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/75733b362ae71eb4b507f79c3bccae6c166c74ef))
+* resolve ESLint process undefined error ([4315ad6](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/4315ad666f0fadcc69c8b483a2b760f97d68c319))
+* Tried to add shell script which checks for errors in jsdoc. ([da800a3](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/da800a3b51115730cd19f4f0c2dc1f74e8ae38db))
+* Tried to make error checking for jsdoc more robust. ([616c677](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/616c6773ec6eb35d6416ae0854f6da32c7fa8c95))
+
+
+### Features
+
+* add SQLite database setup with issues and activity tables ([352f2fb](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/352f2fb2042b68ebac7d11c293d12a29275583fd))
+* added create.js, minor fixes in createIssue and getFlagValue ([#95](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/95)) ([f4e0fdc](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/f4e0fdc4a867f97174a90f32482d5295b748e5fe))
+* adding dependency better-sqlite3 ([a7e3b5e](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/a7e3b5e827a10236395a71407a688285d623d2ca))
+* Finished loop and status commands ([f900e8b](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/f900e8b957618a31f0730c2ba786854eef6c76ca))
+* Finished next command + specs format ([e15aa72](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/e15aa72abbc0ad714844dd4dca4ef33246b5ef71))
+* migrate common code into util.js to avoid repeated code ([4d1ef08](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/4d1ef0828404b2796ba94da65a5d21ae53a73603))
+* moved functionality that touched db from CLI commands to issuesService.js ([#49](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/49)) ([0855b28](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/0855b2807a2952df3e55ed85dad0c99372fc9c53))
+* unified CLI flag parsing logic ([#103](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/103)) ([4b0ad52](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/4b0ad5204e7cd9473db3c5586ccd8e8bd83c602f))
+
+# 1.0.0 (2026-05-29)
+
+
+### Bug Fixes
+
+* fix linting error ([af0d382](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/af0d3827c0bfb97ef1845a7f8c315fcec28c46c2))
+* fixing linting error stemming from eslint ([052c6af](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/052c6af6ed31439e2a154d66bce72ddce6fd75b5))
+* lint fix, added global process comment ([db851ec](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/db851ecf937eb7b311be5e36a2709fcbee3c5dbf))
+* refactor flag functions to make them consistent and updated positional arg according to comments ([11927a8](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/11927a84e129d3b887b6f1ebdbbe125f0bfedefd))
+* refactor model dir to models, added REJECT to action ([a4091c0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/a4091c0cbb7c7435f9fdfe4489c1b21271afe026))
+* refactored commands to remove any interaction with db ([75733b3](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/75733b362ae71eb4b507f79c3bccae6c166c74ef))
+* resolve ESLint process undefined error ([4315ad6](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/4315ad666f0fadcc69c8b483a2b760f97d68c319))
+* Tried to add shell script which checks for errors in jsdoc. ([da800a3](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/da800a3b51115730cd19f4f0c2dc1f74e8ae38db))
+* Tried to make error checking for jsdoc more robust. ([616c677](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/616c6773ec6eb35d6416ae0854f6da32c7fa8c95))
+
+
+### Features
+
+* add SQLite database setup with issues and activity tables ([352f2fb](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/352f2fb2042b68ebac7d11c293d12a29275583fd))
+* added create.js, minor fixes in createIssue and getFlagValue ([#95](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/95)) ([f4e0fdc](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/f4e0fdc4a867f97174a90f32482d5295b748e5fe))
+* adding dependency better-sqlite3 ([a7e3b5e](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/a7e3b5e827a10236395a71407a688285d623d2ca))
+* Finished loop and status commands ([f900e8b](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/f900e8b957618a31f0730c2ba786854eef6c76ca))
+* Finished next command + specs format ([e15aa72](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/e15aa72abbc0ad714844dd4dca4ef33246b5ef71))
+* migrate common code into util.js to avoid repeated code ([4d1ef08](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/4d1ef0828404b2796ba94da65a5d21ae53a73603))
+* moved functionality that touched db from CLI commands to issuesService.js ([#49](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/49)) ([0855b28](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/0855b2807a2952df3e55ed85dad0c99372fc9c53))
+
+# 1.0.0 (2026-05-28)
+
+
+### Bug Fixes
+
+* fix linting error ([af0d382](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/af0d3827c0bfb97ef1845a7f8c315fcec28c46c2))
+* fixing linting error stemming from eslint ([052c6af](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/052c6af6ed31439e2a154d66bce72ddce6fd75b5))
+* lint fix, added global process comment ([db851ec](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/db851ecf937eb7b311be5e36a2709fcbee3c5dbf))
+* refactor flag functions to make them consistent and updated positional arg according to comments ([11927a8](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/11927a84e129d3b887b6f1ebdbbe125f0bfedefd))
+* refactor model dir to models, added REJECT to action ([a4091c0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/a4091c0cbb7c7435f9fdfe4489c1b21271afe026))
+* refactored commands to remove any interaction with db ([75733b3](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/75733b362ae71eb4b507f79c3bccae6c166c74ef))
+* resolve ESLint process undefined error ([4315ad6](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/4315ad666f0fadcc69c8b483a2b760f97d68c319))
+* Tried to add shell script which checks for errors in jsdoc. ([da800a3](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/da800a3b51115730cd19f4f0c2dc1f74e8ae38db))
+* Tried to make error checking for jsdoc more robust. ([616c677](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/616c6773ec6eb35d6416ae0854f6da32c7fa8c95))
+
+
+### Features
+
+* add SQLite database setup with issues and activity tables ([352f2fb](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/352f2fb2042b68ebac7d11c293d12a29275583fd))
+* adding dependency better-sqlite3 ([a7e3b5e](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/a7e3b5e827a10236395a71407a688285d623d2ca))
+* Finished loop and status commands ([f900e8b](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/f900e8b957618a31f0730c2ba786854eef6c76ca))
+* Finished next command + specs format ([e15aa72](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/e15aa72abbc0ad714844dd4dca4ef33246b5ef71))
+* migrate common code into util.js to avoid repeated code ([4d1ef08](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/4d1ef0828404b2796ba94da65a5d21ae53a73603))
+* moved functionality that touched db from CLI commands to issuesService.js ([#49](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/49)) ([0855b28](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/0855b2807a2952df3e55ed85dad0c99372fc9c53))

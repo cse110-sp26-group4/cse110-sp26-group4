@@ -1,0 +1,140 @@
+#!/usr/bin/env node
+// cli.js
+// AI was consulted for large portions of this file.
+// CLI for the issue tracker which allows the user to interact with the tracker.
+// usage: baton [command] [options]
+// commands:
+//   init: initialize the tracker
+//   next: work on the next issue
+//   loop: run the agent autonomously for multiple steps
+//   status: show issue counts and overall progress
+//
+// see each command's file for more detailed flags specifications.
+/**
+ * Imports the run functions from each command.
+ */
+import { run as runInit } from './commands/init.js';
+import { run as runNext } from './commands/next.js';
+import { run as runLoop } from './commands/loop.js';
+import { run as runStatus } from './commands/status.js';
+import { run as runApprove } from './commands/approve.js';
+import { wantsHelp } from './util.js';
+import { run as runView} from './commands/view.js';
+import { run as runSearch } from './commands/search.js';
+import { run as runList } from './commands/list.js';
+import { run as runCreate } from './commands/create.js'
+import { run as runUpdate } from './commands/update.js'
+
+const HELP = `baton — AI agent issue tracker CLI
+
+Usage:
+  baton <command> [options]
+
+Commands:
+  init     Initialize storage and seed issues from product specs
+  next     Work on the highest-priority open issue
+  loop     Run the agent autonomously for multiple steps
+  status   Show issue counts and overall progress
+  view     View all issue fields for a given issue ID
+  search   Search issues by title and description (case insensitive)
+  list     Lists issues filtered by status and priority
+  create   Creates an issue with specified fields
+  approve  Move an issue from in-review to closed
+  update   Updates an issue's specified fields 
+
+Options:
+  init --force                    Re-initialize an existing tracker database
+  init --specs <path>             Path to product specs file (overrides default)
+  init --json                     Output as JSON (for AI agents)
+  init <path>                     Same as --specs <path> (positional)
+  Default specs: docs/specs/project-requirements.md
+  loop --steps <n>                Number of autonomous steps (alias: -n)
+  loop -n <n>
+  loop --json                     Output as JSON (for AI agents)
+  next --json                     Output as JSON (for AI agents)
+  status --json                   Output as JSON (for AI agents)
+  view <id> [--json]
+  search <query> [--json]
+  list --status <s>               Filter by status: open | in-progress | closed
+  list --priority <p>             Filter by priority: low | medium | high
+  list --limit <n>                Max results (default: 50)
+  list --offset <n>               Skip first n results (default: 0)
+  list --json                     Output as JSON (for AI agents)
+  create --title <text>           Issue title (defaults to "Issue #<id>" if omitted)
+  create --description <text>     Issue description
+  create --priority <level>       low | medium | high  (default: low)
+  create --token-limit <n>        Optional token budget for this issue
+  create --json                   Output as JSON (for AI agents)
+  approve <id> [--json]
+  update --title <text>           New title
+  update --description <text>     New description
+  update --token-limit <n>        New token budget
+  update --status <s>             open | in-progress | closed
+  update --priority <level>       low | medium | high
+  update --json                   Output as JSON (for AI agents)
+ 
+
+Examples:
+  baton init
+  baton init --specs ./my-specs.md
+  baton init ./my-specs.md
+  baton init --force
+  baton next
+  baton loop --steps 5
+  baton status
+  baton view 29
+  baton search system
+  baton list
+  baton list --status open --priority high
+  baton list --limit 10 --offset 20
+  baton create --title "Fix login bug" --priority high
+  baton create --title "Refactor auth" --description "Clean up JWT logic" --token-limit 4000
+  baton approve 5
+  baton update 3 --title "Revised title"
+  baton update 7 --status closed --priority medium
+`;
+
+/**
+ * Main function that runs the CLI.
+ * @returns {Promise<void>} The exit code: 0 is success, 1 is error, 2 is invalid input.
+ */
+async function main() {
+  const [, , command, ...args] = process.argv;
+
+  if (!command || command === 'help' || wantsHelp(args) || command === '--help') {
+    console.log(HELP);
+    process.exit(command ? 0 : 1);
+    return;
+  }
+
+  const handlers = {
+    init: () => runInit(args),
+    next: () => runNext(args),
+    loop: () => runLoop(args),
+    status: () => runStatus(args),
+    view: () => runView(args),
+    search: () => runSearch(args),
+    list: () => runList(args),
+    approve: () => runApprove(args),
+    create: () => runCreate(args),
+    update: () => runUpdate(args)
+  };
+  
+  const handler = handlers[command];
+  if (!handler) {
+    console.error(`Error: Unknown command "${command}".`);
+    console.error('Run `baton --help` for usage.');
+    process.exit(1);
+    return;
+  }
+
+  try {
+    const exitCode = await handler();
+    process.exit(exitCode ?? 0);
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
+    process.exit(2);
+  }
+}
+
+main();

@@ -2,9 +2,9 @@
 // AI was consulted for small portions of this file.
 // utility functions for the issue tracker transferred over from other files
 // centralizing these functions here to avoid duplication and improve code organization.
-/* global console, process */
 
 import { isAbsolute, resolve } from 'node:path';
+import { issueSchema } from '../source/models/schema.js';
 
 /**
  * Formats a timestamp as `HH:MM:SS YYYY-MM-DD`.
@@ -54,10 +54,22 @@ export function getFlagValue(args, flag) {
   if (index === -1) {
     return null;
   }
+
+  let endIdx = args.length;
+  // Finds beginning of next flag 
+  for (let i = index + 1; i < args.length; i++) {
+    if (args[i].startsWith('--')) {
+      endIdx = i;
+      break;
+    }
+  }
+
   if (index === args.length - 1) {
     throw new Error(`Missing value for ${flag}.`);
   }
-  return args[index + 1];
+
+  // join the elements into one sentence
+  return args.slice(index + 1, endIdx).join(' ');
 }
 
 /**
@@ -88,9 +100,47 @@ export function getNumericFlag(args, flag) {
 }
 
 /**
+ * Represents the options for issue fields entered by the user.
+ * @typedef {Object} parsedOptions
+ * @property {string} [title] The title of an issue
+ * @property {string} [status] The issue's status: open | in-progress | closed
+ * @property {string} [priority] The issue's priority: low | medium | high
+ * @property {number} [tokenLimit] The token limit for an AI agent
+ * @property {string} [description] Description of the issue 
+ * @property {string} [assignee] The agent assigned to the issue
+ */
+/**
+ * Parses command line arguments and extracts values for any flags / data fields
+ * @param {string[]} args The command line arguemnts
+ * @returns {parsedOptions} Object containing the extracted fields 
+ */
+export function parseArgs(args) {
+  const options = {};
+  for (const [key, config] of Object.entries(issueSchema)) {
+        if (hasFlag(args, config.flag)) {
+          // Use numericFlag helper if the argument type is a number
+            const value = config.type === 'number' 
+                ? getNumericFlag(args, config.flag) 
+                : getFlagValue(args, config.flag);
+          // Only add value if user used the corresponding flag
+            if (value !== null) {
+                options[key] = value;
+            }
+        }
+    }
+  return options;
+}
+/**
+ * Represents the options for parsing the first positional argument.
+ * @typedef {Object} FirstPositionalArgOptions
+ * @property {string[]} [valueFlags]
+ * @property {string[]} [ignoreFlags]
+ */
+
+/**
  * First positional argument, skipping flag tokens and values consumed by value flags.
  * @param {string[]} args
- * @param {{ valueFlags?: string[], ignoreFlags?: string[] }} [options]
+ * @param {FirstPositionalArgOptions} [options]
  * @returns {string | null}
  */
 export function getFirstPositionalArg(
@@ -137,4 +187,135 @@ export function resolvePath(userPath, defaultPath) {
 export function reportTrackerNotReady() {
   console.error('Error: No tracker found in this directory.');
   console.error('Run `baton init` first.');
+}
+
+/**
+ * Converts DB-style enum values to lowercase snake_case for JSON output.
+ * e.g. "In-Progress" → "in_progress"
+ * @param {string | null | undefined} value
+ * @returns {string | null}
+ */
+function toJsonEnum(value) {
+  return value?.toLowerCase().replace(/-/g, '_') ?? null;
+}
+
+/**
+ * Normalizes a DB row or Issue instance into a stable JSON-friendly shape.
+ * All commands should serialize through this before building their envelope.
+ * @param {object} issue
+ * @returns {object}
+ */
+export function serializeIssue(issue) {
+  return {
+    id: issue.id,
+    title: issue.title,
+    status: toJsonEnum(issue.status),
+    priority: toJsonEnum(issue.priority),
+    description: issue.description ?? null,
+    token_limit: issue.tokenLimit ?? issue.token_limit ?? null,
+    attempt_num: issue.attemptNum ?? issue.attempt_num ?? 0,
+    created_at: issue.createdAt ?? issue.created_at ?? null,
+    last_updated: issue.lastUpdated ?? issue.last_updated ?? null,
+    assignees: issue.assignees ?? null,
+  };
+}
+
+/**
+ * Centralized output renderer.
+ * If isJson is true, outputs the envelope as JSON.
+ * Otherwise, runs the human-readable callback.
+ * @param {boolean} isJson - Whether the user passed the --json flag
+ * @param {object} envelope - Structured response payload (e.g. { status, issues })
+ * @param {Function} humanOutput - Callback for human terminal styling
+ */
+export function renderOutput(isJson, envelope, humanOutput) {
+  if (isJson) {
+    console.log(JSON.stringify(envelope, null, 2));
+    return;
+  }
+  humanOutput(envelope);
+}
+
+/**
+ * Prints an error in JSON or plain text depending on output mode.
+ * @param {boolean} isJson
+ * @param {string} message
+ * @param {string} [code='ERROR']
+ */
+export function renderError(isJson, message, code = 'ERROR') {
+  if (isJson) {
+    console.error(JSON.stringify({ status: 'error', code, message }));
+    return;
+  }
+  console.error(`Error: ${message}`);
+}
+
+/**
+ * Configuration for table column widths.
+ */
+export const WIDTHS = {
+  id: 5,
+  title: 20,
+  status: 15,
+  priority: 10,
+  //assignees: 10, 
+  description: 50
+};
+
+/**
+ * Prints the table header row and separator line.
+ * @returns {void}
+ */
+export function printTableHeader() {
+  console.log(
+    "ID".padEnd(WIDTHS.id) + " │ " +
+    "TITLE".padEnd(WIDTHS.title) + " │ " +
+    "STATUS".padEnd(WIDTHS.status) + " │ " +
+    "PRIORITY".padEnd(WIDTHS.priority) + " │ " +
+    //"ASSIGNEE".padEnd(WIDTHS.assignees) + " │ " +
+    "DESCRIPTION".padEnd(WIDTHS.description)
+  );
+  console.log(
+    "─".repeat(WIDTHS.id) + "─┼─" +
+    "─".repeat(WIDTHS.title) + "─┼─" +
+    "─".repeat(WIDTHS.status) + "─┼─" +
+    "─".repeat(WIDTHS.priority) + "─┼─" +
+    //"─".repeat(WIDTHS.assignees) + "─┼─" +
+    "─".repeat(WIDTHS.description)
+  );
+}
+
+// Helper for printIssueTable 
+/**
+ * Truncates a string to a specific length and adds ellipsis if it exceeds the specified length
+ * @param {string} str The string to be truncated
+ * @param {number} length The maximum length of the string 
+ * @returns {string} The truncated string 
+ */
+export function truncate(str, length) {
+    if (str === null || str === undefined || str === '') return "N/A";
+    const s = String(str);
+    if (s.length > length) {
+        return s.substring(0, length - 3) + "...";
+    }
+    return s;
+}
+
+/**
+ * Helper function used to format and print Issues in a table
+ * @param {Object} issue 
+ * @returns {void}
+ */
+export function printIssueTable(issue) {
+  const idVal = String(issue.id).padEnd(WIDTHS.id);
+  const titleVal = truncate(issue.title || `Issue #${issue.id}`, WIDTHS.title).padEnd(WIDTHS.title);
+  const statusVal = truncate(issue.status, WIDTHS.status).padEnd(WIDTHS.status);
+  const priorityVal = truncate(issue.priority, WIDTHS.priority).padEnd(WIDTHS.priority);
+  const descVal = truncate(issue.description, WIDTHS.description).padEnd(WIDTHS.description);
+
+  // Handling the assignee array
+  //const assigneesVal = Array.isArray(issue.assignees) ? issue.assignees.join(', ') : 'None';
+  //const assigneeVal = truncate(assigneesVal, WIDTHS.assignees).padEnd(WIDTHS.assignees);
+
+  console.log(`${idVal} │ ${titleVal} │ ${statusVal} │ ${priorityVal} │ ${descVal}`);
 }
