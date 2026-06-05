@@ -2,6 +2,7 @@ import os from 'os';
 import { getAgentByName } from './agentsService.js';
 import { setCurrentActor, getCurrentActor } from './context.js';
 import { isTrackerReady } from './issuesService.js';
+import { authorizeAction } from './agentRestrictions.js';
 
 export { getCurrentActor };
 
@@ -13,9 +14,6 @@ export { getCurrentActor };
  * @param {string} command - The command being executed
  */
 export function authenticateContext(command) {
-  const AGENT_RESTRICTED_COMMANDS = ['init', 'approve', 'reject', 'delete', 'priority'];
-  const AGENT_RESTRICTED_UPDATE_FLAGS = ['--status', '--token-limit'];
-
   const exemptCommands = ['register', 'help'];
   if (exemptCommands.includes(command)) {
     return;
@@ -38,18 +36,9 @@ export function authenticateContext(command) {
       process.exit(1);
   }
 
-  if (agent.type === 'agent' && AGENT_RESTRICTED_COMMANDS.includes(command)) {
-    console.error(`Error: Command "${command}" is restricted to human users only.`);
-    process.exit(1);
-  }
-
-  // Restricts agent from using specific flags in baton update
-  if (agent.type === 'agent' && command === 'update') {
-    const usedRestricted = AGENT_RESTRICTED_UPDATE_FLAGS.filter(f => process.argv.includes(f));
-    if (usedRestricted.length > 0) {
-      console.error(`Error: Agents cannot update: ${usedRestricted.join(', ')}. Use 'baton claim', 'baton submit', or 'baton unclaim' for status changes.`);
-      process.exit(1);
-    }
+  // Check if agent entered a restricted command
+  if (agent.type === 'agent') {
+    authorizeAction(command);
   }
 
   setCurrentActor(agent);
