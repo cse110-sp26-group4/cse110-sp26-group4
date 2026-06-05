@@ -2,7 +2,7 @@ import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { useSandbox } from './sandbox.test.js';
 
-describe('baton create', () => {
+describe('E2E: baton create', () => {
   const sb = useSandbox();
 
   beforeEach(async () => {
