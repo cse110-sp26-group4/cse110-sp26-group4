@@ -26,10 +26,12 @@ export function setActiveActor(id) {
  * @param {number} issueId - The ID of the issue.
  * @param {string} action - The action type.
  * @param {string|null} [details=null] - Optional details.
+ * @param {number|null} [specificActorId=null] - Override the current actor.
  */
 function logActivity(db, issueId, action, details = null) {
+  const finalActorId = specificActorId !== null ? specificActorId : currentActorId;
   db.insert(activityTable)
-    .values({ issueId, action, details, actorId: currentActorId })
+    .values({ issueId, action, details, actorId: finalActorId })
     .run();
 }
 
@@ -274,21 +276,15 @@ export function assignIssue(issueId, assigneeId, actorId) {
   
   // Verify the issue exists first (will throw if not found)
   findById(db, issueId);
-
-  // Set the actor context explicitly so the audit trail log uses the right person
-  const previousActorId = currentActorId;
-  currentActorId = actorId;
   
-  try {
-    db.update(issuesTable)
+  db.update(issuesTable)
     .set({ assigneeId: assigneeId })
     .where(eq(issuesTable.id, issueId))
     .run();
 
-    logActivity(db, issueId, Action.EDIT, `Issue #${issueId} was assigned.`);
-  } finally {
-    currentActorId = previousActorId;
-  }
+  // Pass actorId directly instead of hacking the global module variable
+  logActivity(db, issueId, Action.EDIT, `Issue #${issueId} was assigned.`, actorId);
+  
   return getIssue(issueId);
 }
 
