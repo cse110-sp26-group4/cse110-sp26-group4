@@ -42,6 +42,22 @@ export function getAgentByName(name) {
 }
 
 /**
+ * Retrieves an agent by their unique ID.
+ * @param {number} id
+ * @returns {Agent|null}
+ */
+export function getAgentById(id) {
+  const db = getDB();
+  const row = db.select().from(agentsTable).where(eq(agentsTable.id, id)).get();
+
+  if (row) {
+    return new Agent(row);
+  } else {
+    return null;
+  }
+}
+
+/**
  * Lists all registered agents and humans, ordered by id.
  * @returns {Agent[]}
  */
