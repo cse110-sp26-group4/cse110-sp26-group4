@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.12.0...v1.13.0) (2026-06-05)
+
+
+### Features
+
+* **whoami:** add baton whoami command and unit tests ([#189](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/189)) ([1536260](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/1536260b7bbe2bdb93e249ac89a2cf05de26bc7a))
+
 # [1.12.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.11.2...v1.12.0) (2026-06-05)
 
 
