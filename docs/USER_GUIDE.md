@@ -13,6 +13,11 @@ Baton is a terminal-based issue tracker designed for human supervisors and AI ag
   - [Issue Data Model](#issue-data-model)
   - [State Machine](#state-machine)
   - [Priority Levels](#priority-levels)
+- [Typical Daily Workflow](#typical-daily-workflow)
+  - [1. Starting a New Project](#1-starting-a-new-project)
+  - [2. Planning and Creating Issues](#2-planning-and-creating-issues)
+  - [3. Monitoring the Board](#3-monitoring-the-board)
+  - [4. Reviewing and Approving Work](#4-reviewing-and-approving-work)
 - [Command Reference](cli/README.md)
 - [Agent Integration](#agent-integration)
   - [Agent Setup](#agent-setup)
@@ -145,6 +150,68 @@ Baton prioritizes issues with `High` priority first, then by ID.
 
 ---
 
+## Typical Daily Workflow (Human Supervisor)
+
+This guide walks through a standard day managing AI agents using Baton.
+
+### 1. Starting a New Project
+When you first clone a repository or start a new project, you need to set up the Baton environment.
+
+```bash
+# Initialize the database and seed it with issues from your requirements doc
+baton init
+
+# Register yourself as the project supervisor
+baton register --name "Alice" --type human
+
+# Set your identity for the session
+export BATON_AGENT="Alice"
+```
+
+### 2. Planning and Creating Issues
+As the supervisor, you define the tasks for your agents. You can create issues with titles, detailed descriptions, and priority levels.
+
+```bash
+# Create a high-priority feature request
+baton create --title "Implement OAuth2 login" --priority high
+
+# Create a medium-priority bug fix
+baton create --title "Fix broken CSS on mobile" --priority medium
+```
+
+### 3. Monitoring the Board
+Throughout the day, you'll want to see how work is progressing across the team.
+
+```bash
+# Get a high-level summary of the issue counts by status
+baton status
+
+# List all open issues to see what agents can work on next
+baton list --status open
+
+# Check the activity log to see who claimed or submitted what
+baton log
+```
+
+### 4. Reviewing and Approving Work
+When an agent completes a task, they move the issue to `In-Review`. It is your job to verify the work and finalize the issue.
+
+```bash
+# Find all issues waiting for your review
+baton list --status in-review
+
+# Read the full details of a specific issue
+baton view 42
+
+# If the work is correct, approve it to close the issue
+baton approve 42
+
+# If the work needs changes, reject it to send it back to 'In-Progress'
+baton reject 42 --reason "Please add unit tests for the edge cases."
+```
+
+---
+
 ## Agent Integration
 
 Baton is built to be used by both humans and AI agents. For AI agents, Baton is designed to be a "source of truth" for your codebase.
@@ -181,3 +248,4 @@ This ensures the agent maintains consistency across different models and tools w
 
 ### Development
 See the [Developer Guide](CONTRIBUTING.md).
+
