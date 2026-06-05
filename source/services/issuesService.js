@@ -7,17 +7,7 @@ import {
   Priority,
 } from "../models/issue.js";
 import { ActivityLog, Action } from '../models/activityLog.js';
-
-// Internal variable to hold the active agent's ID for logging purposes. Set via setActiveActor() during authentication.
-let currentActorId = null;
-
-/**
- * Sets the active actor ID for logging purposes.
- * @param {number} id - The ID of the active actor.
- */
-export function setActiveActor(id) {
-    currentActorId = id;
-}
+import { getCurrentActorId } from './context.js';
 
 /**
  * Internal helper to log actions.
@@ -29,16 +19,8 @@ export function setActiveActor(id) {
  */
 function logActivity(db, issueId, action, details = null) {
   db.insert(activityTable)
-    .values({ issueId, action, details, actorId: currentActorId })
+    .values({ issueId, action, details, actorId: getCurrentActorId() })
     .run();
-}
-
-/**
- * Returns the active actor ID set during authentication.
- * @returns {number|null}
- */
-export function getActiveActor() {
-  return currentActorId;
 }
 
 /**
@@ -102,6 +84,21 @@ export function createIssue({
 } = {}) {
 
   const db = getDB();
+
+  // Normalize priority argument
+  if (priority !== undefined) {
+    const priorityValues = Object.values(Priority);
+    const match = priorityValues.find(v => v.toLowerCase() === priority.trim().toLowerCase());
+    priority = match || priority;
+  }
+  
+  // Validate before inserting
+  const proposed = new Issue({ title, priority, tokenLimit, description, assigneeId });
+  const { isValid, errors } = proposed.validate();
+  if (!isValid) {
+    throw new Error(`Validation failed: ${errors.join(', ')}`);
+  }
+
   const result = db.insert(issuesTable)
     .values({
       title: title?.trim() || "PENDING",
@@ -491,10 +488,10 @@ export function claimIssue(issueId) {
     logActivity(tx, issueId, Action.READ, `Agent accessed issue #${issueId}`);
     
     tx.update(issuesTable)
-      .set({ 
+      .set({
         status: Status.IN_PROGRESS,
-        assigneeId: currentActorId, 
-        attemptNum: sql`${issuesTable.attemptNum} + 1` 
+        assigneeId: getCurrentActorId(),
+        attemptNum: sql`${issuesTable.attemptNum} + 1`
       })
       .where(eq(issuesTable.id, issueId))
       .run();
@@ -515,6 +512,36 @@ export function claimIssue(issueId) {
   });
 
   return findById(db, issueId);
+}
+
+/**
+ * Release an issue back to Open status, clearing the assignee.
+ * Logs a STATE_CHANGE activity entry.
+ * @param {number} issueId
+ * @returns {Issue}
+ * @throws {Error} If issueId is invalid or issue is not found
+ */
+export function unclaimIssue(issueId) {
+  if (!Number.isInteger(issueId)) {
+    throw new Error('issueId must be an integer');
+  }
+
+  const db = getDB();
+  findById(db, issueId);
+
+  db.update(issuesTable)
+    .set({ status: Status.OPEN, assigneeId: null })
+    .where(eq(issuesTable.id, issueId))
+    .run();
+
+  logActivity(
+    db,
+    issueId,
+    Action.STATE_CHANGE,
+    `Issue #${issueId} was released and returned to Open.`,
+  );
+
+  return getIssue(issueId);
 }
 
 /**
