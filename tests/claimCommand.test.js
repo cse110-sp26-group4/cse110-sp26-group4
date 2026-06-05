@@ -9,7 +9,8 @@ import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { Status, Priority } from '../source/models/issue.js';
 import * as schema from '../source/models/schema.js';
 import { setTestDB } from '../source/db/index.js';
-import { createIssue, setActiveActor } from '../source/services/issuesService.js';
+import { createIssue } from '../source/services/issuesService.js';
+import { setCurrentActor } from '../source/services/context.js';
 import { registerAgent } from '../source/services/agentsService.js';
 import { authenticateContext } from '../source/services/authService.js';
 import { run as claimCommand } from '../source/commands/claim.js';
@@ -65,7 +66,7 @@ describe('Claim Command', () => {
 
   afterEach(() => {
     capture.restore();
-    setActiveActor(null);
+    setCurrentActor(null);
     process.env.BATON_AGENT = originalBatonAgent;
     if (sqlite) {
       sqlite.close();
@@ -114,8 +115,7 @@ describe('Claim Command', () => {
     sqlite = setup.sqlite;
     setTestDB(setup.db);
 
-    const human = registerAgent('human-user', 'human');
-    setActiveActor(human.id);
+    registerAgent('human-user', 'human');
     process.env.BATON_AGENT = 'human-user';
     authenticateContext('claim');
 
