@@ -5,8 +5,6 @@
 // usage: baton [command] [options]
 // commands:
 //   init: initialize the tracker
-//   next: work on the next issue
-//   loop: run the agent autonomously for multiple steps
 //   status: show issue counts and overall progress
 //
 // see each command's file for more detailed flags specifications.
@@ -14,8 +12,6 @@
  * Imports the run functions from each command.
  */
 import * as initCmd from './commands/init.js';
-import * as nextCmd from './commands/next.js';
-import * as loopCmd from './commands/loop.js';
 import * as statusCmd from './commands/status.js';
 import * as approveCmd from './commands/approve.js';
 import * as rejectCmd from './commands/reject.js';
@@ -45,8 +41,6 @@ Commands:
   init     Initialize storage and seed issues from product specs
   register Register a new AI agent or human user
   agents   List all registered agents and humans
-  next     Work on the highest-priority open issue
-  loop     Run the agent autonomously for multiple steps
   status   Show issue counts and overall progress
   view     View all issue fields for a given issue ID
   search   Search issues by title and description (case insensitive)
@@ -69,10 +63,6 @@ Options:
   register --name <name>          Name of the agent or user
   register --type <type>          agent | human (default: agent)
   agents [--json]
-  loop --steps <n>                Number of autonomous steps (alias: -n)
-  loop -n <n>
-  loop --json                     Output as JSON (for AI agents)
-  next --json                     Output as JSON (for AI agents)
   status --json                   Output as JSON (for AI agents)
   view <id> [--json]
   search <query> [--json]
@@ -107,8 +97,6 @@ Examples:
   baton init --force
   baton register --name claude-dev --type agent
   baton agents
-  baton next
-  baton loop --steps 5
   baton status
   baton view 29
   baton search system
@@ -181,8 +169,6 @@ async function main() {
     init: () => initCmd.run(args),
     register: () => registerCmd.run(args),
     agents: () => agentsCmd.run(args),
-    next: () => nextCmd.run(args),
-    loop: () => loopCmd.run(args),
     status: () => statusCmd.run(args),
     view: () => viewCmd.run(args),
     search: () => searchCmd.run(args),

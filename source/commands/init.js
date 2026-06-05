@@ -145,7 +145,7 @@ export async function run(args = []) {
         console.log(`  #${issue.id} [${issue.priority}] ${issue.title}`);
       }
     }
-    console.log('Run `baton status` to review progress or `baton next` to start work.');
+    console.log('Run `baton status` to review progress.');
   });
 
   return 0;
