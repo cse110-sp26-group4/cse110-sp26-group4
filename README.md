@@ -1,7 +1,6 @@
 # Baton Issue Tracker (Baton)
 
 [![NPM Version](https://img.shields.io/npm/v/baton-issue-tracker)](https://www.npmjs.com/package/baton-issue-tracker)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Baton** is a terminal-first issue tracker designed for the modern AI-augmented software engineering workflow. It provides a structured interface for human supervisors to manage, track, and approve tasks performed by autonomous AI agents.
 
