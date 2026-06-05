@@ -7,17 +7,7 @@ import {
   Priority,
 } from "../models/issue.js";
 import { ActivityLog, Action } from '../models/activityLog.js';
-
-// Internal variable to hold the active agent's ID for logging purposes. Set via setActiveActor() during authentication.
-let currentActorId = null;
-
-/**
- * Sets the active actor ID for logging purposes.
- * @param {number} id - The ID of the active actor.
- */
-export function setActiveActor(id) {
-    currentActorId = id;
-}
+import { getCurrentActorId } from './context.js';
 
 /**
  * Internal helper to log actions.
@@ -29,7 +19,7 @@ export function setActiveActor(id) {
  */
 function logActivity(db, issueId, action, details = null) {
   db.insert(activityTable)
-    .values({ issueId, action, details, actorId: currentActorId })
+    .values({ issueId, action, details, actorId: getCurrentActorId() })
     .run();
 }
 
@@ -280,16 +270,37 @@ export function rejectIssue(id, reason) {
 }
 
 /**
- * Change the status of an issue to in-review.
- * Logs a state_change_event.
- * @param {number} id
+ * Change the status of an issue from in-progress to in-review.
+ * Logs a state_change event attributed to the current actor.
+ * @param {number} issueId
  * @returns {Issue}
+ * @throws {Error} If issueId is invalid, issue is not found, or status is not in-progress
  */
-export function submitForReview(id) {
+export function submitForReview(issueId) {
+  if (!Number.isInteger(issueId)) {
+    throw new Error('issueId must be an integer');
+  }
+
   const db = getDB();
-  db.update(issuesTable).set({ status: Status.IN_REVIEW }).where(eq(issuesTable.id, id)).run();
-  logActivity(db, id, Action.STATE_CHANGE, `Issue #${id} was submitted for review.`);
-  return getIssue(id);
+  const existing = findById(db, issueId);
+
+  if (existing.status !== Status.IN_PROGRESS) {
+    throw new Error(
+      `Issue #${issueId} is currently "${existing.status}". Only issues in "${Status.IN_PROGRESS}" can be submitted for review.`,
+    );
+  }
+
+  db.update(issuesTable)
+    .set({ status: Status.IN_REVIEW })
+    .where(eq(issuesTable.id, issueId))
+    .run();
+  logActivity(
+    db,
+    issueId,
+    Action.STATE_CHANGE,
+    `Issue #${issueId} was submitted for review.`,
+  );
+  return getIssue(issueId);
 }
 
 /**
@@ -462,10 +473,10 @@ export function claimIssue(issueId) {
     logActivity(tx, issueId, Action.READ, `Agent accessed issue #${issueId}`);
     
     tx.update(issuesTable)
-      .set({ 
+      .set({
         status: Status.IN_PROGRESS,
-        assigneeId: currentActorId, 
-        attemptNum: sql`${issuesTable.attemptNum} + 1` 
+        assigneeId: getCurrentActorId(),
+        attemptNum: sql`${issuesTable.attemptNum} + 1`
       })
       .where(eq(issuesTable.id, issueId))
       .run();
@@ -486,6 +497,36 @@ export function claimIssue(issueId) {
   });
 
   return findById(db, issueId);
+}
+
+/**
+ * Release an issue back to Open status, clearing the assignee.
+ * Logs a STATE_CHANGE activity entry.
+ * @param {number} issueId
+ * @returns {Issue}
+ * @throws {Error} If issueId is invalid or issue is not found
+ */
+export function unclaimIssue(issueId) {
+  if (!Number.isInteger(issueId)) {
+    throw new Error('issueId must be an integer');
+  }
+
+  const db = getDB();
+  findById(db, issueId);
+
+  db.update(issuesTable)
+    .set({ status: Status.OPEN, assigneeId: null })
+    .where(eq(issuesTable.id, issueId))
+    .run();
+
+  logActivity(
+    db,
+    issueId,
+    Action.STATE_CHANGE,
+    `Issue #${issueId} was released and returned to Open.`,
+  );
+
+  return getIssue(issueId);
 }
 
 /**

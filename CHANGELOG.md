@@ -1,3 +1,45 @@
+# [1.13.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.12.0...v1.13.0) (2026-06-05)
+
+
+### Features
+
+* **whoami:** add baton whoami command and unit tests ([#189](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/189)) ([1536260](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/1536260b7bbe2bdb93e249ac89a2cf05de26bc7a))
+
+# [1.12.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.11.2...v1.12.0) (2026-06-05)
+
+
+### Features
+
+* add baton unclaim command and refactor actor context ([#182](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/182)) ([4d435b6](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/4d435b63ca9c934c8155136727e57213483cdd8c))
+
+## [1.11.2](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.11.1...v1.11.2) (2026-06-05)
+
+
+### Bug Fixes
+
+* serializeJson reads from schema and is now updated ([#187](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/187)) ([be0dabf](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/be0dabf4df9b4ce77c0dcc2ed7fffda94cfbb113))
+
+## [1.11.1](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.11.0...v1.11.1) (2026-06-05)
+
+
+### Bug Fixes
+
+* remove baton next and baton loop ([#179](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/179)) ([98d8e70](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/98d8e70544fcd2e5d6177b693ec18de27d8e9d66))
+
+# [1.11.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.10.0...v1.11.0) (2026-06-03)
+
+
+### Features
+
+* create agents command and test file ([#163](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/163)) ([d7b8725](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/d7b87259abf406578f141e94250b3f203208dbd5))
+
+# [1.10.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.9.0...v1.10.0) (2026-06-03)
+
+
+### Features
+
+* create submit command + refactor affected files ([#162](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/162)) ([386f369](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/386f369e9cec29b4d7be53a53bad5ce927680153))
+
 # [1.9.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.8.0...v1.9.0) (2026-06-01)
 
 
