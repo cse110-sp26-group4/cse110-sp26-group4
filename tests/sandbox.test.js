@@ -13,8 +13,6 @@ import { beforeEach, afterEach } from 'node:test';
  * @property {string} agentName - The name of the AI agent actor.
  * @property {(args: string[]) => Promise<BatonResult>} runBaton - Default runs the CLI as the human actor.
  * @property {(args: string[]) => Promise<BatonResult>} runAsAgent - Runs the CLI as the AI agent.
- * @property {string} agentName - The name of the registered test actor.
- * @property {(args: string[]) => Promise<BatonResult>} runBaton - Runs the CLI inside the sandbox.
  * @property {(result: BatonResult) => unknown} parseJSON - Parses stdout as JSON.
  * @property {() => void} cleanup - Removes the temp directory.
  */
@@ -64,7 +62,7 @@ export function createSandbox() {
 
 /**
  * Setup / teardown hook for test suites
- * @returns {Sandbox} 
+ * @returns {sandbox} 
  */
 export function useSandbox() {
   const ref = /** @type {ReturnType<typeof createSandbox>} */ ({});
