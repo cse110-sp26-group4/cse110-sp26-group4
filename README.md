@@ -7,7 +7,7 @@
 
 In an environment where AI does much of the heavy lifting, Baton ensures accountability, tracks token budgets, and maintains a rigorous audit trail of every change made to your project's backlog.
 
----
+--- 
 
 ## Quickstart
 

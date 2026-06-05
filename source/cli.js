@@ -5,8 +5,6 @@
 // usage: baton [command] [options]
 // commands:
 //   init: initialize the tracker
-//   next: work on the next issue
-//   loop: run the agent autonomously for multiple steps
 //   status: show issue counts and overall progress
 //
 // see each command's file for more detailed flags specifications.
@@ -14,8 +12,6 @@
  * Imports the run functions from each command.
  */
 import { run as runInit } from './commands/init.js';
-import { run as runNext } from './commands/next.js';
-import { run as runLoop } from './commands/loop.js';
 import { run as runStatus } from './commands/status.js';
 import { run as runApprove } from './commands/approve.js';
 import { run as runReject } from './commands/reject.js';
@@ -29,6 +25,11 @@ import { run as runDelete } from './commands/delete.js';
 import { run as runPriority } from './commands/priority.js';
 import { run as runLog } from './commands/log.js';
 import { run as runRegister } from './commands/register.js';
+import { run as runAgents } from './commands/agents.js';
+import { run as runWhoami } from './commands/whoami.js';
+import { run as runSubmit } from './commands/submit.js';
+import { run as runUnclaim } from './commands/unclaim.js';
+import { run as runClaim } from './commands/claim.js';
 
 import { authenticateContext } from './services/authService.js';
 
@@ -40,14 +41,17 @@ Usage:
 Commands:
   init     Initialize storage and seed issues from product specs
   register Register a new AI agent or human user
-  next     Work on the highest-priority open issue
-  loop     Run the agent autonomously for multiple steps
+  agents   List all registered agents and humans
+  whoami   Show the currently authenticated agent or user
   status   Show issue counts and overall progress
   view     View all issue fields for a given issue ID
   search   Search issues by title and description (case insensitive)
   list     Lists issues filtered by status and priority
   create   Creates an issue with specified fields
   approve  Move an issue from in-review to closed
+  submit   Submit finished work for human review
+  unclaim  Release a claimed issue back to Open
+  claim    Claim an issue as the authenticated agent
   priority Set an issue's priority level
   update   Updates an issue's specified fields
   delete   Deletes an issue
@@ -61,10 +65,8 @@ Options:
   Default specs: docs/specs/project-requirements.md
   register --name <name>          Name of the agent or user
   register --type <type>          agent | human (default: agent)
-  loop --steps <n>                Number of autonomous steps (alias: -n)
-  loop -n <n>
-  loop --json                     Output as JSON (for AI agents)
-  next --json                     Output as JSON (for AI agents)
+  agents [--json]
+  whoami [--json]
   status --json                   Output as JSON (for AI agents)
   view <id> [--json]
   search <query> [--json]
@@ -79,6 +81,9 @@ Options:
   create --token-limit <n>        Optional token budget for this issue
   create --json                   Output as JSON (for AI agents)
   approve <id> [--json]
+  submit <id> [--json]
+  unclaim <id> [--json]
+  claim <id> [--json]
   reject <id> --reason <text>     Reject an issue with a given reason
   priority <id> <level> [--json]  low | medium | high
   update --title <text>           New title
@@ -96,8 +101,8 @@ Examples:
   baton init ./my-specs.md
   baton init --force
   baton register --name claude-dev --type agent
-  baton next
-  baton loop --steps 5
+  baton agents
+  baton whoami
   baton status
   baton view 29
   baton search system
@@ -107,6 +112,9 @@ Examples:
   baton create --title "Fix login bug" --priority high
   baton create --title "Refactor auth" --description "Clean up JWT logic" --token-limit 4000
   baton approve 5
+  baton submit 14
+  baton unclaim 14
+  baton claim 14
   baton priority 5 high
   baton priority 3 low
   baton update 3 --title "Revised title"
@@ -121,7 +129,7 @@ Examples:
 async function main() {
   const [, , command, ...args] = process.argv;
 
-  if (!command || command === 'help' || wantsHelp(args) || command === '--help') {
+  if (!command || command === 'help' || command === '--help') {
     console.log(HELP);
     process.exit(command ? 0 : 1);
     return;
@@ -133,19 +141,22 @@ async function main() {
   const handlers = {
     init: () => runInit(args),
     register: () => runRegister(args),
-    next: () => runNext(args),
-    loop: () => runLoop(args),
+    agents: () => runAgents(args),
+    whoami: () => runWhoami(args),
     status: () => runStatus(args),
     view: () => runView(args),
     search: () => runSearch(args),
     list: () => runList(args),
     approve: () => runApprove(args),
     reject: () => runReject(args),
+    claim: () => runClaim(args),
     priority: () => runPriority(args),
     create: () => runCreate(args),
     update: () => runUpdate(args),
     delete: () => runDelete(args),
     log: () => runLog(args),
+    submit: () => runSubmit(args),
+    unclaim: () => runUnclaim(args),
   };
 
   const handler = handlers[command];
