@@ -234,6 +234,36 @@ export function updateIssue(id, oldIssue, { title, description, tokenLimit, stat
     updates.status = toUpdate || status;
   }
 
+  /**
+   * Assigns an issue to a specific registered agent or human.
+   * Logs an edit event.
+   * @param {number} issueId 
+   * @param {number} assigneeId 
+   * @returns {Issue} - the issue that matches the ID
+   */
+  export function assignIssue(issueId, assigneeId, actorId) {
+    const db = getDB();
+    
+    // Verify the issue exists first (will throw if not found)
+    findById(db, issueId);
+
+    // Set the actor context explicitly so the audit trail log uses the right person
+    const previousActorId = currentActorId;
+    currentActorId = actorId;
+    
+    try {
+      db.update(issuesTable)
+      .set({ assigneeId: assigneeId })
+      .where(eq(issuesTable.id, issueId))
+      .run();
+
+      logActivity(db, issueId, Action.EDIT, `Issue #${issueId} was assigned.`);
+    } finally {
+      currentActorId = previousActorId;
+    }
+    return getIssue(issueId);
+  }
+
   // Normalize priority argument
   if (priority !== undefined) {
     const priorityValues = Object.values(Priority);

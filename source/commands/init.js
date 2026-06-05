@@ -13,7 +13,9 @@
 
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { initDB } from '../db/index.js';
+import { initDB , getDB } from '../db/index.js';
+import os from 'node:os';
+import { registerAgent } from '../services/agentsService.js';
 import { Priority } from '../models/issue.js';
 import {
   createIssue,
@@ -155,6 +157,19 @@ export async function run(args = []) {
   if (flags.force) {
     clearAllIssues();
   }
+
+  // auto-register default deployment human user
+  let autoRegisterMessage = '';
+  try {
+    const activeName = process.env.BATON_AGENT || os.userInfo().username;
+    registerAgent(activeName, 'human');
+    autoRegisterMessage = `Auto-registered default human user: "${activeName}"`;
+  } catch (error){
+    if (!error.message?.includes('UNIQUE constraint failed')) {
+      autoRegisterMessage = `Warning: Could not auto-register default user: ${error.message}`;
+    }
+  }
+
 
   const resolvedSpecsPath = resolvePath(flags.specs, DEFAULT_SPECS_PATH);
   const createdIssues = generateIssuesFromSpecs(flags.specs);
