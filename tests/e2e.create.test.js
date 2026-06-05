@@ -7,7 +7,7 @@ describe('E2E: baton create', () => {
 
   beforeEach(async () => {
     await sb.runBaton(['init', '--specs', sb.specsPath]);
-    await sb.runBaton(['register', '--name', sb.agentName, '--type', 'human']);
+    await sb.runBaton(['register', '--name', sb.humanName, '--type', 'human']);
   });
 
   // Manual entry / Flag mode tests
