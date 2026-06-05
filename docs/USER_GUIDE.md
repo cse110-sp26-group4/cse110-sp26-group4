@@ -17,6 +17,7 @@ Baton is a terminal-based issue tracker designed for human supervisors and AI ag
 - [Agent Integration](#agent-integration)
   - [Agent Setup](#agent-setup)
   - [Instruction Files](#instruction-files)
+- [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -181,3 +182,25 @@ This ensures the agent maintains consistency across different models and tools w
 
 ### Development
 See the [Developer Guide](CONTRIBUTING.md).
+
+## Troubleshooting
+
+1. **Database is not found**: try running init.
+```
+baton init
+```
+
+2. **Database is locked**: another process may be using it. Close other terminals running Baton and try again.
+
+3. **User is not registered**: ensure you have registered the name of an agent, and the name matches.
+```
+baton register --name "insert-user-name" --type human
+$env:BATON_AGENT="insert-user-name"
+```
+
+4. **Baton command is not found**: try running baton --version to see if you have it installed. If not, follow the installation guide.
+
+5. **Changes are not appearing**: try running one of these two commands to refresh the list. Ensure you are in the correct folder, which should be ./baton.
+```
+baton list
+baton status --json
