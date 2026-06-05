@@ -30,6 +30,7 @@ import { run as runPriority } from './commands/priority.js';
 import { run as runLog } from './commands/log.js';
 import { run as runRegister } from './commands/register.js';
 import { run as runAgents } from './commands/agents.js';
+import { run as runWhoami } from './commands/whoami.js';
 import { run as runSubmit } from './commands/submit.js';
 import { run as runClaim } from './commands/claim.js';
 
@@ -44,6 +45,7 @@ Commands:
   init     Initialize storage and seed issues from product specs
   register Register a new AI agent or human user
   agents   List all registered agents and humans
+  whoami   Show the currently authenticated agent or user
   next     Work on the highest-priority open issue
   loop     Run the agent autonomously for multiple steps
   status   Show issue counts and overall progress
@@ -68,6 +70,7 @@ Options:
   register --name <name>          Name of the agent or user
   register --type <type>          agent | human (default: agent)
   agents [--json]
+  whoami [--json]
   loop --steps <n>                Number of autonomous steps (alias: -n)
   loop -n <n>
   loop --json                     Output as JSON (for AI agents)
@@ -106,6 +109,7 @@ Examples:
   baton init --force
   baton register --name claude-dev --type agent
   baton agents
+  baton whoami
   baton next
   baton loop --steps 5
   baton status
@@ -146,6 +150,7 @@ async function main() {
     init: () => runInit(args),
     register: () => runRegister(args),
     agents: () => runAgents(args),
+    whoami: () => runWhoami(args),
     next: () => runNext(args),
     loop: () => runLoop(args),
     status: () => runStatus(args),
