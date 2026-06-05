@@ -5,8 +5,6 @@
 // usage: baton [command] [options]
 // commands:
 //   init: initialize the tracker
-//   next: work on the next issue
-//   loop: run the agent autonomously for multiple steps
 //   status: show issue counts and overall progress
 //
 // see each command's file for more detailed flags specifications.
@@ -14,8 +12,6 @@
  * Imports the run functions from each command.
  */
 import { run as runInit } from './commands/init.js';
-import { run as runNext } from './commands/next.js';
-import { run as runLoop } from './commands/loop.js';
 import { run as runStatus } from './commands/status.js';
 import { run as runApprove } from './commands/approve.js';
 import { run as runReject } from './commands/reject.js';
@@ -46,8 +42,6 @@ Commands:
   register Register a new AI agent or human user
   agents   List all registered agents and humans
   whoami   Show the currently authenticated agent or user
-  next     Work on the highest-priority open issue
-  loop     Run the agent autonomously for multiple steps
   status   Show issue counts and overall progress
   view     View all issue fields for a given issue ID
   search   Search issues by title and description (case insensitive)
@@ -71,10 +65,6 @@ Options:
   register --type <type>          agent | human (default: agent)
   agents [--json]
   whoami [--json]
-  loop --steps <n>                Number of autonomous steps (alias: -n)
-  loop -n <n>
-  loop --json                     Output as JSON (for AI agents)
-  next --json                     Output as JSON (for AI agents)
   status --json                   Output as JSON (for AI agents)
   view <id> [--json]
   search <query> [--json]
@@ -110,8 +100,6 @@ Examples:
   baton register --name claude-dev --type agent
   baton agents
   baton whoami
-  baton next
-  baton loop --steps 5
   baton status
   baton view 29
   baton search system
@@ -151,8 +139,6 @@ async function main() {
     register: () => runRegister(args),
     agents: () => runAgents(args),
     whoami: () => runWhoami(args),
-    next: () => runNext(args),
-    loop: () => runLoop(args),
     status: () => runStatus(args),
     view: () => runView(args),
     search: () => runSearch(args),
