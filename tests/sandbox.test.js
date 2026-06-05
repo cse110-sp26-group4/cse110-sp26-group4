@@ -9,6 +9,7 @@ import { beforeEach, afterEach } from 'node:test';
  * @typedef {Object} Sandbox
  * @property {string} dir - Path to the temporary directory for this test.
  * @property {string} specsPath - Path to the minimal specs.md inside the sandbox.
+ * @property {string} agentName - The name of the registered test actor.
  * @property {(args: string[]) => Promise<BatonResult>} runBaton - Runs the CLI inside the sandbox.
  * @property {(result: BatonResult) => unknown} parseJSON - Parses stdout as JSON.
  * @property {() => void} cleanup - Removes the temp directory.
@@ -31,15 +32,17 @@ export function createSandbox() {
     | FR-1.2 | Must | Sandbox test issue two. |
   `);
 
+  const agentName = 'E2E-Sandbox';
+
   function runBaton(args = []) {
-    return _runBaton(args, { cwd: dir });
+    return _runBaton(args, { cwd: dir, env: { BATON_AGENT: agentName } });
   }
 
   function cleanup() {
     fs.rmSync(dir, { recursive: true, force: true });
   }
 
-return { dir, specsPath, runBaton, parseJSON, cleanup };
+return { dir, specsPath, agentName, runBaton, parseJSON, cleanup };
 }
 
 /**
