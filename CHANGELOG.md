@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.11.2...v1.12.0) (2026-06-05)
+
+
+### Features
+
+* add baton unclaim command and refactor actor context ([#182](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/182)) ([4d435b6](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/4d435b63ca9c934c8155136727e57213483cdd8c))
+
 ## [1.11.2](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.11.1...v1.11.2) (2026-06-05)
 
 
