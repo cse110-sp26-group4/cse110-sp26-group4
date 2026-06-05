@@ -18,10 +18,10 @@ import { getCurrentActorId } from './context.js';
  * @param {string|null} [details=null] - Optional details.
  * @param {number|null} [specificActorId=null] - Override the current actor.
  */
-function logActivity(db, issueId, action, details = null) {
-  const finalActorId = specificActorId !== null ? specificActorId : currentActorId;
+function logActivity(db, issueId, action, details = null, specificActorId = null) {
+  const finalActorId = specificActorId !== null ? specificActorId : getCurrentActorId();
   db.insert(activityTable)
-
+  
     .values({ issueId, action, details, actorId: getCurrentActorId() })
     .run();
 }
