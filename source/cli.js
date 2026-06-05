@@ -26,6 +26,7 @@ import { run as runPriority } from './commands/priority.js';
 import { run as runLog } from './commands/log.js';
 import { run as runRegister } from './commands/register.js';
 import { run as runAgents } from './commands/agents.js';
+import { run as runWhoami } from './commands/whoami.js';
 import { run as runSubmit } from './commands/submit.js';
 import { run as runUnclaim } from './commands/unclaim.js';
 import { run as runClaim } from './commands/claim.js';
@@ -41,6 +42,7 @@ Commands:
   init     Initialize storage and seed issues from product specs
   register Register a new AI agent or human user
   agents   List all registered agents and humans
+  whoami   Show the currently authenticated agent or user
   status   Show issue counts and overall progress
   view     View all issue fields for a given issue ID
   search   Search issues by title and description (case insensitive)
@@ -64,6 +66,7 @@ Options:
   register --name <name>          Name of the agent or user
   register --type <type>          agent | human (default: agent)
   agents [--json]
+  whoami [--json]
   status --json                   Output as JSON (for AI agents)
   view <id> [--json]
   search <query> [--json]
@@ -99,6 +102,7 @@ Examples:
   baton init --force
   baton register --name claude-dev --type agent
   baton agents
+  baton whoami
   baton status
   baton view 29
   baton search system
@@ -138,6 +142,7 @@ async function main() {
     init: () => runInit(args),
     register: () => runRegister(args),
     agents: () => runAgents(args),
+    whoami: () => runWhoami(args),
     status: () => runStatus(args),
     view: () => runView(args),
     search: () => runSearch(args),
