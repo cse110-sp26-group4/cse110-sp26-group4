@@ -7,9 +7,9 @@ describe('E2E: Agent Restriction Tests', () => {
   const sb = useSandbox();
 
   beforeEach(async () => {
-    await sb.runAsHuman(['init', '--specs', sb.specsPath]);
-    await sb.runAsHuman(['register', '--name', sb.humanName, '--type', 'human']);
-    await sb.runAsHuman(['register', '--name', sb.agentName, '--type', 'agent']);
+    await sb.runBaton(['init', '--specs', sb.specsPath]);
+    await sb.runBaton(['register', '--name', sb.humanName, '--type', 'human']);
+    await sb.runBaton(['register', '--name', sb.agentName, '--type', 'agent']);
   });
 
   it('agent cannot run baton init', async () => {
