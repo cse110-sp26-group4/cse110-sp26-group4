@@ -84,6 +84,21 @@ export function createIssue({
 } = {}) {
 
   const db = getDB();
+
+  // Normalize priority argument
+  if (priority !== undefined) {
+    const priorityValues = Object.values(Priority);
+    const match = priorityValues.find(v => v.toLowerCase() === priority.trim().toLowerCase());
+    priority = match || priority;
+  }
+  
+  // Validate before inserting
+  const proposed = new Issue({ title, priority, tokenLimit, description, assigneeId });
+  const { isValid, errors } = proposed.validate();
+  if (!isValid) {
+    throw new Error(`Validation failed: ${errors.join(', ')}`);
+  }
+
   const result = db.insert(issuesTable)
     .values({
       title: title?.trim() || "PENDING",
