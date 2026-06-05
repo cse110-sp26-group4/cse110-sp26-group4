@@ -32,87 +32,52 @@ import { wantsHelp } from './util.js';
 
 import { authenticateContext } from './services/authService.js';
 
-const HELP = `baton — AI agent issue tracker CLI
+const bold = "\x1b[1m";
+const reset = "\x1b[0m";
+const HELP = `
+${bold}Baton — AI agent issue tracker CLI${reset}
 
-Usage:
+${bold}USAGE${reset}
   baton <command> [options]
 
-Commands:
-  init     Initialize storage and seed issues from product specs
-  register Register a new AI agent or human user
-  agents   List all registered agents and humans
-  status   Show issue counts and overall progress
-  view     View all issue fields for a given issue ID
-  search   Search issues by title and description (case insensitive)
-  list     Lists issues filtered by status and priority
-  create   Creates an issue with specified fields
-  approve  Move an issue from in-review to closed
-  submit   Submit finished work for human review
-  claim    Claim an issue as the authenticated agent
-  priority Set an issue's priority level
-  update   Updates an issue's specified fields
-  delete   Deletes an issue
-  log      Show activity history for an issue
+${bold}CORE & SETUP${reset}
+  init       Initialize storage and seed issues from product specs
+  register   Register a new AI agent or human user
+  agents     List all registered agents and humans
 
-Options:
-  init --force                    Re-initialize an existing tracker database
-  init --specs <path>             Path to product specs file (overrides default)
-  init --json                     Output as JSON (for AI agents)
-  init <path>                     Same as --specs <path> (positional)
-  Default specs: docs/specs/project-requirements.md
-  register --name <name>          Name of the agent or user
-  register --type <type>          agent | human (default: agent)
-  agents [--json]
-  status --json                   Output as JSON (for AI agents)
-  view <id> [--json]
-  search <query> [--json]
-  list --status <s>               Filter by status: open | in-progress | closed
-  list --priority <p>             Filter by priority: low | medium | high
-  list --limit <n>                Max results (default: 50)
-  list --offset <n>               Skip first n results (default: 0)
-  list --json                     Output as JSON (for AI agents)
-  create --title <text>           Issue title (defaults to "Issue #<id>" if omitted)
-  create --description <text>     Issue description
-  create --priority <level>       low | medium | high  (default: low)
-  create --token-limit <n>        Optional token budget for this issue
-  create --json                   Output as JSON (for AI agents)
-  approve <id> [--json]
-  submit <id> [--json]
-  claim <id> [--json]
-  reject <id> --reason <text>     Reject an issue with a given reason
-  priority <id> <level> [--json]  low | medium | high
-  update --title <text>           New title
-  update --description <text>     New description
-  update --token-limit <n>        New token budget
-  update --status <s>             open | in-progress | closed
-  update --priority <level>       low | medium | high
-  update --json                   Output as JSON (for AI agents)
-  delete <id> [--yes]
-  log <id> [--json]
+${bold}ISSUE WORKFLOW${reset}
+  create     Create an issue with specified fields
+  claim      Claim an issue as the authenticated agent
+  submit     Submit finished work for human review
+  approve    Move an issue from in-review to closed
+  reject     Reject an issue with a given reason
+  update     Update an issue's specified fields
+  priority   Set an issue's priority level
+  delete     Delete an issue
 
-Examples:
-  baton init
-  baton init --specs ./my-specs.md
-  baton init ./my-specs.md
-  baton init --force
-  baton register --name claude-dev --type agent
-  baton agents
-  baton status
-  baton view 29
-  baton search system
-  baton list
-  baton list --status open --priority high
-  baton list --limit 10 --offset 20
-  baton create --title "Fix login bug" --priority high
-  baton create --title "Refactor auth" --description "Clean up JWT logic" --token-limit 4000
-  baton approve 5
-  baton submit 14
-  baton claim 14
-  baton priority 5 high
-  baton priority 3 low
-  baton update 3 --title "Revised title"
-  baton update 7 --status closed --priority medium
-  baton log 5
+${bold}QUERY & VIEW${reset}
+  list       List issues filtered by status and priority
+  search     Search issues by title and description (case insensitive)
+  view       View all issue fields for a given issue ID
+  status     Show issue counts and overall progress
+  log        Show activity history for an issue
+
+${bold}GLOBAL OPTIONS${reset}
+  --json     Output raw JSON instead of formatted text (for AI agents)
+  --help     Show detailed usage and flags for a specific command
+
+${bold}EXAMPLES${reset}
+  # Initialize the database with custom specs
+  baton init --specs ./docs/requirements.md
+
+  # Create a high priority issue and allocate a token budget
+  baton create --title "Refactor auth" --priority high --token-limit 4000
+
+  # Search for open issues and pass the output to an AI agent
+  baton list --status open --json
+  
+  # Learn more about a specific command's options
+  baton update --help
 `;
 
 /**
