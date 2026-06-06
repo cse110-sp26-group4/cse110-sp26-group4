@@ -170,6 +170,10 @@ export async function run(args = []) {
     }
   }
 
+  if (autoRegisterMessage) {
+    console.log(autoRegisterMessage);
+  }
+
 
   const resolvedSpecsPath = resolvePath(flags.specs, DEFAULT_SPECS_PATH);
   const createdIssues = generateIssuesFromSpecs(flags.specs);

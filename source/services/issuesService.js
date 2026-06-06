@@ -16,12 +16,9 @@ import { getCurrentActorId } from './context.js';
  * @param {number} issueId - The ID of the issue.
  * @param {string} action - The action type.
  * @param {string|null} [details=null] - Optional details.
- * @param {number|null} [specificActorId=null] - Override the current actor.
  */
-function logActivity(db, issueId, action, details = null, specificActorId = null) {
-  const finalActorId = specificActorId !== null ? specificActorId : getCurrentActorId();
+function logActivity(db, issueId, action, details = null) {
   db.insert(activityTable)
-  
     .values({ issueId, action, details, actorId: getCurrentActorId() })
     .run();
 }
@@ -251,10 +248,9 @@ export function updateIssue(id, oldIssue, { title, description, tokenLimit, stat
  * Logs an edit event.
  * @param {number} issueId 
  * @param {number} assigneeId 
- * @param {number} actorId
  * @returns {Issue} - the issue that matches the ID
  */
-export function assignIssue(issueId, assigneeId, actorId) {
+export function assignIssue(issueId, assigneeId) {
   const db = getDB();
   
   // Verify the issue exists first (will throw if not found)
@@ -266,7 +262,7 @@ export function assignIssue(issueId, assigneeId, actorId) {
     .run();
 
   // Pass actorId directly instead of hacking the global module variable
-  logActivity(db, issueId, Action.EDIT, `Issue #${issueId} was assigned.`, actorId);
+  logActivity(db, issueId, Action.EDIT, `Issue #${issueId} was assigned.`);
   
   return getIssue(issueId);
 }
