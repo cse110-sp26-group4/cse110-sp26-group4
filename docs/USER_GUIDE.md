@@ -283,29 +283,24 @@ This ensures the agent maintains consistency across different models and tools w
 ### Development
 See the [Developer Guide](CONTRIBUTING.md).
 
----
-
 ## Troubleshooting
 
-1. **Database not found**: Try initializing the tracker in your project root.
-   ```bash
-   baton init
-   ```
+1. **Database is not found**: try running init.
+```
+baton init
+```
 
-2. **Database is locked**: Another process may be accessing the database file. Close any other instances of Baton and try again.
+2. **Database is locked**: another process may be using it. Close other terminals running Baton and try again.
 
-3. **User is not registered**: Actions require a registered identity. Ensure your `BATON_AGENT` environment variable matches a name registered via the CLI.
-   ```bash
-   baton register --name "your-name" --type human
-   export BATON_AGENT="your-name"
-   ```
+3. **User is not registered**: ensure you have registered the name of an agent, and the name matches.
+```
+baton register --name "insert-user-name" --type human
+$env:BATON_AGENT="insert-user-name"
+```
 
-4. **Command not found**: Ensure Baton is installed globally or use `npx baton` if installed locally.
-   ```bash
-   npm install -g baton-issue-tracker
-   ```
+4. **Baton command is not found**: try running baton --version to see if you have it installed. If not, follow the installation guide.
 
-5. **Changes not appearing**: Ensure you are running commands from the project root where the `.baton` directory is located. You can also verify the current database state with:
-   ```bash
-   baton status --json
-   ```
+5. **Changes are not appearing**: try running one of these two commands to refresh the list. Ensure you are in the correct folder, which should be ./baton.
+```
+baton list
+baton status --json
