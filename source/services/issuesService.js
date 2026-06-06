@@ -256,7 +256,7 @@ export function unassignIssue(issueId){
   // Check that issue exists
   findById(db, issueId);
 
-  db.update(issuesTable).set({ assigneeId: null }).where(eq(issuesTable.id, issueId)).run();
+  db.update(issuesTable).set({ status: Status.OPEN, assigneeId: null }).where(eq(issuesTable.id, issueId)).run();
   logActivity(db, issueId, Action.EDIT, `Success: Issue #${issueId} is now unassigned.`);
   return getIssue(issueId);
 }

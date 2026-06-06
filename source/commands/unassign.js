@@ -10,8 +10,10 @@
 //   baton unassign 12
 //   baton unassign 12 --json
 
-import { unassignIssue } from "../services/issuesService.js";
-import { hasFlag, renderOutput } from "../util.js";
+import { getIssue, unassignIssue } from "../services/issuesService.js";
+import { getCurrentActor } from "../services/context.js";
+import { AgentType } from "../models/agents.js";
+import { hasFlag, renderOutput, renderError, serializeIssue } from "../util.js";
 
 const VALID_FLAGS = new Set(["--json"]);
 
@@ -31,31 +33,63 @@ export async function run(args) {
     }
   }
 
-  const issueId = Number(args.find((a) => !a.startsWith("-")));
+  const idArg = args.find((a) => !a.startsWith("-"));
+  const issueId = Number(idArg);
 
   if (!Number.isInteger(issueId) || issueId <= 0) {
-    console.error("Usage: baton unassign <id> [--json]");
+    renderError(
+      isJson,
+      `Invalid ID "${idArg}". ID must be a positive integer.`,
+      "INVALID_ID",
+    );
+    return 1;
+  }
+
+  const actor = getCurrentActor();
+
+  if (!actor || actor.type !== AgentType.HUMAN) {
+    renderError(isJson, "Only human users can unassign issues.", "FORBIDDEN");
+    return 1;
+  }
+  
+  let issue;
+
+  try {
+    issue = getIssue(issueId);
+  } catch (error) {
+    if (error.message.includes("not found")) {
+      renderError(isJson, error.message, "NOT_FOUND");
+    } else {
+      renderError(isJson, error.message);
+    }
+    return 1;
+  }
+
+  if (!issue.assigneeId) {
+    renderError(
+      isJson,
+      `Issue #${issueId} is not assigned.`,
+      "INVALID_STATE"
+    );
     return 1;
   }
 
   try {
     // Use unassignIssue from issuesService.js
-    const issue = await unassignIssue(issueId);
+    const updatedIssue = unassignIssue(issueId);
 
-    renderOutput(
-      isJson,
-      {
-        status: "success",
-        issue,
-      },
-      () => {
-        console.log(`Success: Issue #${issueId} is now unassigned.`);
-      }
-    );
+    const envelope = {
+      status: "success",
+      issue: serializeIssue(updatedIssue),
+    };
+
+    renderOutput(isJson, envelope, () => {
+      console.log(`Success: Issue #${issueId} is now unassigned.`);
+    });
 
     return 0;
   } catch (error) {
-    console.error(`Failed to unassign issue: ${error.message}`);
+    renderError(isJson, error.message);
     return 1;
   }
 }
