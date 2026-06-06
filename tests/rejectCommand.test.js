@@ -62,7 +62,7 @@ describe('Reject Command', () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
     testDb = setup.db;
-    setTestDB(testDb);
+    setTestDB(testDb, sqlite);
     testActor = registerAgent('test-agent', 'agent');
     setCurrentActor(testActor);
     capture = captureConsole();

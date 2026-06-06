@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./admin/branding/teamLogo.png" width="100">
+</p>
+
 # Baton Issue Tracker (Baton)
 
 [![NPM Version](https://img.shields.io/npm/v/baton-issue-tracker)](https://www.npmjs.com/package/baton-issue-tracker)
@@ -5,6 +9,8 @@
 **Baton** is a terminal-first issue tracker designed for the modern AI-augmented software engineering workflow. It provides a structured interface for human supervisors to manage, track, and approve tasks performed by autonomous AI agents.
 
 In an environment where AI does much of the heavy lifting, Baton ensures accountability, tracks token budgets, and maintains a rigorous audit trail of every change made to your project's backlog.
+
+**Baton** is developed and maintained by **Team Fantastic Four**.
 
 --- 
 
