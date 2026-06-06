@@ -19,13 +19,10 @@ describe('E2E: baton init', () => {
       assert.ok(fs.existsSync(path.join(sb.dir, '.baton', 'baton.db')));
   });
 
-  // TO DO: Edit this assertion once .md creation logic is implemented
-  /*
   it('creates BATON_AGENT_RULES.md', async () => {
     await sb.runBaton(['init', '--specs', sb.specsPath]);
     assert.ok(fs.existsSync(path.join(sb.dir, 'BATON_AGENT_RULES.md')));
   });
-  */
 
   it('creates the correct number of issues', async () => {
     const result = await sb.runBaton(['init', '--specs', sb.specsPath, '--json']);
@@ -59,6 +56,7 @@ describe('E2E: baton init', () => {
     await sb.runBaton(['register', '--name', sb.humanName, '--type', 'human']);
     const result = await sb.runBaton(['init', '--specs', sb.specsPath, '--force']);
     assert.equal(result.exitCode, 0);
+    assert.ok(fs.existsSync(path.join(sb.dir, 'BATON_AGENT_RULES.md')));
   });
 
   it('resets issues when run with --force', async () => {
