@@ -14,7 +14,6 @@ export function authorizeAction(command, args = []) {
   }
 
   if (command === 'update') {
-    const args = process.argv.slice(2); 
     const usedRestricted = args.filter(arg => AGENT_RESTRICTED_FLAGS.has(arg));
     if (usedRestricted.length > 0) {
       throw new Error(
