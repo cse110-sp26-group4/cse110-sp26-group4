@@ -158,9 +158,9 @@ export async function run(args = []) {
 
   const templatePath = join('docs', 'specs', 'BATON_AGENT_RULES.md');
 
-  if (!existsSync(templatePath)) {
-    console.error(`Error: Missing rules template at ${templatePath}`);
-    return 1;
+  let rulesContent = '';
+  if (existsSync(templatePath)) {
+    rulesContent = readFileSync(templatePath, 'utf8');
   }
 
   const rulesContent = readFileSync(templatePath, 'utf8');
