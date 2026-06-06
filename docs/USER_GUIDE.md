@@ -7,13 +7,14 @@ Baton is a terminal-based issue tracker designed for human supervisors and AI ag
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Initialization](#initialization)
+    - [Requirements File Format](#requirements-file-format)
   - [Registration](#registration)
   - [Configuration](#configuration)
 - [Core Concepts](#core-concepts)
   - [Issue Data Model](#issue-data-model)
   - [State Machine](#state-machine)
   - [Priority Levels](#priority-levels)
-- [Typical Daily Workflow](#typical-daily-workflow)
+- [Typical Daily Workflow (Human Supervisor)](#typical-daily-workflow-human-supervisor)
   - [1. Starting a New Project](#1-starting-a-new-project)
   - [2. Planning and Creating Issues](#2-planning-and-creating-issues)
   - [3. Monitoring the Board](#3-monitoring-the-board)
@@ -22,6 +23,7 @@ Baton is a terminal-based issue tracker designed for human supervisors and AI ag
 - [Agent Integration](#agent-integration)
   - [Agent Setup](#agent-setup)
   - [Instruction Files](#instruction-files)
+- [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -61,6 +63,22 @@ baton init
 This command:
 1. Creates a local database at `.baton/baton.db`.
 2. (Optional) Seeds the database with issues from a requirements file (defaults to `docs/specs/project-requirements.md`).
+
+#### Requirements File Format
+For `baton init` to automatically create issues, your requirements file (e.g., `requirements.md`) must use a specific Markdown table format. The parser looks for rows containing `| Must |`.
+
+**Example `requirements.md`:**
+```markdown
+# Project Requirements
+
+| ID     | Priority | Requirement                                   |
+|--------|----------|-----------------------------------------------|
+| FR-1.1 | Must     | User must be able to log in with email.      |
+| FR-1.2 | Must     | System must track token usage per agent.     |
+| FR-1.3 | Should   | Support for dark mode in the CLI.            |
+```
+
+*Note: Only rows with `FR-` identifiers and `Must` priority are imported as issues during initialization.*
 
 
 ### Registration
@@ -169,7 +187,23 @@ export BATON_AGENT="Alice"
 ```
 
 ### 2. Planning and Creating Issues
-As the supervisor, you define the tasks for your agents. You can create issues with titles, detailed descriptions, and priority levels.
+As the supervisor, you define the tasks for your agents. You can create issues quickly via flags or use the **Interactive Mode** for a more guided experience.
+
+#### Interactive Mode (Recommended for humans)
+Simply run `baton create` without any arguments to start the interactive wizard. This will walk you through setting the title, priority, and description (opening your `$EDITOR` for long-form text).
+
+```bash
+baton create
+```
+
+**What to expect:**
+1. **Title**: Enter a concise summary.
+2. **Priority**: Select from Low, Medium, or High (with helpful hints).
+3. **Token Limit**: Optionally set a budget for AI agents.
+4. **Description**: Choose to add a detailed description. If `$EDITOR` is set, Baton will open it (e.g., VS Code or Vim) for you to type the details.
+
+#### Quick Create (via Flags)
+For power users or scripts, you can pass all details directly:
 
 ```bash
 # Create a high-priority feature request
@@ -249,3 +283,29 @@ This ensures the agent maintains consistency across different models and tools w
 ### Development
 See the [Developer Guide](CONTRIBUTING.md).
 
+---
+
+## Troubleshooting
+
+1. **Database not found**: Try initializing the tracker in your project root.
+   ```bash
+   baton init
+   ```
+
+2. **Database is locked**: Another process may be accessing the database file. Close any other instances of Baton and try again.
+
+3. **User is not registered**: Actions require a registered identity. Ensure your `BATON_AGENT` environment variable matches a name registered via the CLI.
+   ```bash
+   baton register --name "your-name" --type human
+   export BATON_AGENT="your-name"
+   ```
+
+4. **Command not found**: Ensure Baton is installed globally or use `npx baton` if installed locally.
+   ```bash
+   npm install -g baton-issue-tracker
+   ```
+
+5. **Changes not appearing**: Ensure you are running commands from the project root where the `.baton` directory is located. You can also verify the current database state with:
+   ```bash
+   baton status --json
+   ```
