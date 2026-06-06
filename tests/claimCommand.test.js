@@ -9,7 +9,8 @@ import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { Status, Priority } from '../source/models/issue.js';
 import * as schema from '../source/models/schema.js';
 import { setTestDB } from '../source/db/index.js';
-import { createIssue, setActiveActor } from '../source/services/issuesService.js';
+import { createIssue } from '../source/services/issuesService.js';
+import { setCurrentActor } from '../source/services/context.js';
 import { registerAgent } from '../source/services/agentsService.js';
 import { authenticateContext } from '../source/services/authService.js';
 import { run as claimCommand } from '../source/commands/claim.js';
@@ -65,7 +66,7 @@ describe('Claim Command', () => {
 
   afterEach(() => {
     capture.restore();
-    setActiveActor(null);
+    setCurrentActor(null);
     process.env.BATON_AGENT = originalBatonAgent;
     if (sqlite) {
       sqlite.close();
@@ -76,7 +77,7 @@ describe('Claim Command', () => {
   it('should fail when the tracker is not initialized', async () => {
     const empty = makeEmptyDb();
     sqlite = empty.sqlite;
-    setTestDB(empty.db);
+    setTestDB(empty.db, empty.sqlite);
 
     const exitCode = await claimCommand(['1']);
 
@@ -87,7 +88,7 @@ describe('Claim Command', () => {
   it('should fail when the issue ID is missing', async () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
-    setTestDB(setup.db);
+    setTestDB(setup.db, setup.sqlite);
 
     const exitCode = await claimCommand([]);
 
@@ -98,7 +99,7 @@ describe('Claim Command', () => {
   it('should fail when the issue ID is not an integer', async () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
-    setTestDB(setup.db);
+    setTestDB(setup.db, setup.sqlite);
     process.env.BATON_AGENT = 'agent-1';
     registerAgent('agent-1', 'agent');
     authenticateContext('claim');
@@ -112,10 +113,9 @@ describe('Claim Command', () => {
   it('should fail when the current actor is human', async () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
-    setTestDB(setup.db);
+    setTestDB(setup.db, setup.sqlite);
 
-    const human = registerAgent('human-user', 'human');
-    setActiveActor(human.id);
+    registerAgent('human-user', 'human');
     process.env.BATON_AGENT = 'human-user';
     authenticateContext('claim');
 
@@ -129,7 +129,7 @@ describe('Claim Command', () => {
   it('should claim an issue for an authenticated agent', async () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
-    setTestDB(setup.db);
+    setTestDB(setup.db, setup.sqlite);
 
     const agent = registerAgent('claimer-agent', 'agent');
     process.env.BATON_AGENT = 'claimer-agent';
@@ -145,7 +145,7 @@ describe('Claim Command', () => {
   it('should support --json output on success', async () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
-    setTestDB(setup.db);
+    setTestDB(setup.db, setup.sqlite);
 
     const agent = registerAgent('json-agent', 'agent');
     process.env.BATON_AGENT = 'json-agent';

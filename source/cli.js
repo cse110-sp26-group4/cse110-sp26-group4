@@ -126,7 +126,7 @@ async function main() {
   }
 
   // Authenticate the user and context before executing any command.
-  authenticateContext(command);
+  authenticateContext(command, args);
 
   const handlers = {
     init: () => initCmd.run(args),

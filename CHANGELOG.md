@@ -1,3 +1,38 @@
+## [1.13.3](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.13.2...v1.13.3) (2026-06-06)
+
+
+### Bug Fixes
+
+* add actorId to baton log ([#208](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/208)) ([604d0d8](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/604d0d80eef7643cea17bfa0149a459e0e6c6473))
+
+## [1.13.2](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.13.1...v1.13.2) (2026-06-06)
+
+
+### Bug Fixes
+
+* fixed some spelling errors ([#209](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/209)) ([b767398](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/b767398a8262840867660fec7ad715ee0796c910))
+
+## [1.13.1](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.13.0...v1.13.1) (2026-06-05)
+
+
+### Bug Fixes
+
+* added agentName variable ([#194](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/194)) ([c585e82](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/c585e82fe32b47419851fd3b5b988d3a82739cd0))
+
+# [1.13.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.12.0...v1.13.0) (2026-06-05)
+
+
+### Features
+
+* **whoami:** add baton whoami command and unit tests ([#189](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/189)) ([1536260](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/1536260b7bbe2bdb93e249ac89a2cf05de26bc7a))
+
+# [1.12.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.11.2...v1.12.0) (2026-06-05)
+
+
+### Features
+
+* add baton unclaim command and refactor actor context ([#182](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/182)) ([4d435b6](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/4d435b63ca9c934c8155136727e57213483cdd8c))
+
 ## [1.11.2](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.11.1...v1.11.2) (2026-06-05)
 
 

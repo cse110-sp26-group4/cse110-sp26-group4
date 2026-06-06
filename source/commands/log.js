@@ -33,8 +33,9 @@ function serializeLogEntry(entry) {
   return {
     log_id: entry.logId,
     issue_id: entry.issueId,
+    actor_id: entry.actorId,
     action: entry.action,
-    details: entry.details ?? null,
+    details: entry.details,
     created_at: entry.createdAt,
   };
 }

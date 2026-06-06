@@ -14,8 +14,8 @@ import {
   approveIssue,
   claimIssue,
   submitForReview,
-  setActiveActor,
 } from '../source/services/issuesService.js';
+import { setCurrentActor } from '../source/services/context.js';
 import { registerAgent } from '../source/services/agentsService.js';
 import { run as statusCommand } from '../source/commands/status.js';
 
@@ -65,8 +65,8 @@ function captureConsole() {
 describe('Status Command', () => {
   let sqlite;
   let capture;
-  /** @type {number} */
-  let testActorId;
+  /** @type {object} */
+  let testActor;
 
   beforeEach(() => {
     capture = captureConsole();
@@ -74,7 +74,7 @@ describe('Status Command', () => {
 
   afterEach(() => {
     capture.restore();
-    setActiveActor(null);
+    setCurrentActor(null);
     if (sqlite) {
       sqlite.close();
     }
@@ -83,7 +83,7 @@ describe('Status Command', () => {
   it('should fail when the tracker is not initialized', async () => {
     const empty = makeEmptyDb();
     sqlite = empty.sqlite;
-    setTestDB(empty.db);
+    setTestDB(empty.db, empty.sqlite);
 
     const exitCode = await statusCommand([]);
 
@@ -94,7 +94,7 @@ describe('Status Command', () => {
   it('should report zero progress when there are no issues', async () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
-    setTestDB(setup.db);
+    setTestDB(setup.db, setup.sqlite);
 
     const exitCode = await statusCommand([]);
 
@@ -106,9 +106,9 @@ describe('Status Command', () => {
   it('should report counts across all statuses', async () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
-    setTestDB(setup.db);
-    testActorId = registerAgent('status-agent', 'agent').id;
-    setActiveActor(testActorId);
+    setTestDB(setup.db, setup.sqlite);
+    testActor = registerAgent('status-agent', 'agent');
+    setCurrentActor(testActor);
 
     const openIssue = createIssue({ title: 'Open', priority: Priority.HIGH });
     const inProgress = createIssue({ title: 'Working' });
@@ -134,7 +134,7 @@ describe('Status Command', () => {
   it('should only count open issues in the priority breakdown', async () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
-    setTestDB(setup.db);
+    setTestDB(setup.db, setup.sqlite);
 
     createIssue({ title: 'Open High', priority: Priority.HIGH });
     const closedHigh = createIssue({ title: 'Closed High', priority: Priority.HIGH });
@@ -150,7 +150,7 @@ describe('Status Command', () => {
   it('should support --json output', async () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
-    setTestDB(setup.db);
+    setTestDB(setup.db, setup.sqlite);
 
     createIssue({ title: 'JSON Status', priority: Priority.LOW });
 
