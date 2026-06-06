@@ -1,3 +1,4 @@
+// AI was consulted to guide implementation of part of the file.
 import { getDB } from '../db/index.js';
 import { eq, and, or, like, sql } from "drizzle-orm";
 import {issuesTable, activityTable} from "../models/schema.js";
@@ -255,6 +256,24 @@ export function updateIssue(id, oldIssue, { title, description, tokenLimit, stat
 
   logActivity(db, id, Action.EDIT, `Issue #${id} was updated.`);
   return getIssue(id);
+}
+
+/**
+ * 
+ * Sets assigneeId to null
+ * Logs an edit event
+ * @param {number} issueId - ID of the issue to be editted
+ * @returns {Issue}
+ */
+export function unassignIssue(issueId){
+  const db = getDB();
+
+  // Check that issue exists
+  findById(db, issueId);
+
+  db.update(issuesTable).set({ status: Status.OPEN, assigneeId: null }).where(eq(issuesTable.id, issueId)).run();
+  logActivity(db, issueId, Action.EDIT, `Success: Issue #${issueId} is now unassigned.`);
+  return getIssue(issueId);
 }
 
 /**
