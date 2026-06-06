@@ -7,7 +7,7 @@
 //   --specs <path>: path to the specs file (default: docs/specs/project-requirements.md)
 //   <specs-path>: optional positional path to specs (same as --specs)
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { initDB } from '../db/index.js';
 import { Priority } from '../models/issue.js';
@@ -124,6 +124,21 @@ export async function run(args = []) {
   initDB();
 
   if (flags.force) clearAllIssues();
+
+  const templatePath = join('docs', 'BATON_AGENT_RULES.md');
+
+  let rulesContent = '';
+  if (existsSync(templatePath)) {
+    rulesContent = readFileSync(templatePath, 'utf8');
+  }
+
+  const outputPath = join(process.cwd(), 'BATON_AGENT_RULES.md');
+  if (existsSync(outputPath) && !flags.force) {
+    console.error('Error: BATON_AGENT_RULES.md already exists. Use --force to overwrite.');
+    return 1;
+  }
+
+  writeFileSync(outputPath, rulesContent, 'utf8');
 
   const resolvedSpecsPath = resolvePath(flags.specs, DEFAULT_SPECS_PATH);
   const createdIssues = generateIssuesFromSpecs(flags.specs);

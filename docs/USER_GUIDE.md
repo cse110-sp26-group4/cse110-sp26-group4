@@ -7,12 +7,18 @@ Baton is a terminal-based issue tracker designed for human supervisors and AI ag
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Initialization](#initialization)
+    - [Requirements File Format](#requirements-file-format)
   - [Registration](#registration)
   - [Configuration](#configuration)
 - [Core Concepts](#core-concepts)
   - [Issue Data Model](#issue-data-model)
   - [State Machine](#state-machine)
   - [Priority Levels](#priority-levels)
+- [Typical Daily Workflow (Human Supervisor)](#typical-daily-workflow-human-supervisor)
+  - [1. Starting a New Project](#1-starting-a-new-project)
+  - [2. Planning and Creating Issues](#2-planning-and-creating-issues)
+  - [3. Monitoring the Board](#3-monitoring-the-board)
+  - [4. Reviewing and Approving Work](#4-reviewing-and-approving-work)
 - [Command Reference](cli/README.md)
 - [Agent Integration](#agent-integration)
   - [Agent Setup](#agent-setup)
@@ -57,6 +63,22 @@ baton init
 This command:
 1. Creates a local database at `.baton/baton.db`.
 2. (Optional) Seeds the database with issues from a requirements file (defaults to `docs/specs/project-requirements.md`).
+
+#### Requirements File Format
+For `baton init` to automatically create issues, your requirements file (e.g., `requirements.md`) must use a specific Markdown table format. The parser looks for rows containing `| Must |`.
+
+**Example `requirements.md`:**
+```markdown
+# Project Requirements
+
+| ID     | Priority | Requirement                                   |
+|--------|----------|-----------------------------------------------|
+| FR-1.1 | Must     | User must be able to log in with email.      |
+| FR-1.2 | Must     | System must track token usage per agent.     |
+| FR-1.3 | Should   | Support for dark mode in the CLI.            |
+```
+
+*Note: Only rows with `FR-` identifiers and `Must` priority are imported as issues during initialization.*
 
 
 ### Registration
@@ -143,6 +165,84 @@ Issues move through a defined lifecycle:
 - `Medium`
 - `High`
 Baton prioritizes issues with `High` priority first, then by ID.
+
+---
+
+## Typical Daily Workflow (Human Supervisor)
+
+This guide walks through a standard day managing AI agents using Baton.
+
+### 1. Starting a New Project
+When you first clone a repository or start a new project, you need to set up the Baton environment.
+
+```bash
+# Initialize the database and seed it with issues from your requirements doc
+baton init
+
+# Register yourself as the project supervisor
+baton register --name "Alice" --type human
+
+# Set your identity for the session
+export BATON_AGENT="Alice"
+```
+
+### 2. Planning and Creating Issues
+As the supervisor, you define the tasks for your agents. You can create issues quickly via flags or use the **Interactive Mode** for a more guided experience.
+
+#### Interactive Mode (Recommended for humans)
+Simply run `baton create` without any arguments to start the interactive wizard. This will walk you through setting the title, priority, and description (opening your `$EDITOR` for long-form text).
+
+```bash
+baton create
+```
+
+**What to expect:**
+1. **Title**: Enter a concise summary.
+2. **Priority**: Select from Low, Medium, or High (with helpful hints).
+3. **Token Limit**: Optionally set a budget for AI agents.
+4. **Description**: Choose to add a detailed description. If `$EDITOR` is set, Baton will open it (e.g., VS Code or Vim) for you to type the details.
+
+#### Quick Create (via Flags)
+For power users or scripts, you can pass all details directly:
+
+```bash
+# Create a high-priority feature request
+baton create --title "Implement OAuth2 login" --priority high
+
+# Create a medium-priority bug fix
+baton create --title "Fix broken CSS on mobile" --priority medium
+```
+
+### 3. Monitoring the Board
+Throughout the day, you'll want to see how work is progressing across the team.
+
+```bash
+# Get a high-level summary of the issue counts by status
+baton status
+
+# List all open issues to see what agents can work on next
+baton list --status open
+
+# Check the activity log to see who claimed or submitted what
+baton log
+```
+
+### 4. Reviewing and Approving Work
+When an agent completes a task, they move the issue to `In-Review`. It is your job to verify the work and finalize the issue.
+
+```bash
+# Find all issues waiting for your review
+baton list --status in-review
+
+# Read the full details of a specific issue
+baton view 42
+
+# If the work is correct, approve it to close the issue
+baton approve 42
+
+# If the work needs changes, reject it to send it back to 'In-Progress'
+baton reject 42 --reason "Please add unit tests for the edge cases."
+```
 
 ---
 

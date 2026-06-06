@@ -8,10 +8,14 @@
 //  --priority <p>    Filter by priority: low | medium | high
 //  --limit <n>       Max results (default: 50)
 //  --offset <n>      Skip first n results (default: 0)
+//  --assignee <name> Filter by assignee name
 //  --json            Output as JSON (for AI agents)
 //  -h, --help        Show this help
 
 import { listIssues } from '../services/issuesService.js';
+import { issueSchema } from '../models/schema.js';
+import { listAgents, getAgentByName } from '../services/agentsService.js';
+
 import {
     getFlagValue,
     getNumericFlag,
@@ -41,6 +45,13 @@ Examples:
     baton list --limit 10 --offset 20
 `;
 
+const ALLOWED_LIST_FIELDS = ['status', 'priority', 'limit', 'offset', 'assigneeId'];
+
+const VALID_FLAGS = new Set([
+  ...ALLOWED_LIST_FIELDS.map(key => issueSchema[key].flag),
+  '--json',
+]);
+
 /**
  * Lists issues matching the filters and pagination settings 
  * @param {string[]} args - The command line arguments
@@ -53,18 +64,25 @@ export async function run(args) {
         return 0;
     }
     const isJson = hasFlag(args, '--json');
-    const validFlags = ['--status', '--priority', '--limit', '--offset', '--json'];
-    // Check if user misspelled a flag
     for (const arg of args) {
-        if (arg.startsWith('--')) {
-            if (!validFlags.includes(arg)) {
-                throw new Error(`Unknown flag provided: ${arg}. \nFlags: --status <s>, --priority <p>, --limit <n>, --offset <n>, --json`);
-            }
+        if (arg.startsWith('--') && !VALID_FLAGS.has(arg)) {
+            throw new Error(`Unknown flag provided: ${arg}.\nFlags: ${[...VALID_FLAGS].join(', ')}`);
         }
     }
 
     try {
         const options = parseArgs(args);
+
+        // Getting agent name from ID
+        if (options.assigneeId) {
+            const target = getAgentByName(options.assigneeId);
+            if (!target) {
+            const agents = listAgents();
+            const names = agents.map(agent => `${agent.name} (${agent.type})`).join(', ');
+            throw new Error(`Agent/User "${options.assigneeId}" is not registered.\nRegistered agents: ${names}`);
+            }
+            options.assigneeId = target.id;
+        }
 
         const result = await listIssues(options);
         const issues = result.map(serializeIssue);

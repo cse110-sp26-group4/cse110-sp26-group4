@@ -14,6 +14,7 @@
 //   --description <text>   Issue description
 //   --priority <level>     low | medium | high  (default: low)
 //   --token-limit <n>      Optional token budget for this issue
+//   --assignee <name>      Agent assigned to this issue
 //   -h, --help             Show this help
 
 import { createIssue } from "../services/issuesService.js";
@@ -24,8 +25,9 @@ import { spawnSync } from "child_process";
 import { writeFileSync, readFileSync, unlinkSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
+import { listAgents, getAgentByName } from '../services/agentsService.js';
 
-const ALLOWED_CREATE_FIELDS = ['title', 'priority', 'tokenLimit', 'description'];
+const ALLOWED_CREATE_FIELDS = ['title', 'priority', 'tokenLimit', 'description', 'assigneeId'];
 
 const VALID_FLAGS = new Set([
   ...ALLOWED_CREATE_FIELDS.map(key => issueSchema[key].flag),
@@ -174,6 +176,19 @@ async function runInteractiveMode() {
     description = await openEditorForDescription();
   }
 
+  // Assignee
+  const agents = listAgents();
+  const assigneeChoices = [
+    { name: '(none)', value: null },
+    ...agents.map(a => ({ name: `${a.name} (${a.type})`, value: a.id }))
+  ];
+
+  const assigneeId = await select({
+    message: 'Assign to:',
+    choices: assigneeChoices,
+    default: null,
+  });
+
   // Preview & confirm
   console.log("\n" + "-".repeat(48));
   console.log(`  Title      : ${title}`);
@@ -198,7 +213,7 @@ async function runInteractiveMode() {
     process.exit(0);
   }
 
-  return { title, priority, tokenLimit, description };
+  return { title, priority, tokenLimit, description, assigneeId };
 }
 
 /**
@@ -238,6 +253,17 @@ export async function run(args) {
     const options = isInteractive
       ? await runInteractiveMode()
       : parseArgs(args);
+
+    // Getting agent name from ID
+    if (options.assigneeId) {
+      const target = getAgentByName(options.assigneeId);
+      if (!target) {
+        const agents = listAgents();
+        const names = agents.map(agent => `${agent.name} (${agent.type})`).join(', ');
+        throw new Error(`Agent/User "${options.assigneeId}" is not registered.\nRegistered agents: ${names}`);
+      }
+      options.assigneeId = target.id;
+    }
 
     const issue = await createIssue(options);
     const envelope = { status: "success", issue: serializeIssue(issue) };
