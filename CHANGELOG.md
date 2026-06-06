@@ -1,3 +1,10 @@
+## [1.13.2](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.13.1...v1.13.2) (2026-06-06)
+
+
+### Bug Fixes
+
+* fixed some spelling errors ([#209](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/209)) ([b767398](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/b767398a8262840867660fec7ad715ee0796c910))
+
 ## [1.13.1](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.13.0...v1.13.1) (2026-06-05)
 
 
