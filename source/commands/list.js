@@ -17,8 +17,6 @@ import { issueSchema } from '../models/schema.js';
 import { listAgents, getAgentByName } from '../services/agentsService.js';
 
 import {
-  getFlagValue,
-  getNumericFlag,
   hasFlag,
   parseArgs,
   printIssueTable,
