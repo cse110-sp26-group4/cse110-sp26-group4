@@ -6,6 +6,7 @@ const AGENT_RESTRICTED_FLAGS = new Set(['--status', '--token-limit', '--assignee
 /**
  * Validates whether an actor has permission to execute a given command and arguments.
  * @param {string} command - The primary CLI command name.
+ * @param {string[]} [args=[]] - The command line arguments.
  * @throws {Error} If the agent entered a restricted command or flag
  */
 export function authorizeAction(command, args = []) {
@@ -14,7 +15,6 @@ export function authorizeAction(command, args = []) {
   }
 
   if (command === 'update') {
-    const args = process.argv.slice(2); 
     const usedRestricted = args.filter(arg => AGENT_RESTRICTED_FLAGS.has(arg));
     if (usedRestricted.length > 0) {
       throw new Error(
