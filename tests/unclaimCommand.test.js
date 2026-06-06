@@ -65,7 +65,7 @@ describe('Unclaim Command', () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
     testDb = setup.db;
-    setTestDB(testDb);
+    setTestDB(testDb, sqlite);
     agent = registerAgent('claude-dev', 'agent');
     setCurrentActor(agent);
     capture = captureConsole();
