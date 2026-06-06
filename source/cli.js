@@ -28,6 +28,7 @@ import { run as runRegister } from './commands/register.js';
 import { run as runAgents } from './commands/agents.js';
 import { run as runWhoami } from './commands/whoami.js';
 import { run as runSubmit } from './commands/submit.js';
+import { run as runUnassign } from './commands/unassign.js';
 import { run as runUnclaim } from './commands/unclaim.js';
 import { run as runClaim } from './commands/claim.js';
 
@@ -56,6 +57,7 @@ Commands:
   update   Updates an issue's specified fields
   delete   Deletes an issue
   log      Show activity history for an issue
+  unassign Removes all assignees from issue
 
 Options:
   init --force                    Re-initialize an existing tracker database
@@ -94,6 +96,7 @@ Options:
   update --json                   Output as JSON (for AI agents)
   delete <id> [--yes]
   log <id> [--json]
+  unassign <id> [--json]          Output as JSON (for AI agents)
 
 Examples:
   baton init
@@ -120,6 +123,8 @@ Examples:
   baton update 3 --title "Revised title"
   baton update 7 --status closed --priority medium
   baton log 5
+  baton unassign 12
+  baton unassign 11 --json
 `;
 
 /**
@@ -136,7 +141,7 @@ async function main() {
   }
 
   // Authenticate the user and context before executing any command.
-  authenticateContext(command);
+  authenticateContext(command, args);
 
   const handlers = {
     init: () => runInit(args),
@@ -156,6 +161,7 @@ async function main() {
     delete: () => runDelete(args),
     log: () => runLog(args),
     submit: () => runSubmit(args),
+    unassign: () => runUnassign(args),
     unclaim: () => runUnclaim(args),
   };
 

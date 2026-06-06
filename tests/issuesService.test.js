@@ -82,7 +82,7 @@ describe('Issue Tracker Operations', () => {
 
     // Inject the in-memory database into the application
     // This forces getDB() inside issuesService to return this instance.
-    setTestDB(testDb);
+    setTestDB(testDb, sqlite);
     testActor = registerAgent('test-agent', 'agent');
     setCurrentActor(null);
   });

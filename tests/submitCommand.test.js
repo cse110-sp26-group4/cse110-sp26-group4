@@ -66,7 +66,7 @@ describe('Submit Command', () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
     testDb = setup.db;
-    setTestDB(testDb);
+    setTestDB(testDb, sqlite);
     testActor = registerAgent('test-agent', 'agent');
     setCurrentActor(null);
     capture = captureConsole();

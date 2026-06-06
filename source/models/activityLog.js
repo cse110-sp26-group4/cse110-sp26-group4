@@ -14,12 +14,14 @@ export class ActivityLog {
     issueId,
     actorId   = null,
     action,
+    details   = null,
     createdAt = new Date().toISOString(),
   } = {}) {
     this.logId     = logId;
     this.issueId   = issueId;
     this.actorId   = actorId;
     this.action    = action;
+    this.details   = details,
     this.createdAt = createdAt;
   }
 }

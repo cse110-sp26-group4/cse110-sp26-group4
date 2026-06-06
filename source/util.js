@@ -5,6 +5,7 @@
 
 import { isAbsolute, resolve } from 'node:path';
 import { issueSchema } from '../source/models/schema.js';
+import { getAgentById } from '../source/services/agentsService.js';
 
 /**
  * Formats a timestamp as `HH:MM:SS YYYY-MM-DD`.
@@ -269,7 +270,7 @@ export const WIDTHS = {
   title: 20,
   status: 15,
   priority: 10,
-  //assignees: 10, 
+  assignee: 10, 
   description: 50
 };
 
@@ -283,7 +284,7 @@ export function printTableHeader() {
     "TITLE".padEnd(WIDTHS.title) + " │ " +
     "STATUS".padEnd(WIDTHS.status) + " │ " +
     "PRIORITY".padEnd(WIDTHS.priority) + " │ " +
-    //"ASSIGNEE".padEnd(WIDTHS.assignees) + " │ " +
+    "ASSIGNEE".padEnd(WIDTHS.assignee) + " │ " +
     "DESCRIPTION".padEnd(WIDTHS.description)
   );
   console.log(
@@ -291,7 +292,7 @@ export function printTableHeader() {
     "─".repeat(WIDTHS.title) + "─┼─" +
     "─".repeat(WIDTHS.status) + "─┼─" +
     "─".repeat(WIDTHS.priority) + "─┼─" +
-    //"─".repeat(WIDTHS.assignees) + "─┼─" +
+    "─".repeat(WIDTHS.assignee) + "─┼─" +
     "─".repeat(WIDTHS.description)
   );
 }
@@ -324,9 +325,10 @@ export function printIssueTable(issue) {
   const priorityVal = truncate(issue.priority, WIDTHS.priority).padEnd(WIDTHS.priority);
   const descVal = truncate(issue.description, WIDTHS.description).padEnd(WIDTHS.description);
 
-  // Handling the assignee array
-  //const assigneesVal = Array.isArray(issue.assignees) ? issue.assignees.join(', ') : 'None';
-  //const assigneeVal = truncate(assigneesVal, WIDTHS.assignees).padEnd(WIDTHS.assignees);
+  // Getting Agent name from id
+  const assigneeId = issue.assigneeId ?? issue.assignee_id ?? null;
+  const assignee = assigneeId ? getAgentById(assigneeId) : null;
+  const assigneeVal = truncate(assignee?.name ?? null, WIDTHS.assignee).padEnd(WIDTHS.assignee);
 
-  console.log(`${idVal} │ ${titleVal} │ ${statusVal} │ ${priorityVal} │ ${descVal}`);
+  console.log(`${idVal} │ ${titleVal} │ ${statusVal} │ ${priorityVal} │ ${assigneeVal} │ ${descVal}`);
 }

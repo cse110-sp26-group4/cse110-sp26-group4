@@ -11,7 +11,7 @@
 //  baton init --specs ./path/to/my-specs.md
 //  baton init --specs C:\full\path\to\specs.md
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { initDB } from '../db/index.js';
 import os from 'node:os';
@@ -174,6 +174,20 @@ export async function run(args = []) {
     console.log(autoRegisterMessage);
   }
 
+  const templatePath = join('docs', 'BATON_AGENT_RULES.md');
+
+  let rulesContent = '';
+  if (existsSync(templatePath)) {
+    rulesContent = readFileSync(templatePath, 'utf8');
+  }
+
+  const outputPath = join(process.cwd(), 'BATON_AGENT_RULES.md');
+  if (existsSync(outputPath) && !flags.force) {
+    console.error('Error: BATON_AGENT_RULES.md already exists. Use --force to overwrite.');
+    return 1;
+  }
+
+  writeFileSync(outputPath, rulesContent, 'utf8');
 
   const resolvedSpecsPath = resolvePath(flags.specs, DEFAULT_SPECS_PATH);
   const createdIssues = generateIssuesFromSpecs(flags.specs);

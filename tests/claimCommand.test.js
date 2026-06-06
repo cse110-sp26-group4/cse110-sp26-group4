@@ -77,7 +77,7 @@ describe('Claim Command', () => {
   it('should fail when the tracker is not initialized', async () => {
     const empty = makeEmptyDb();
     sqlite = empty.sqlite;
-    setTestDB(empty.db);
+    setTestDB(empty.db, empty.sqlite);
 
     const exitCode = await claimCommand(['1']);
 
@@ -88,7 +88,7 @@ describe('Claim Command', () => {
   it('should fail when the issue ID is missing', async () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
-    setTestDB(setup.db);
+    setTestDB(setup.db, setup.sqlite);
 
     const exitCode = await claimCommand([]);
 
@@ -99,7 +99,7 @@ describe('Claim Command', () => {
   it('should fail when the issue ID is not an integer', async () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
-    setTestDB(setup.db);
+    setTestDB(setup.db, setup.sqlite);
     process.env.BATON_AGENT = 'agent-1';
     registerAgent('agent-1', 'agent');
     authenticateContext('claim');
@@ -113,7 +113,7 @@ describe('Claim Command', () => {
   it('should fail when the current actor is human', async () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
-    setTestDB(setup.db);
+    setTestDB(setup.db, setup.sqlite);
 
     registerAgent('human-user', 'human');
     process.env.BATON_AGENT = 'human-user';
@@ -129,7 +129,7 @@ describe('Claim Command', () => {
   it('should claim an issue for an authenticated agent', async () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
-    setTestDB(setup.db);
+    setTestDB(setup.db, setup.sqlite);
 
     const agent = registerAgent('claimer-agent', 'agent');
     process.env.BATON_AGENT = 'claimer-agent';
@@ -145,7 +145,7 @@ describe('Claim Command', () => {
   it('should support --json output on success', async () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
-    setTestDB(setup.db);
+    setTestDB(setup.db, setup.sqlite);
 
     const agent = registerAgent('json-agent', 'agent');
     process.env.BATON_AGENT = 'json-agent';

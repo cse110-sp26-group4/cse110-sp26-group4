@@ -1,3 +1,4 @@
+// AI was consulted to guide implementation of part of the file.
 import { getDB } from '../db/index.js';
 import { eq, and, or, like, sql } from "drizzle-orm";
 import {issuesTable, activityTable} from "../models/schema.js";
@@ -84,6 +85,21 @@ export function createIssue({
 } = {}) {
 
   const db = getDB();
+
+  // Normalize priority argument
+  if (priority !== undefined) {
+    const priorityValues = Object.values(Priority);
+    const match = priorityValues.find(v => v.toLowerCase() === priority.trim().toLowerCase());
+    priority = match || priority;
+  }
+  
+  // Validate before inserting
+  const proposed = new Issue({ title, priority, tokenLimit, description, assigneeId });
+  const { isValid, errors } = proposed.validate();
+  if (!isValid) {
+    throw new Error(`Validation failed: ${errors.join(', ')}`);
+  }
+
   const result = db.insert(issuesTable)
     .values({
       title: title?.trim() || "PENDING",
@@ -244,6 +260,24 @@ export function updateIssue(id, oldIssue, { title, description, tokenLimit, stat
 }
 
 /**
+ * 
+ * Sets assigneeId to null
+ * Logs an edit event
+ * @param {number} issueId - ID of the issue to be editted
+ * @returns {Issue}
+ */
+export function unassignIssue(issueId){
+  const db = getDB();
+
+  // Check that issue exists
+  findById(db, issueId);
+
+  db.update(issuesTable).set({ status: Status.OPEN, assigneeId: null }).where(eq(issuesTable.id, issueId)).run();
+  logActivity(db, issueId, Action.EDIT, `Success: Issue #${issueId} is now unassigned.`);
+  return getIssue(issueId);
+}
+
+/**
  * Assigns an issue to a specific registered agent or human.
  * Logs an edit event.
  * @param {number} issueId 
@@ -394,7 +428,7 @@ export function deleteIssue(id) {
  */
 export function getActivityLog(issueId) {
   const db = getDB();
-  return db.select().from(activityTable).where(eq(activityTable.issueId, issueId)).all();
+  return db.select().from(activityTable).where(eq(activityTable.issueId, issueId)).all().map(rowToLog);
 }
 
 /**
@@ -404,7 +438,7 @@ export function getActivityLog(issueId) {
  */
 export function getRecentActivity({ limit = 20 } = {}) {
   const db = getDB();
-  return db.select().from(activityTable).orderBy(sql`${activityTable.logId} DESC`).limit(limit).all();
+  return db.select().from(activityTable).orderBy(sql`${activityTable.logId} DESC`).limit(limit).all().map(rowToLog);
 }
 // =============================================================================
 // Tracker operations (CLI: init / next / status / claim)
