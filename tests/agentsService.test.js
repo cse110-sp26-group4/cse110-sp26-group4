@@ -69,7 +69,7 @@ describe('Agents Service Operations', () => {
     testDb = setup.db;
     
     // Inject the in-memory database into the application
-    setTestDB(testDb);
+    setTestDB(testDb, sqlite);
   });
 
   afterEach(() => {

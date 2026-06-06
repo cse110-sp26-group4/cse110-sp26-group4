@@ -66,7 +66,7 @@ describe('Whoami Command', () => {
   it('should display the authenticated agent', async () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
-    setTestDB(setup.db);
+    setTestDB(setup.db, setup.sqlite);
 
     registerAgent('claude-dev', 'agent');
     process.env.BATON_AGENT = 'claude-dev';
@@ -81,7 +81,7 @@ describe('Whoami Command', () => {
   it('should output JSON when --json is provided', async () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
-    setTestDB(setup.db);
+    setTestDB(setup.db, setup.sqlite);
 
     registerAgent('json-agent', 'agent');
     process.env.BATON_AGENT = 'json-agent';

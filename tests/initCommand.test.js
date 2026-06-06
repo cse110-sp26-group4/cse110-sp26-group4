@@ -49,7 +49,7 @@ function makeDb() {
     END;
   `);
 
-  setTestDB(db);
+  setTestDB(db, sqlite);
   return { sqlite };
 }
 
