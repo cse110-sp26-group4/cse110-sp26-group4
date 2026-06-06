@@ -93,7 +93,7 @@ describe('E2E: baton init', () => {
   it('creates 0 issues when specs has no issues with Must priority', async () => {
     const emptySpecsPath = path.join(sb.dir, 'empty-specs.md');
     fs.writeFileSync(emptySpecsPath, 
-      `| TITLE | Priority | Requirement |
+      `| Title | Priority | Requirement |
        |--------|----------|-------------|
        | FR-1.1 | Should | This should be ignored. |
     `);
