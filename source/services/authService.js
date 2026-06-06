@@ -12,6 +12,7 @@ export { getCurrentActor };
  * If the agent/user is registered, it sets them as the active actor for this session.
  * If not, it terminates the process with a helpful error message.
  * @param {string} command - The command being executed
+ * @param {string[]} [args=[]] - The command line arguments.
  */
 export function authenticateContext(command, args = []) {
   const exemptCommands = ['register', 'help'];
