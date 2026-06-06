@@ -53,4 +53,10 @@ describe('E2E: Agent Restriction Tests', () => {
     assert.notEqual(result.exitCode, 0);
     assert.match(result.stderr, /Agents cannot update/i);
   });
+
+  it('agent cannot run baton update --assignee', async () => {
+    const result = await sb.runAsAgent(['update', '--assignee', sb.agentName]);
+    assert.notEqual(result.exitCode, 0);
+    assert.match(result.stderr, /Agents cannot update/i);
+  });
 });

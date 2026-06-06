@@ -23,6 +23,19 @@ describe('E2E: baton create', () => {
     assert.equal(result.exitCode, 0);
   });
 
+  it('creates an issue and assigns an agent with --assignee', async () => {
+    await sb.runBaton(['register', '--name', sb.agentName, '--type', 'agent']);
+    const result = await sb.runBaton([
+      'create',
+      '--title', 'Assigned issue',
+      '--assignee', sb.agentName,
+      '--json'
+    ]);
+    assert.equal(result.exitCode, 0);
+    const data = sb.parseJSON(result);
+    assert.ok(data.issue.assignee_id !== null);
+  });
+
   it('returns a valid JSON envelope with --json', async () => {
     const result = await sb.runBaton(['create', '--title', 'Fix login bug', '--json']);
     const data = sb.parseJSON(result);
@@ -88,6 +101,22 @@ describe('E2E: baton create', () => {
     assert.equal(data.issue.token_limit, 1000);
   });
 
+  it('stores the correct assignee in the database', async () => {
+    await sb.runBaton(['register', '--name', sb.agentName, '--type', 'agent']);
+    const registerResult = await sb.runBaton(['agents', '--json']);
+    const agents = sb.parseJSON(registerResult);
+    const agent = agents.agents.find(a => a.name === sb.agentName);
+
+    const result = await sb.runBaton([
+      'create',
+      '--title', 'Assigned issue',
+      '--assignee', sb.agentName,
+      '--json'
+    ]);
+    const data = sb.parseJSON(result);
+    assert.equal(data.issue.assignee_id, agent.id);
+  });
+
   it('creates an issue with all flags', async () => {
     const result = await sb.runBaton([
       'create',
@@ -95,6 +124,7 @@ describe('E2E: baton create', () => {
       '--description', 'Clean up JWT logic',
       '--priority', 'High',
       '--token-limit', '1000',
+      '--assignee', sb.humanName,
       '--json'
     ]);
     assert.equal(result.exitCode, 0);
@@ -103,6 +133,7 @@ describe('E2E: baton create', () => {
     assert.equal(data.issue.description, 'Clean up JWT logic');
     assert.equal(data.issue.priority, 'high');
     assert.equal(data.issue.token_limit, 1000);
+    assert.ok(data.issue.assignee_id !== null);
   });
 
   // Invalid input tests
@@ -119,5 +150,16 @@ describe('E2E: baton create', () => {
   it('exits 1 if token limit is a negative number', async () => {
     const result = await sb.runBaton(['create', '--title', 'Fix login bug', '--token-limit', '-9000', '--json']);
     assert.equal(result.exitCode, 1);
+  });
+
+  it('exits 1 if assignee name is not registered', async () => {
+    const result = await sb.runBaton([
+      'create',
+      '--title', 'Assigned issue',
+      '--assignee', 'nonexistent-agent',
+      '--json'
+    ]);
+    assert.equal(result.exitCode, 1);
+    assert.match(result.stderr, /not registered/i);
   });
 });
