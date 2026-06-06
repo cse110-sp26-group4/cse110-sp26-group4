@@ -1,3 +1,10 @@
+## [1.13.4](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.13.3...v1.13.4) (2026-06-06)
+
+
+### Bug Fixes
+
+* updated e2e init test cases ([#215](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/215)) ([176f7ef](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/176f7ef36db714a1e302046c34c36f5e6a9cb384))
+
 ## [1.13.3](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.13.2...v1.13.3) (2026-06-06)
 
 
