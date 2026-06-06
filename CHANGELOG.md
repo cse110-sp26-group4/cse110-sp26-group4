@@ -1,3 +1,10 @@
+## [1.13.3](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.13.2...v1.13.3) (2026-06-06)
+
+
+### Bug Fixes
+
+* add actorId to baton log ([#208](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/208)) ([604d0d8](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/604d0d80eef7643cea17bfa0149a459e0e6c6473))
+
 ## [1.13.2](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.13.1...v1.13.2) (2026-06-06)
 
 

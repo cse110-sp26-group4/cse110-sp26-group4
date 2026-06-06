@@ -384,7 +384,7 @@ export function deleteIssue(id) {
  */
 export function getActivityLog(issueId) {
   const db = getDB();
-  return db.select().from(activityTable).where(eq(activityTable.issueId, issueId)).all();
+  return db.select().from(activityTable).where(eq(activityTable.issueId, issueId)).all().map(rowToLog);
 }
 
 /**
@@ -394,7 +394,7 @@ export function getActivityLog(issueId) {
  */
 export function getRecentActivity({ limit = 20 } = {}) {
   const db = getDB();
-  return db.select().from(activityTable).orderBy(sql`${activityTable.logId} DESC`).limit(limit).all();
+  return db.select().from(activityTable).orderBy(sql`${activityTable.logId} DESC`).limit(limit).all().map(rowToLog);
 }
 // =============================================================================
 // Tracker operations (CLI: init / next / status / claim)
