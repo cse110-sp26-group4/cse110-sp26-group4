@@ -110,6 +110,7 @@ async function main() {
     delete: deleteCmd,
     log: logCmd,
     submit: submitCmd,
+    claim: claimCmd,
   };
 
   if (wantsHelp(args)) {
