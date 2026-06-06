@@ -170,7 +170,7 @@ export async function run(args = []) {
     }
   }
 
-  if (autoRegisterMessage) {
+  if (autoRegisterMessage && !isJson) {
     console.log(autoRegisterMessage);
   }
 
