@@ -163,8 +163,6 @@ export async function run(args = []) {
     rulesContent = readFileSync(templatePath, 'utf8');
   }
 
-  const rulesContent = readFileSync(templatePath, 'utf8');
-
   const outputPath = join(process.cwd(), 'BATON_AGENT_RULES.md');
   if (existsSync(outputPath) && !flags.force) {
     console.error('Error: BATON_AGENT_RULES.md already exists. Use --force to overwrite.');
