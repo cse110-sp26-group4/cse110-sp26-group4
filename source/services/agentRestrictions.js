@@ -8,7 +8,7 @@ const AGENT_RESTRICTED_FLAGS = new Set(['--status', '--token-limit']);
  * @param {string} command - The primary CLI command name.
  * @throws {Error} If the agent entered a restricted command or flag
  */
-export function authorizeAction(command) {
+export function authorizeAction(command, args = []) {
   if (AGENT_RESTRICTED_COMMANDS.has(command)) {
     throw new Error(`Command "${command}" is restricted to human users only.`);
   }

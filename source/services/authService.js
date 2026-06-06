@@ -13,7 +13,7 @@ export { getCurrentActor };
  * If not, it terminates the process with a helpful error message.
  * @param {string} command - The command being executed
  */
-export function authenticateContext(command) {
+export function authenticateContext(command, args = []) {
   const exemptCommands = ['register', 'help'];
   if (exemptCommands.includes(command)) {
     return;
@@ -38,7 +38,7 @@ export function authenticateContext(command) {
 
   // Check if agent entered a restricted command
   if (agent.type === 'agent') {
-    authorizeAction(command);
+    authorizeAction(command, args);
   }
 
   setCurrentActor(agent);
