@@ -156,7 +156,7 @@ export async function run(args = []) {
     clearAllIssues();
   }
 
-  const templatePath = join('docs', 'specs', 'BATON_AGENT_RULES.md');
+  const templatePath = join('docs', 'BATON_AGENT_RULES.md');
 
   let rulesContent = '';
   if (existsSync(templatePath)) {
