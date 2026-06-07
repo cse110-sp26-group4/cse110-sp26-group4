@@ -98,8 +98,7 @@ h1, h2, h3 { line-height: 1.2; letter-spacing: -0.01em; }
 .hero {
   padding: 90px 0 70px;
   text-align: center;
-  background:
-    radial-gradient(60% 60% at 50% 0%, var(--accent-soft), transparent 70%);
+  background: none;
 }
 .hero-inner { max-width: 720px; margin: 0 auto; }
 .hero-logo {
