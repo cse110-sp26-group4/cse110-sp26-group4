@@ -1,3 +1,10 @@
+## [1.14.4](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.14.3...v1.14.4) (2026-06-07)
+
+
+### Bug Fixes
+
+* corrected db_path and made ita const to reduce repetitive code ([#232](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/232)) ([8c59168](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/8c59168d3638dd0768c2d514400295640f8cb8f4))
+
 ## [1.14.3](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.14.2...v1.14.3) (2026-06-07)
 
 
