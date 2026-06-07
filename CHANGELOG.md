@@ -1,3 +1,10 @@
+## [1.14.3](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.14.2...v1.14.3) (2026-06-07)
+
+
+### Bug Fixes
+
+* instruct user to set env variable before agent starts ([#222](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/222)) ([056760d](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/056760d373004aeb781af1459a57781e035588bd))
+
 ## [1.14.2](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.14.1...v1.14.2) (2026-06-07)
 
 
