@@ -94,8 +94,8 @@
             <p>Issues live in a local SQLite file inside your repo. Clone the project, run <code>init</code>, and you're tracking.</p>
           </article>
           <article class="card">
-            <h3>Auto-claim by priority</h3>
-            <p>Agents run <code>baton claim</code> and Baton hands them the highest-priority open issue automatically.</p>
+            <h3>Explicit issue claiming</h3>
+            <p>Agents run <code>baton claim &lt;id&gt;</code> to take ownership of a specific issue and move it to In-Progress.</p>
           </article>
         </div>
       </div>
@@ -124,8 +124,8 @@
             automatically from a requirements file during <code>baton init</code>.
           </li>
           <li>
-            <strong>Claim.</strong> An agent runs <code>baton claim</code> and is assigned
-            the highest-priority open task, moving it to In-Progress.
+            <strong>Claim.</strong> An agent runs <code>baton claim &lt;id&gt;</code> to take
+            ownership of a specific issue, moving it to In-Progress.
           </li>
           <li>
             <strong>Do the work.</strong> The agent reads the issue with
