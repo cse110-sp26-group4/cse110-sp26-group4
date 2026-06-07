@@ -30,6 +30,7 @@ import {
 } from '../util.js';
 
 const DEFAULT_SPECS_PATH = join('docs', 'specs', 'project-requirements.md');
+const DB_PATH = join(process.cwd(), '.baton', 'baton.db');
 
 export const HELP = `Usage:
   baton init [--force] [--specs <path>] [<specs-path>]
@@ -180,14 +181,14 @@ export async function run(args = []) {
   const createdIssues = generateIssuesFromSpecs(flags.specs);
   const envelope = {
     status: 'success',
-    db_path: join(process.cwd(), 'data', 'issues.db'),
+    db_path: DB_PATH,
     specs_path: resolvedSpecsPath,
     count: createdIssues.length,
     issues: createdIssues.map(serializeIssue),
   };
 
   renderOutput(isJson, envelope, () => {
-    console.log(`Tracker initialized at ${join(process.cwd(), 'data', 'issues.db')}`);
+    console.log(`Tracker initialized at ${DB_PATH}`);
     console.log(`Specs: ${resolvedSpecsPath}`);
     console.log(`Created ${createdIssues.length} issue(s) from product specs.`);
     if (createdIssues.length > 0) {
