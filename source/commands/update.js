@@ -25,8 +25,9 @@ import { spawnSync } from "child_process";
 import { writeFileSync, readFileSync, unlinkSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
+import { listAgents, getAgentByName } from '../services/agentsService.js';
 
-const ALLOWED_UPDATE_FIELDS = ['title', 'status', 'priority', 'tokenLimit', 'description'];
+const ALLOWED_UPDATE_FIELDS = ['title', 'status', 'priority', 'tokenLimit', 'description', 'assigneeId'];
 
 const VALID_FLAGS = new Set([
   ...ALLOWED_UPDATE_FIELDS.map(key => issueSchema[key].flag),
@@ -161,6 +162,24 @@ async function runInteractiveMode(issue) {
     if (edited !== null) results.description = edited;
   }
 
+  // Assignee
+  const wantsAssignee = await confirm({
+    message: "Edit assignee?",
+    default: false,
+  });
+  if (wantsAssignee) {
+    const agents = listAgents();
+    const assigneeChoices = [
+      { name: '(none)', value: null },
+      ...agents.map(agent => ({ name: `${agent.name} (${agent.type})`, value: agent.id }))
+    ];
+    results.assigneeId = await select({
+      message: 'Assign to:',
+      choices: assigneeChoices,
+      default: issue.assigneeId ?? null
+    });
+  }
+
   // Diff: loop over results and collect only what changed.
   // Adding a new prompt above is all that is needed -- nothing to update here.
   const pending = Object.fromEntries(
@@ -235,6 +254,17 @@ export async function run(args) {
     const options = isInteractive
       ? await runInteractiveMode(oldIssue)
       : parseArgs(cmdArgs.slice(1));
+
+    // Getting agent name from ID
+    if (options.assigneeId) {
+      const target = getAgentByName(options.assigneeId);
+      if (!target) {
+        const agents = listAgents();
+        const names = agents.map(agent => `${agent.name} (${agent.type})`).join(', ');
+        throw new Error(`Agent/User "${options.assigneeId}" is not registered.\nRegistered agents: ${names}`);
+      }
+      options.assigneeId = target.id;
+    }
 
     const newIssue = await updateIssue(id, oldIssue, options);
     const envelope = { status: "success", issue: serializeIssue(newIssue) };

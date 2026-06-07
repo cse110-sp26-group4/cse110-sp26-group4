@@ -11,9 +11,11 @@
 //  baton init --specs ./path/to/my-specs.md
 //  baton init --specs C:\full\path\to\specs.md
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { initDB } from '../db/index.js';
+import os from 'node:os';
+import { registerAgent } from '../services/agentsService.js';
 import { Priority } from '../models/issue.js';
 import {
   createIssue,
@@ -156,6 +158,37 @@ export async function run(args = []) {
     clearAllIssues();
   }
 
+  // auto-register default deployment human user
+  let autoRegisterMessage = '';
+  try {
+    const activeName = process.env.BATON_AGENT || os.userInfo().username;
+    registerAgent(activeName, 'human');
+    autoRegisterMessage = `Auto-registered default human user: "${activeName}"`;
+  } catch (error){
+    if (!error.message?.includes('UNIQUE constraint failed')) {
+      autoRegisterMessage = `Warning: Could not auto-register default user: ${error.message}`;
+    }
+  }
+
+  if (autoRegisterMessage && !isJson) {
+    console.log(autoRegisterMessage);
+  }
+
+  const templatePath = join('docs', 'BATON_AGENT_RULES.md');
+
+  let rulesContent = '';
+  if (existsSync(templatePath)) {
+    rulesContent = readFileSync(templatePath, 'utf8');
+  }
+
+  const outputPath = join(process.cwd(), 'BATON_AGENT_RULES.md');
+  if (existsSync(outputPath) && !flags.force) {
+    console.error('Error: BATON_AGENT_RULES.md already exists. Use --force to overwrite.');
+    return 1;
+  }
+
+  writeFileSync(outputPath, rulesContent, 'utf8');
+
   const resolvedSpecsPath = resolvePath(flags.specs, DEFAULT_SPECS_PATH);
   const createdIssues = generateIssuesFromSpecs(flags.specs);
   const envelope = {
@@ -176,7 +209,7 @@ export async function run(args = []) {
         console.log(`  #${issue.id} [${issue.priority}] ${issue.title}`);
       }
     }
-    console.log('Run `baton status` to review progress or `baton next` to start work.');
+    console.log('Run `baton status` to review progress.');
   });
 
   return 0;

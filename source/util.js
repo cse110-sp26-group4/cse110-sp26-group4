@@ -5,6 +5,7 @@
 
 import { isAbsolute, resolve } from 'node:path';
 import { issueSchema } from '../source/models/schema.js';
+import { getAgentById } from '../source/services/agentsService.js';
 
 /**
  * Formats a timestamp as `HH:MM:SS YYYY-MM-DD`.
@@ -200,24 +201,35 @@ function toJsonEnum(value) {
 }
 
 /**
+ * Converts a camelCase string to snake_case.
+ * @param {string} str
+ * @returns {string}
+ */
+function camelToSnake(str) {
+  return str.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
+}
+
+/**
  * Normalizes a DB row or Issue instance into a stable JSON-friendly shape.
- * All commands should serialize through this before building their envelope.
+ * Dynamically built from issueSchema so the output always matches the schema.
  * @param {object} issue
  * @returns {object}
  */
 export function serializeIssue(issue) {
-  return {
-    id: issue.id,
-    title: issue.title,
-    status: toJsonEnum(issue.status),
-    priority: toJsonEnum(issue.priority),
-    description: issue.description ?? null,
-    token_limit: issue.tokenLimit ?? issue.token_limit ?? null,
-    attempt_num: issue.attemptNum ?? issue.attempt_num ?? 0,
-    created_at: issue.createdAt ?? issue.created_at ?? null,
-    last_updated: issue.lastUpdated ?? issue.last_updated ?? null,
-    assignees: issue.assignees ?? null,
-  };
+  const skip = new Set(['limit', 'offset']);
+  const result = {};
+
+  for (const [key, config] of Object.entries(issueSchema)) {
+    if (skip.has(key)) continue;
+    const snakeKey = camelToSnake(key);
+    const value = issue[key] ?? issue[snakeKey] ?? null;
+    result[snakeKey] = config.type === 'enum' ? toJsonEnum(value) : value;
+  }
+
+  result.created_at = issue.createdAt ?? issue.created_at ?? null;
+  result.last_updated = issue.lastUpdated ?? issue.last_updated ?? null;
+
+  return result;
 }
 
 /**
@@ -258,7 +270,7 @@ export const WIDTHS = {
   title: 20,
   status: 15,
   priority: 10,
-  //assignees: 10, 
+  assignee: 10, 
   description: 50
 };
 
@@ -272,7 +284,7 @@ export function printTableHeader() {
     "TITLE".padEnd(WIDTHS.title) + " │ " +
     "STATUS".padEnd(WIDTHS.status) + " │ " +
     "PRIORITY".padEnd(WIDTHS.priority) + " │ " +
-    //"ASSIGNEE".padEnd(WIDTHS.assignees) + " │ " +
+    "ASSIGNEE".padEnd(WIDTHS.assignee) + " │ " +
     "DESCRIPTION".padEnd(WIDTHS.description)
   );
   console.log(
@@ -280,7 +292,7 @@ export function printTableHeader() {
     "─".repeat(WIDTHS.title) + "─┼─" +
     "─".repeat(WIDTHS.status) + "─┼─" +
     "─".repeat(WIDTHS.priority) + "─┼─" +
-    //"─".repeat(WIDTHS.assignees) + "─┼─" +
+    "─".repeat(WIDTHS.assignee) + "─┼─" +
     "─".repeat(WIDTHS.description)
   );
 }
@@ -313,9 +325,10 @@ export function printIssueTable(issue) {
   const priorityVal = truncate(issue.priority, WIDTHS.priority).padEnd(WIDTHS.priority);
   const descVal = truncate(issue.description, WIDTHS.description).padEnd(WIDTHS.description);
 
-  // Handling the assignee array
-  //const assigneesVal = Array.isArray(issue.assignees) ? issue.assignees.join(', ') : 'None';
-  //const assigneeVal = truncate(assigneesVal, WIDTHS.assignees).padEnd(WIDTHS.assignees);
+  // Getting Agent name from id
+  const assigneeId = issue.assigneeId ?? issue.assignee_id ?? null;
+  const assignee = assigneeId ? getAgentById(assigneeId) : null;
+  const assigneeVal = truncate(assignee?.name ?? null, WIDTHS.assignee).padEnd(WIDTHS.assignee);
 
-  console.log(`${idVal} │ ${titleVal} │ ${statusVal} │ ${priorityVal} │ ${descVal}`);
+  console.log(`${idVal} │ ${titleVal} │ ${statusVal} │ ${priorityVal} │ ${assigneeVal} │ ${descVal}`);
 }

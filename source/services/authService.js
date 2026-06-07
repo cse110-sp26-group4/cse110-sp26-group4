@@ -1,8 +1,10 @@
 import os from 'os';
 import { getAgentByName } from './agentsService.js';
-import { setActiveActor } from './issuesService.js';
+import { setCurrentActor, getCurrentActor } from './context.js';
+import { isTrackerReady } from './issuesService.js';
+import { authorizeAction } from './agentRestrictions.js';
 
-let currentActor = null;
+export { getCurrentActor };
 
 /**
  * Authenticates the current execution context.
@@ -10,46 +12,35 @@ let currentActor = null;
  * If the agent/user is registered, it sets them as the active actor for this session.
  * If not, it terminates the process with a helpful error message.
  * @param {string} command - The command being executed
+ * @param {string[]} [args=[]] - The command line arguments.
  */
-export function authenticateContext(command) {
-  // Commands that don't require an active agent signed in
-  const exemptCommands = ['init', 'register', 'help'];
+export function authenticateContext(command, args = []) {
+  const exemptCommands = ['register', 'help'];
   if (exemptCommands.includes(command)) {
     return;
   }
 
-  // Identify who is running the CLI
-  const activeName = process.env.BATON_AGENT || os.userInfo().username;
-  
-  try {
-    // Look them up in the database
-    const agent = getAgentByName(activeName);
+  if (!isTrackerReady()) {
+    if (command === 'init') {
+      return;
+    }
+    console.error("Error: Tracker is not initialized. Please run 'baton init' first.");
+    process.exit(1);
+  }
 
-    if (!agent) {
+  const activeName = process.env.BATON_AGENT || os.userInfo().username;
+  const agent = getAgentByName(activeName);
+    
+  if (!agent) {
       console.error(`Error: Agent/User "${activeName}" is not registered in this Baton tracker.`);
       console.error(`Please run 'baton register --name "${activeName}" --type "human"' (or "agent") first.`);
       process.exit(1);
-    }
-
-    // Set the global state for the remainder of this command's lifecycle
-    currentActor = agent;
-    setActiveActor(agent.id);
-  } catch (error) {
-    // Gracefully handle the scenario where the database hasn't been initialized yet
-    if (error.message && error.message.includes('no such table: agents')) {
-      console.error("Error: Tracker is not initialized. Please run 'baton init' first.");
-      process.exit(1);
-    }
-    
-    // Rethrow if it's a completely different error
-    throw error;
   }
-}
 
-/**
- * Returns the authenticated actor object for this session.
- * @returns {object|null}
- */
-export function getCurrentActor() {
-  return currentActor;
+  // Check if agent entered a restricted command
+  if (agent.type === 'agent') {
+    authorizeAction(command, args);
+  }
+
+  setCurrentActor(agent);
 }

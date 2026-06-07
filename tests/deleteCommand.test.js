@@ -63,7 +63,7 @@ describe('Delete Command', () => {
     const setup = makeDb();
     sqlite = setup.sqlite;
     testDb = setup.db;
-    setTestDB(testDb);
+    setTestDB(testDb, sqlite);
     capture = captureConsole();
   });
 

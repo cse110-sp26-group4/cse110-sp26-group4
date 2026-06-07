@@ -13,8 +13,8 @@ import {
   createIssue,
   claimIssue,
   getIssue,
-  setActiveActor,
 } from '../source/services/issuesService.js';
+import { setCurrentActor } from '../source/services/context.js';
 import { registerAgent } from '../source/services/agentsService.js';
 import { run as submitCommand } from '../source/commands/submit.js';
 
@@ -59,27 +59,27 @@ describe('Submit Command', () => {
   let sqlite;
   let testDb;
   let capture;
-  /** @type {number} Registered agent ID for valid activity.actor_id FK */
-  let testActorId;
+  /** @type {object} */
+  let testActor;
 
   beforeEach(() => {
     const setup = makeDb();
     sqlite = setup.sqlite;
     testDb = setup.db;
-    setTestDB(testDb);
-    testActorId = registerAgent('test-agent', 'agent').id;
-    setActiveActor(null);
+    setTestDB(testDb, sqlite);
+    testActor = registerAgent('test-agent', 'agent');
+    setCurrentActor(null);
     capture = captureConsole();
   });
 
   afterEach(() => {
     capture.restore();
-    setActiveActor(null);
+    setCurrentActor(null);
     sqlite.close();
   });
 
   it('should successfully submit an In-Progress issue for review', async () => {
-    setActiveActor(testActorId);
+    setCurrentActor(testActor);
     const issue = createIssue({ title: 'Submit Me' });
     claimIssue(issue.id);
 
@@ -94,7 +94,7 @@ describe('Submit Command', () => {
 
   it('should fail if the issue is not In-Progress', async () => {
     const issue = createIssue({ title: 'Open Issue' });
-    setActiveActor(testActorId);
+    setCurrentActor(testActor);
 
     const exitCode = await submitCommand([String(issue.id)]);
 
@@ -107,7 +107,7 @@ describe('Submit Command', () => {
   });
 
   it('should fail if the issue does not exist', async () => {
-    setActiveActor(testActorId);
+    setCurrentActor(testActor);
 
     const exitCode = await submitCommand(['999']);
 
@@ -116,7 +116,7 @@ describe('Submit Command', () => {
   });
 
   it('should fail if no issue ID is provided', async () => {
-    setActiveActor(testActorId);
+    setCurrentActor(testActor);
 
     const exitCode = await submitCommand([]);
 
@@ -125,7 +125,7 @@ describe('Submit Command', () => {
   });
 
   it('should fail if the ID is not an integer', async () => {
-    setActiveActor(testActorId);
+    setCurrentActor(testActor);
 
     const exitCode = await submitCommand(['abc']);
 
@@ -134,7 +134,7 @@ describe('Submit Command', () => {
   });
 
   it('should support --json output on success', async () => {
-    setActiveActor(testActorId);
+    setCurrentActor(testActor);
     const issue = createIssue({ title: 'JSON Submit' });
     claimIssue(issue.id);
 
@@ -148,7 +148,7 @@ describe('Submit Command', () => {
   });
 
   it('should support --json output on error', async () => {
-    setActiveActor(testActorId);
+    setCurrentActor(testActor);
 
     const exitCode = await submitCommand(['999', '--json']);
 

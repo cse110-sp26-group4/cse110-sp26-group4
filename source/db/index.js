@@ -18,7 +18,8 @@ if (!fs.existsSync(dataDir)) {
 }
 
 // Initialize better-sqlite3 connection
-const sqliteConnection = new Database(dbPath);
+// Using let here so we can reassign it in tests with an in-memory database instance.
+let sqliteConnection = new Database(dbPath);
 
 // Initialize Drizzle ORM, passing in the schema for relational queries
 // Using let here so we can reassign it in tests with an in-memory database instance.
@@ -71,6 +72,7 @@ export function getSQLiteDB() {
 }
 
 // function for the test suite mocking
-export function setTestDB(testDbInstance) {
+export function setTestDB(testDbInstance, testSqliteConnection) {
   db = testDbInstance;
+  if (testSqliteConnection) sqliteConnection = testSqliteConnection;
 }

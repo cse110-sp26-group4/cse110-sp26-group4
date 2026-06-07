@@ -1,3 +1,4 @@
+// AI was consulted to guide implementation of part of the file.
 import { getDB } from '../db/index.js';
 import { eq, and, or, like, sql } from "drizzle-orm";
 import {issuesTable, activityTable} from "../models/schema.js";
@@ -7,17 +8,7 @@ import {
   Priority,
 } from "../models/issue.js";
 import { ActivityLog, Action } from '../models/activityLog.js';
-
-// Internal variable to hold the active agent's ID for logging purposes. Set via setActiveActor() during authentication.
-let currentActorId = null;
-
-/**
- * Sets the active actor ID for logging purposes.
- * @param {number} id - The ID of the active actor.
- */
-export function setActiveActor(id) {
-    currentActorId = id;
-}
+import { getCurrentActorId } from './context.js';
 
 /**
  * Internal helper to log actions.
@@ -29,16 +20,8 @@ export function setActiveActor(id) {
  */
 function logActivity(db, issueId, action, details = null) {
   db.insert(activityTable)
-    .values({ issueId, action, details, actorId: currentActorId })
+    .values({ issueId, action, details, actorId: getCurrentActorId() })
     .run();
-}
-
-/**
- * Returns the active actor ID set during authentication.
- * @returns {number|null}
- */
-export function getActiveActor() {
-  return currentActorId;
 }
 
 /**
@@ -102,6 +85,21 @@ export function createIssue({
 } = {}) {
 
   const db = getDB();
+
+  // Normalize priority argument
+  if (priority !== undefined) {
+    const priorityValues = Object.values(Priority);
+    const match = priorityValues.find(v => v.toLowerCase() === priority.trim().toLowerCase());
+    priority = match || priority;
+  }
+  
+  // Validate before inserting
+  const proposed = new Issue({ title, priority, tokenLimit, description, assigneeId });
+  const { isValid, errors } = proposed.validate();
+  if (!isValid) {
+    throw new Error(`Validation failed: ${errors.join(', ')}`);
+  }
+
   const result = db.insert(issuesTable)
     .values({
       title: title?.trim() || "PENDING",
@@ -234,6 +232,7 @@ export function updateIssue(id, oldIssue, { title, description, tokenLimit, stat
     updates.status = toUpdate || status;
   }
 
+
   // Normalize priority argument
   if (priority !== undefined) {
     const priorityValues = Object.values(Priority);
@@ -258,6 +257,48 @@ export function updateIssue(id, oldIssue, { title, description, tokenLimit, stat
 
   logActivity(db, id, Action.EDIT, `Issue #${id} was updated.`);
   return getIssue(id);
+}
+
+/**
+ * 
+ * Sets assigneeId to null
+ * Logs an edit event
+ * @param {number} issueId - ID of the issue to be editted
+ * @returns {Issue}
+ */
+export function unassignIssue(issueId){
+  const db = getDB();
+
+  // Check that issue exists
+  findById(db, issueId);
+
+  db.update(issuesTable).set({ status: Status.OPEN, assigneeId: null }).where(eq(issuesTable.id, issueId)).run();
+  logActivity(db, issueId, Action.EDIT, `Success: Issue #${issueId} is now unassigned.`);
+  return getIssue(issueId);
+}
+
+/**
+ * Assigns an issue to a specific registered agent or human.
+ * Logs an edit event.
+ * @param {number} issueId 
+ * @param {number} assigneeId 
+ * @returns {Issue} - the issue that matches the ID
+ */
+export function assignIssue(issueId, assigneeId) {
+  const db = getDB();
+  
+  // Verify the issue exists first (will throw if not found)
+  findById(db, issueId);
+  
+  db.update(issuesTable)
+    .set({ assigneeId: assigneeId })
+    .where(eq(issuesTable.id, issueId))
+    .run();
+
+  // Pass actorId directly instead of hacking the global module variable
+  logActivity(db, issueId, Action.EDIT, `Issue #${issueId} was assigned.`);
+  
+  return getIssue(issueId);
 }
 
 /**
@@ -387,7 +428,7 @@ export function deleteIssue(id) {
  */
 export function getActivityLog(issueId) {
   const db = getDB();
-  return db.select().from(activityTable).where(eq(activityTable.issueId, issueId)).all();
+  return db.select().from(activityTable).where(eq(activityTable.issueId, issueId)).all().map(rowToLog);
 }
 
 /**
@@ -397,7 +438,7 @@ export function getActivityLog(issueId) {
  */
 export function getRecentActivity({ limit = 20 } = {}) {
   const db = getDB();
-  return db.select().from(activityTable).orderBy(sql`${activityTable.logId} DESC`).limit(limit).all();
+  return db.select().from(activityTable).orderBy(sql`${activityTable.logId} DESC`).limit(limit).all().map(rowToLog);
 }
 // =============================================================================
 // Tracker operations (CLI: init / next / status / claim)
@@ -491,10 +532,10 @@ export function claimIssue(issueId) {
     logActivity(tx, issueId, Action.READ, `Agent accessed issue #${issueId}`);
     
     tx.update(issuesTable)
-      .set({ 
+      .set({
         status: Status.IN_PROGRESS,
-        assigneeId: currentActorId, 
-        attemptNum: sql`${issuesTable.attemptNum} + 1` 
+        assigneeId: getCurrentActorId(),
+        attemptNum: sql`${issuesTable.attemptNum} + 1`
       })
       .where(eq(issuesTable.id, issueId))
       .run();
@@ -515,6 +556,36 @@ export function claimIssue(issueId) {
   });
 
   return findById(db, issueId);
+}
+
+/**
+ * Release an issue back to Open status, clearing the assignee.
+ * Logs a STATE_CHANGE activity entry.
+ * @param {number} issueId
+ * @returns {Issue}
+ * @throws {Error} If issueId is invalid or issue is not found
+ */
+export function unclaimIssue(issueId) {
+  if (!Number.isInteger(issueId)) {
+    throw new Error('issueId must be an integer');
+  }
+
+  const db = getDB();
+  findById(db, issueId);
+
+  db.update(issuesTable)
+    .set({ status: Status.OPEN, assigneeId: null })
+    .where(eq(issuesTable.id, issueId))
+    .run();
+
+  logActivity(
+    db,
+    issueId,
+    Action.STATE_CHANGE,
+    `Issue #${issueId} was released and returned to Open.`,
+  );
+
+  return getIssue(issueId);
 }
 
 /**

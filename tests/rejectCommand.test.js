@@ -9,7 +9,8 @@ import Database from 'better-sqlite3';
 import { Status } from '../source/models/issue.js';
 import * as schema from '../source/models/schema.js';
 import { setTestDB } from '../source/db/index.js'; 
-import { createIssue, submitForReview, claimIssue, setActiveActor } from '../source/services/issuesService.js';
+import { createIssue, submitForReview, claimIssue } from '../source/services/issuesService.js';
+import { setCurrentActor } from '../source/services/context.js';
 import { registerAgent } from '../source/services/agentsService.js';
 import { run as rejectCommand } from '../source/commands/reject.js';
 
@@ -54,22 +55,22 @@ describe('Reject Command', () => {
   let sqlite;
   let testDb;
   let capture;
-  /** @type {number} */
-  let testActorId;
+  /** @type {object} */
+  let testActor;
 
   beforeEach(() => {
     const setup = makeDb();
     sqlite = setup.sqlite;
     testDb = setup.db;
-    setTestDB(testDb);
-    testActorId = registerAgent('test-agent', 'agent').id;
-    setActiveActor(testActorId);
+    setTestDB(testDb, sqlite);
+    testActor = registerAgent('test-agent', 'agent');
+    setCurrentActor(testActor);
     capture = captureConsole();
   });
 
   afterEach(() => {
     capture.restore();
-    setActiveActor(null);
+    setCurrentActor(null);
     sqlite.close();
   });
 
