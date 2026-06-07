@@ -3,12 +3,14 @@ import { sql } from "drizzle-orm";
 import { Status, Priority } from "./issue.js";
 import { Action } from "./activityLog.js";
 
+/** Drizzle table definition for registered agents and humans. */
 export const agentsTable = sqliteTable("agents", {
   id:   int().primaryKey({ autoIncrement: true }),
   name: text().notNull().unique(),
   type: text({ enum: ['agent', 'human'] }).notNull(),
 });
 
+/** Drizzle table definition for issues. */
 export const issuesTable = sqliteTable("issues", {
   id:          int().primaryKey({ autoIncrement: true }),
   createdAt:   text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
@@ -22,6 +24,7 @@ export const issuesTable = sqliteTable("issues", {
   assigneeId:  int("assignee_id").references(() => agentsTable.id),
 });
 
+/** Drizzle table definition for the activity audit log. */
 export const activityTable = sqliteTable(
   "activity",
   {
@@ -44,7 +47,10 @@ export const activityTable = sqliteTable(
   ],
 );
 
-// helper for parsing command line arguments 
+/**
+ * Maps issue field names to their CLI flag, type, and (for enums) allowed values.
+ * Used by `parseArgs()` and `validateFlags()` in util.js.
+ */
 export const issueSchema = {
     id:         { flag: '--id', type: 'number' },
     attemptNum: { flag: '--attempt', type: 'number' },

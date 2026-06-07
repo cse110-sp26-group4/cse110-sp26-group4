@@ -53,6 +53,11 @@ Examples:
  * @property {string | null} specs - The resolved path to the specifications file.
  */
 
+/**
+ * Parses init-specific flags from raw CLI arguments.
+ * @param {string[]} args
+ * @returns {InitFlags}
+ */
 function parseInitFlags(args) {
   const specsFromFlag = getFlagValue(args, '--specs');
   const positionalSpecs = getFirstPositionalArg(args, {
@@ -70,6 +75,11 @@ function parseInitFlags(args) {
   };
 }
 
+/**
+ * Extracts "Must" functional requirements from a markdown spec table.
+ * @param {string} markdown - Raw markdown content of the specs file.
+ * @returns {object[]} Array of objects with title, description, and priority fields.
+ */
 function parseMustRequirements(markdown) {
   const issues = [];
   const lines = markdown.split('\n');
@@ -87,6 +97,11 @@ function parseMustRequirements(markdown) {
   return issues;
 }
 
+/**
+ * Reads the specs file and creates issues for every "Must" requirement found.
+ * @param {string | null} specsPath - Resolved path to the specs file, or null to use the default.
+ * @returns {Issue[]}
+ */
 function generateIssuesFromSpecs(specsPath) {
   const resolvedPath = resolvePath(specsPath, DEFAULT_SPECS_PATH);
 
@@ -102,6 +117,11 @@ function generateIssuesFromSpecs(specsPath) {
   return requirements.map((req) => createIssue(req));
 }
 
+/**
+ * Initializes the tracker database, auto-registers the current user, and seeds issues from specs.
+ * @param {string[]} [args]
+ * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
+ */
 export async function run(args = []) {
   if (wantsHelp(args)) {
     console.log(HELP);
