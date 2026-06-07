@@ -1,9 +1,9 @@
-// sandbox.js 
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
-import { runBaton as _runBaton, parseJSON } from './runBaton.test.js';
-import { beforeEach, afterEach } from 'node:test';
+// sandbox.js
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { runBaton as _runBaton, parseJSON } from "./runBaton.test.js";
+import { beforeEach, afterEach } from "node:test";
 
 /**
  * @typedef {Object} sandbox
@@ -22,17 +22,18 @@ import { beforeEach, afterEach } from 'node:test';
  * @returns {sandbox}
  */
 export function createSandbox() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'baton-test-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "baton-test-"));
 
   // Defining format for a fake spec file
-  const specsPath = path.join(dir, 'specs.md');
+  const specsPath = path.join(dir, "specs.md");
 
   fs.writeFileSync(specsPath, 
    `| Title | Priority | Requirement |
     |--------|----------|-------------|
     | FR-1.1 | Must | Sandbox test issue one. |
     | FR-1.2 | Must | Sandbox test issue two. |
-  `);
+  `,
+  );
 
   function execute(args, identity) {
     return _runBaton(args, { 
