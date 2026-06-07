@@ -25,15 +25,17 @@ jobs:
           node-version: "22"
       - run: npm ci
       - run: npm run build-docs
-      - name: Copy product site into artifact
+      - name: Restructure artifact
         run: |
-          cp docs/index.html docs/jsdoc/index.html
-          cp docs/styles.css docs/jsdoc/styles.css
-          cp docs/.nojekyll docs/jsdoc/.nojekyll
-          cp -r docs/assets docs/jsdoc/assets
+          mkdir -p docs/dist
+          cp docs/index.html docs/dist/index.html
+          cp docs/styles.css docs/dist/styles.css
+          touch docs/dist/.nojekyll
+          cp -r docs/assets docs/dist/assets
+          cp -r docs/jsdoc docs/dist/jsdoc
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: ./docs/jsdoc
+          path: ./docs/dist
 
   deploy:
     name: Deploy to GitHub Pages
