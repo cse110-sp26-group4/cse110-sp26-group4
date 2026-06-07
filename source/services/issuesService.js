@@ -86,13 +86,6 @@ export function createIssue({
 
   const db = getDB();
 
-  // Normalize priority argument
-  if (priority !== undefined) {
-    const priorityValues = Object.values(Priority);
-    const match = priorityValues.find(v => v.toLowerCase() === priority.trim().toLowerCase());
-    priority = match || priority;
-  }
-  
   // Validate before inserting
   const proposed = new Issue({ title, priority, tokenLimit, description, assigneeId });
   const { isValid, errors } = proposed.validate();
@@ -224,21 +217,8 @@ export function updateIssue(id, oldIssue, { title, description, tokenLimit, stat
   if (description !== undefined) updates.description = description;
   if (tokenLimit !== undefined) updates.tokenLimit = tokenLimit;
   if (assigneeId !== undefined) updates.assigneeId = assigneeId;
-
-  // Normalize status argument
-  if (status !== undefined) {
-    const statusValues = Object.values(Status);
-    const toUpdate = statusValues.find(v => v.trim().toLowerCase() === status.trim().toLowerCase());
-    updates.status = toUpdate || status;
-  }
-
-
-  // Normalize priority argument
-  if (priority !== undefined) {
-    const priorityValues = Object.values(Priority);
-    const toUpdate = priorityValues.find(v => v.toLowerCase().trim() === priority.trim().toLowerCase());
-    updates.priority = toUpdate || priority;
-  }
+  if (priority !== undefined) updates.priority = priority; 
+  if (status !== undefined) updates.status = status;
 
   // Validate the new data 
   const proposedIssue = new Issue({ ...oldIssue, ...updates });

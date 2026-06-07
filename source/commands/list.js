@@ -13,11 +13,11 @@
 //  -h, --help        Show this help
 
 import { listIssues } from '../services/issuesService.js';
-import { issueSchema } from '../models/schema.js';
-import { listAgents, getAgentByName } from '../services/agentsService.js';
+import { resolveAgentId } from '../services/agentsService.js';
 
 import {
   hasFlag,
+  validateFlags,
   parseArgs,
   printIssueTable,
   printTableHeader,
@@ -27,37 +27,23 @@ import {
 
 const ALLOWED_LIST_FIELDS = ['status', 'priority', 'limit', 'offset', 'assigneeId'];
 
-const VALID_FLAGS = new Set([
-  ...ALLOWED_LIST_FIELDS.map(key => issueSchema[key].flag),
-  '--json',
-]);
-
 /**
  * Lists issues matching the filters and pagination settings 
  * @param {string[]} args - The command line arguments
- * @returns {Promise<number>} The exit code: 0 is success, 1 is error
+ * @returns {Promise<number>} The exit code: 0 is success, 1 is error, 2 isinvalid input
  */
 
 export async function run(args) {
     const isJson = hasFlag(args, '--json');
-    for (const arg of args) {
-        if (arg.startsWith('--') && !VALID_FLAGS.has(arg)) {
-            throw new Error(`Unknown flag provided: ${arg}.\nFlags: ${[...VALID_FLAGS].join(', ')}`);
-        }
-    }
+
+    validateFlags(args, ALLOWED_LIST_FIELDS);
 
     try {
         const options = parseArgs(args);
 
         // Getting agent name from ID
         if (options.assigneeId) {
-            const target = getAgentByName(options.assigneeId);
-            if (!target) {
-            const agents = listAgents();
-            const names = agents.map(agent => `${agent.name} (${agent.type})`).join(', ');
-            throw new Error(`Agent/User "${options.assigneeId}" is not registered.\nRegistered agents: ${names}`);
-            }
-            options.assigneeId = target.id;
+            options.assigneeId = resolveAgentId(options.assigneeId);
         }
 
         const result = await listIssues(options);
@@ -86,7 +72,7 @@ export async function run(args) {
         return 0;
     } catch (error) {
         // Separate error message for missing value
-        if (error.message.includes('Missing value')) {
+        if (error.message.includes('Missing value') || error.message.includes('is not registered')) {
             console.error(`Usage Error: ${error.message}`);
         } else {
             console.error("Error: Failed to retrieve data.");
