@@ -1,3 +1,10 @@
+## [1.14.2](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.14.1...v1.14.2) (2026-06-07)
+
+
+### Bug Fixes
+
+* updated displayed timestamp ([#224](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/224)) ([ca628f6](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/ca628f65eb6bcdac238cc21754c0df3263cd597f))
+
 ## [1.14.1](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.14.0...v1.14.1) (2026-06-07)
 
 
