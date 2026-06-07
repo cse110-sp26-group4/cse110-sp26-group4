@@ -125,7 +125,7 @@ export function getNumericFlag(args, flag) {
 /**
  * Parses command line arguments and extracts values for any flags / data fields
  * @param {string[]} args The command line arguemnts
- * @returns {Partial<Record<keyof typeof issueSchema, string|number>>} Object with relevant keys from issueSchema
+ * @returns {Object} Object with relevant keys from issueSchema
 */
 export function parseArgs(args) {
   const options = {};
