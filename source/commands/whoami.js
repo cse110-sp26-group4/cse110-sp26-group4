@@ -12,7 +12,19 @@
 import { getCurrentActor } from '../services/authService.js';
 import { hasFlag, renderOutput, renderError, wantsHelp } from '../util.js';
 
+
+export const HELP = `Usage:
+    baton whoami [--json]
+
+Options:
+    --json                 Output as JSON (for AI agents)
+    -h, --help             Show this help
+
+Examples:
+    baton whoami
+`;
 const VALID_FLAGS = ['--json', '-h', '--help'];
+
 
 function serializeActor(actor) {
   return {

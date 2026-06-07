@@ -11,7 +11,19 @@ import {
   getFirstPositionalArg,
   serializeIssue,
   reportTrackerNotReady,
+  wantsHelp,
 } from '../util.js';
+
+export const HELP = `Usage:
+    baton claim <id> [--json]
+
+Options:
+    --json                 Output as JSON (for AI agents)
+    -h, --help             Show this help
+
+Examples:
+    baton claim 5
+`;
 
 /**
  * Claims an issue for the authenticated agent.
@@ -19,6 +31,11 @@ import {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error
  */
 export async function run(args) {
+  if (wantsHelp(args)) {
+      console.log(HELP);
+      return 0;
+  }
+
   const isJson = hasFlag(args, '--json');
 
   if (hasFlag(args, '-h') || hasFlag(args, '--help')) {

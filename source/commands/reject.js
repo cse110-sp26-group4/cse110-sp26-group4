@@ -17,7 +17,17 @@ import { rejectIssue, getIssue } from '../services/issuesService.js';
 import { Status } from '../models/issue.js';
 import { hasFlag, getFlagValue, wantsHelp, renderOutput, renderError, serializeIssue } from '../util.js';
 
-const USAGE = "Usage:\n  baton reject <id> [options]\n\nOptions:\n  --reason <text>        Reason for rejection (required)\n  --json                 Output in JSON format\n  -h, --help             Show this help";
+export const HELP = `Usage:
+    baton reject <id> [options]
+
+Options:
+    --reason <text>        Reason for rejection (required)
+    --json                 Output in JSON format
+    -h, --help             Show this help
+
+Examples:
+    baton reject 5 --reason "Needs more detail"
+`;
 
 /**
  * Rejects an issue for a specified ID.
@@ -30,14 +40,14 @@ export async function run(args) {
 
     // (0) Help check
     if (wantsHelp(args)) {
-        console.log(USAGE);
+        console.log(HELP);
         return 0;
     }
 
     // (1) Parse arguments
     const idArgs = args.filter(arg => !arg.startsWith('-'));
     if (idArgs.length === 0) {
-        renderError(isJson, `No ID provided.\n${USAGE}`, 'MISSING_ID');
+        renderError(isJson, `No ID provided.\n${HELP}`, 'MISSING_ID');
         return 1;
     }
 
@@ -48,7 +58,7 @@ export async function run(args) {
     }
 
     if (!hasFlag(args, "--reason")) {
-        renderError(isJson, `Missing reason for reject.\n${USAGE}`, 'MISSING_REASON');
+        renderError(isJson, `Missing reason for reject.\n${HELP}`, 'MISSING_REASON');
         return 1;
     }
 

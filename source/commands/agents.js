@@ -10,7 +10,18 @@
 //   baton agents
 
 import { listAgents } from '../services/agentsService.js';
-import { hasFlag, renderOutput } from '../util.js';
+import { hasFlag, renderOutput, wantsHelp } from '../util.js';
+
+export const HELP = `Usage:
+  baton agents [--json]
+
+Options:
+  --json                 Output as JSON (for AI agents)
+  -h, --help             Show this help
+
+Examples:
+  baton agents
+`;
 
 const VALID_FLAGS = ['--json'];
 
@@ -48,6 +59,10 @@ function printAgentsTable(agents) {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error
  */
 export async function run(args = []) {
+  if (wantsHelp(args)) {
+    console.log(HELP);
+    return 0;
+  }
   const isJson = hasFlag(args, '--json');
 
   for (const arg of args) {
