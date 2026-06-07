@@ -16,7 +16,7 @@ export function formatTimestamp(value) {
   if (!value) {
     return '';
   }
-  const date = value instanceof Date ? value : new Date(String(value).replace(' ', 'T'));
+  const date = value instanceof Date ? value : new Date(String(value).replace(' ', 'T') + 'Z');
   if (Number.isNaN(date.getTime())) {
     return String(value);
   }

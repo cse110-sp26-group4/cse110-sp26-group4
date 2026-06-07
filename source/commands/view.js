@@ -4,7 +4,7 @@
 // Usage: baton view <id> [--json]
 
 import { getIssue } from '../services/issuesService.js';
-import { hasFlag, renderOutput, serializeIssue, wantsHelp } from '../util.js';
+import { hasFlag, renderOutput, serializeIssue, formatTimestamp, wantsHelp } from '../util.js';
 
 export const HELP = `Usage:
     baton view <id> [--json]
@@ -57,7 +57,11 @@ export async function run(args) {
 
             console.log('');
             Object.entries(issue).forEach(([key, value]) => {
-                console.log(`${key}: ${value}`);
+                if (key === 'createdAt' || key === 'lastUpdated') {
+                    console.log(`${key}: ${formatTimestamp(value)}`);
+                } else {
+                    console.log(`${key}: ${value}`);
+                }
             });
             console.log('');
         });
