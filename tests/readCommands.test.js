@@ -31,6 +31,19 @@ async function initializeTracker() {
     0,
     `register failed: ${registerResult.stderr}`,
   );
+
+  const registerSandboxResult = await sandbox.runBaton([
+    "register",
+    "--name",
+    "sandbox-human",
+    "--type",
+    "human",
+  ]);
+  assert.equal(
+    registerSandboxResult.exitCode,
+    0,
+    `register sandbox failed: ${registerSandboxResult.stderr}`,
+  );
 }
 
 async function createIssue({ title, priority = "low", description = "" }) {
