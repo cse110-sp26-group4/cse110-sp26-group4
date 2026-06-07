@@ -13,7 +13,6 @@
 //  -h, --help        Show this help
 
 import { listIssues } from '../services/issuesService.js';
-import { issueSchema } from '../models/schema.js';
 import { resolveAgentId } from '../services/agentsService.js';
 
 import {
@@ -31,7 +30,7 @@ const ALLOWED_LIST_FIELDS = ['status', 'priority', 'limit', 'offset', 'assigneeI
 /**
  * Lists issues matching the filters and pagination settings 
  * @param {string[]} args - The command line arguments
- * @returns {Promise<number>} The exit code: 0 is success, 1 is error
+ * @returns {Promise<number>} The exit code: 0 is success, 1 is error, 2 isinvalid input
  */
 
 export async function run(args) {
@@ -73,7 +72,7 @@ export async function run(args) {
         return 0;
     } catch (error) {
         // Separate error message for missing value
-        if (error.message.includes('Missing value')) {
+        if (error.message.includes('Missing value') || error.message.includes('is not registered')) {
             console.error(`Usage Error: ${error.message}`);
         } else {
             console.error("Error: Failed to retrieve data.");
