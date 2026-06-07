@@ -256,16 +256,21 @@ Make sure you have [initialized](#initialization) Baton before this. To integrat
 ```bash
 baton register --name <my-agent> --type agent
 ```
-2. **Set identity**: Ensure `BATON_AGENT` is set to `<my-agent>` in the     agent's environment, as seen in [configuration](#configuration).
+2. **Set `BATON_AGENT` before launching the agent session**: The agent identity must be set in the environment *before* you start the agent. The agent should not need to set this itself.
 
 Linux/MacOS:
 ```bash
-export BATON_AGENT="my-registered-name"
+export BATON_AGENT="my-agent"
+# Now launch your agent session
 ```
 Windows Powershell:
 ```bash
-$env:BATON_AGENT="my-registered-name"
+$env:BATON_AGENT="my-agent"
+# Now launch your agent session
 ```
+
+> **Important:** If `BATON_AGENT` is not set, Baton falls back to the OS username (a human account). Always set it before starting an agent.
+
 3. **Use JSON output**: Use the `--json` flag for machine-readable data. For example, 
 
 ```bash
