@@ -4,7 +4,7 @@
 // Usage: baton view <id> [--json]
 
 import { getIssue } from '../services/issuesService.js';
-import { hasFlag, renderOutput, serializeIssue } from '../util.js';
+import { hasFlag, renderOutput, serializeIssue, formatTimestamp } from '../util.js';
 
 /**
  * Displays all issue fields for a given id #
@@ -42,7 +42,11 @@ export async function run(args) {
 
             console.log('');
             Object.entries(issue).forEach(([key, value]) => {
-                console.log(`${key}: ${value}`);
+                if (key === 'createdAt' || key === 'lastUpdated') {
+                    console.log(`${key}: ${formatTimestamp(value)}`);
+                } else {
+                    console.log(`${key}: ${value}`);
+                }
             });
             console.log('');
         });
