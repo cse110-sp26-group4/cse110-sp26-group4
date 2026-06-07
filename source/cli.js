@@ -31,6 +31,7 @@ import { run as runSubmit } from './commands/submit.js';
 import { run as runUnassign } from './commands/unassign.js';
 import { run as runUnclaim } from './commands/unclaim.js';
 import { run as runClaim } from './commands/claim.js';
+import { run as runAssign} from './commands/assign.js';
 
 import { authenticateContext } from './services/authService.js';
 
@@ -163,6 +164,7 @@ async function main() {
     submit: () => runSubmit(args),
     unassign: () => runUnassign(args),
     unclaim: () => runUnclaim(args),
+    assign: () => runAssign(args),
   };
 
   const handler = handlers[command];

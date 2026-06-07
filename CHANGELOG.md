@@ -1,3 +1,17 @@
+## [1.14.1](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.14.0...v1.14.1) (2026-06-07)
+
+
+### Bug Fixes
+
+* move agent rules inside source/ for npm package; stop init bug from crashing early ([#220](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/220)) ([16e208f](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/16e208f5f019a1eb8c2e4d3356853d4e4914027e))
+
+# [1.14.0](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.13.4...v1.14.0) (2026-06-07)
+
+
+### Features
+
+* added assign command and had baton init create human user ([#193](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/193)) ([b07e2a6](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/b07e2a640184cb3d4f4e964c7f00f676d2a1512d))
+
 ## [1.13.4](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.13.3...v1.13.4) (2026-06-06)
 
 
