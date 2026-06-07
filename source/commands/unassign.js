@@ -15,6 +15,18 @@ import { getCurrentActor } from "../services/context.js";
 import { AgentType } from "../models/agents.js";
 import { hasFlag, renderOutput, renderError, serializeIssue } from "../util.js";
 
+export const HELP = `Usage:
+  baton unassign <id> [--json]
+
+Options:
+  --json                 Output as JSON (for AI agents)
+  -h, --help             Show this help
+
+Examples:
+  baton unassign 12
+  baton unassign 12 --json
+`;
+
 const VALID_FLAGS = new Set(["--json"]);
 
 /**

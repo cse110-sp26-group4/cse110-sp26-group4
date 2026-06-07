@@ -28,7 +28,9 @@ import * as agentsCmd from './commands/agents.js';
 import * as whoamiCmd from './commands/whoami.js';
 import * as submitCmd from './commands/submit.js';
 import * as claimCmd from './commands/claim.js';
-import * as assignCmd from '/commands/assign.js';
+import * as assignCmd from './commands/assign.js';
+import * as unclaimCmd from './commands/unclaim.js';
+import * as unassignCmd from './commands/unassign.js';
 
 import { wantsHelp } from './util.js';
 
@@ -50,6 +52,9 @@ ${bold}CORE & SETUP${reset}
 ${bold}ISSUE WORKFLOW${reset}
   create     Create an issue with specified fields
   claim      Claim an issue as the authenticated agent
+  unclaim    Release a claimed issue back to Open
+  assign     Assign an issue to a specific agent
+  unassign   Remove the assignee from an issue
   submit     Submit finished work for human review
   approve    Move an issue from in-review to closed
   reject     Reject an issue with a given reason
@@ -63,6 +68,7 @@ ${bold}QUERY & VIEW${reset}
   view       View all issue fields for a given issue ID
   status     Show issue counts and overall progress
   log        Show activity history for an issue
+  whoami     Show the currently authenticated user/agent
 
 ${bold}GLOBAL OPTIONS${reset}
   --json     Output raw JSON instead of formatted text (for AI agents)
@@ -113,6 +119,10 @@ async function main() {
     log: logCmd,
     submit: submitCmd,
     claim: claimCmd,
+    whoami: whoamiCmd,
+    assign: assignCmd,
+    unclaim: unclaimCmd,
+    unassign: unassignCmd,
   };
 
   if (wantsHelp(args)) {
@@ -143,6 +153,7 @@ async function main() {
     approve: () => approveCmd.run(args),
     reject: () => rejectCmd.run(args),
     claim: () => claimCmd.run(args),
+    unclaim: () => unclaimCmd.run(args),
     priority: () => priorityCmd.run(args),
     create: () => createCmd.run(args),
     update: () => updateCmd.run(args),
@@ -150,6 +161,7 @@ async function main() {
     log: () => logCmd.run(args),
     submit: () => submitCmd.run(args),
     assign: () => assignCmd.run(args),
+    unassign: () => unassignCmd.run(args),
   };
 
   const handler = handlers[command];
