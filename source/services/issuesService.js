@@ -217,6 +217,8 @@ export function updateIssue(id, oldIssue, { title, description, tokenLimit, stat
   if (description !== undefined) updates.description = description;
   if (tokenLimit !== undefined) updates.tokenLimit = tokenLimit;
   if (assigneeId !== undefined) updates.assigneeId = assigneeId;
+  if (priority !== undefined) updates.priority = priority; 
+  if (status !== undefined) updates.status = status;
 
   // Validate the new data 
   const proposedIssue = new Issue({ ...oldIssue, ...updates });

@@ -123,6 +123,22 @@ export function getNumericFlag(args, flag) {
 }
 
 /**
+ * Normalizes a field value based on the provided schema/constants.
+ * @param {Object} schema The constant object (Status or Priority).
+ * @param {string} value The input value to normalize.
+ * @returns {string} The normalized value / original if no match found.
+ */
+export function normalizeValue(schema, value) {
+  if (!value) return value;
+  
+  const match = Object.values(schema).find(
+    (v) => v.toLowerCase() === value.toLowerCase()
+  );
+  
+  return match ?? value;
+}
+
+/**
  * Parses command line arguments and extracts values for any flags / data fields
  * @param {string[]} args The command line arguemnts
  * @returns {Object} Object with relevant keys from issueSchema
@@ -142,8 +158,7 @@ export function parseArgs(args) {
 
         // normalize enum fields by case-insensitive match
         if (config.type === 'enum' && config.values) {
-          const match = config.values.find(v => v.toLowerCase() === value.toLowerCase());
-          value = match ?? value;
+          value = normalizeValue(config.values, value);
         }
         options[key] = value;
   }
