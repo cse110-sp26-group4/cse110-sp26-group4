@@ -11,121 +11,81 @@
 /**
  * Imports the run functions from each command.
  */
-import { run as runInit } from './commands/init.js';
-import { run as runStatus } from './commands/status.js';
-import { run as runApprove } from './commands/approve.js';
-import { run as runReject } from './commands/reject.js';
+import * as initCmd from './commands/init.js';
+import * as statusCmd from './commands/status.js';
+import * as approveCmd from './commands/approve.js';
+import * as rejectCmd from './commands/reject.js';
+import * as viewCmd from './commands/view.js';
+import * as searchCmd from './commands/search.js';
+import * as listCmd from './commands/list.js';
+import * as createCmd from './commands/create.js';
+import * as updateCmd from './commands/update.js';
+import * as deleteCmd from './commands/delete.js';
+import * as priorityCmd from './commands/priority.js';
+import * as logCmd from './commands/log.js';
+import * as registerCmd from './commands/register.js';
+import * as agentsCmd from './commands/agents.js';
+import * as whoamiCmd from './commands/whoami.js';
+import * as submitCmd from './commands/submit.js';
+import * as claimCmd from './commands/claim.js';
+import * as assignCmd from './commands/assign.js';
+import * as unclaimCmd from './commands/unclaim.js';
+import * as unassignCmd from './commands/unassign.js';
+
 import { wantsHelp } from './util.js';
-import { run as runView} from './commands/view.js';
-import { run as runSearch } from './commands/search.js';
-import { run as runList } from './commands/list.js';
-import { run as runCreate } from './commands/create.js'
-import { run as runUpdate } from './commands/update.js';
-import { run as runDelete } from './commands/delete.js';
-import { run as runPriority } from './commands/priority.js';
-import { run as runLog } from './commands/log.js';
-import { run as runRegister } from './commands/register.js';
-import { run as runAgents } from './commands/agents.js';
-import { run as runWhoami } from './commands/whoami.js';
-import { run as runSubmit } from './commands/submit.js';
-import { run as runUnassign } from './commands/unassign.js';
-import { run as runUnclaim } from './commands/unclaim.js';
-import { run as runClaim } from './commands/claim.js';
-import { run as runAssign} from './commands/assign.js';
 
 import { authenticateContext } from './services/authService.js';
 
-const HELP = `baton — AI agent issue tracker CLI
+const bold = "\x1b[1m";
+const reset = "\x1b[0m";
+const HELP = `
+${bold}Baton — AI agent issue tracker CLI${reset}
 
-Usage:
+${bold}USAGE${reset}
   baton <command> [options]
 
-Commands:
-  init     Initialize storage and seed issues from product specs
-  register Register a new AI agent or human user
-  agents   List all registered agents and humans
-  whoami   Show the currently authenticated agent or user
-  status   Show issue counts and overall progress
-  view     View all issue fields for a given issue ID
-  search   Search issues by title and description (case insensitive)
-  list     Lists issues filtered by status and priority
-  create   Creates an issue with specified fields
-  approve  Move an issue from in-review to closed
-  submit   Submit finished work for human review
-  unclaim  Release a claimed issue back to Open
-  claim    Claim an issue as the authenticated agent
-  priority Set an issue's priority level
-  update   Updates an issue's specified fields
-  delete   Deletes an issue
-  log      Show activity history for an issue
-  unassign Removes all assignees from issue
+${bold}CORE & SETUP${reset}
+  init       Initialize storage and seed issues from product specs
+  register   Register a new AI agent or human user
+  agents     List all registered agents and humans
 
-Options:
-  init --force                    Re-initialize an existing tracker database
-  init --specs <path>             Path to product specs file (overrides default)
-  init --json                     Output as JSON (for AI agents)
-  init <path>                     Same as --specs <path> (positional)
-  Default specs: docs/specs/project-requirements.md
-  register --name <name>          Name of the agent or user
-  register --type <type>          agent | human (default: agent)
-  agents [--json]
-  whoami [--json]
-  status --json                   Output as JSON (for AI agents)
-  view <id> [--json]
-  search <query> [--json]
-  list --status <s>               Filter by status: open | in-progress | closed
-  list --priority <p>             Filter by priority: low | medium | high
-  list --limit <n>                Max results (default: 50)
-  list --offset <n>               Skip first n results (default: 0)
-  list --json                     Output as JSON (for AI agents)
-  create --title <text>           Issue title (defaults to "Issue #<id>" if omitted)
-  create --description <text>     Issue description
-  create --priority <level>       low | medium | high  (default: low)
-  create --token-limit <n>        Optional token budget for this issue
-  create --json                   Output as JSON (for AI agents)
-  approve <id> [--json]
-  submit <id> [--json]
-  unclaim <id> [--json]
-  claim <id> [--json]
-  reject <id> --reason <text>     Reject an issue with a given reason
-  priority <id> <level> [--json]  low | medium | high
-  update --title <text>           New title
-  update --description <text>     New description
-  update --token-limit <n>        New token budget
-  update --status <s>             open | in-progress | closed
-  update --priority <level>       low | medium | high
-  update --json                   Output as JSON (for AI agents)
-  delete <id> [--yes]
-  log <id> [--json]
-  unassign <id> [--json]          Output as JSON (for AI agents)
+${bold}ISSUE WORKFLOW${reset}
+  create     Create an issue with specified fields
+  claim      Claim an issue as the authenticated agent
+  unclaim    Release a claimed issue back to Open
+  assign     Assign an issue to a specific agent
+  unassign   Remove the assignee from an issue
+  submit     Submit finished work for human review
+  approve    Move an issue from in-review to closed
+  reject     Reject an issue with a given reason
+  update     Update an issue's specified fields
+  priority   Set an issue's priority level
+  delete     Delete an issue
 
-Examples:
-  baton init
-  baton init --specs ./my-specs.md
-  baton init ./my-specs.md
-  baton init --force
-  baton register --name claude-dev --type agent
-  baton agents
-  baton whoami
-  baton status
-  baton view 29
-  baton search system
-  baton list
-  baton list --status open --priority high
-  baton list --limit 10 --offset 20
-  baton create --title "Fix login bug" --priority high
-  baton create --title "Refactor auth" --description "Clean up JWT logic" --token-limit 4000
-  baton approve 5
-  baton submit 14
-  baton unclaim 14
-  baton claim 14
-  baton priority 5 high
-  baton priority 3 low
-  baton update 3 --title "Revised title"
-  baton update 7 --status closed --priority medium
-  baton log 5
-  baton unassign 12
-  baton unassign 11 --json
+${bold}QUERY & VIEW${reset}
+  list       List issues filtered by status and priority
+  search     Search issues by title and description (case insensitive)
+  view       View all issue fields for a given issue ID
+  status     Show issue counts and overall progress
+  log        Show activity history for an issue
+  whoami     Show the currently authenticated user/agent
+
+${bold}GLOBAL OPTIONS${reset}
+  --json     Output raw JSON instead of formatted text (for AI agents)
+  --help     Show detailed usage and flags for a specific command
+
+${bold}EXAMPLES${reset}
+  # Initialize the database with custom specs
+  baton init --specs ./docs/requirements.md
+
+  # Create a high priority issue and allocate a token budget
+  baton create --title "Refactor auth" --priority high --token-limit 4000
+
+  # Search for open issues and pass the output to an AI agent
+  baton list --status open --json
+  
+  # Learn more about a specific command's options
+  baton update --help
 `;
 
 /**
@@ -135,9 +95,46 @@ Examples:
 async function main() {
   const [, , command, ...args] = process.argv;
 
-  if (!command || command === 'help' || command === '--help') {
+  if (!command || command === 'help' || command === '--help' || command === '-h') {
     console.log(HELP);
-    process.exit(command ? 0 : 1);
+    process.exit(0);
+    return;
+  }
+
+  // If user requested help for a specific subcommand (e.g. `baton list -h`)
+  const modules = {
+    init: initCmd,
+    register: registerCmd,
+    agents: agentsCmd,
+    status: statusCmd,
+    view: viewCmd,
+    search: searchCmd,
+    list: listCmd,
+    approve: approveCmd,
+    reject: rejectCmd,
+    priority: priorityCmd,
+    create: createCmd,
+    update: updateCmd,
+    delete: deleteCmd,
+    log: logCmd,
+    submit: submitCmd,
+    claim: claimCmd,
+    whoami: whoamiCmd,
+    assign: assignCmd,
+    unclaim: unclaimCmd,
+    unassign: unassignCmd,
+  };
+
+  if (wantsHelp(args)) {
+    const mod = modules[command];
+    if (mod && mod.HELP) {
+      console.log(mod.HELP);
+      process.exit(0);
+      return;
+    }
+    // Fallback to global help
+    console.log(HELP);
+    process.exit(0);
     return;
   }
 
@@ -145,26 +142,26 @@ async function main() {
   authenticateContext(command, args);
 
   const handlers = {
-    init: () => runInit(args),
-    register: () => runRegister(args),
-    agents: () => runAgents(args),
-    whoami: () => runWhoami(args),
-    status: () => runStatus(args),
-    view: () => runView(args),
-    search: () => runSearch(args),
-    list: () => runList(args),
-    approve: () => runApprove(args),
-    reject: () => runReject(args),
-    claim: () => runClaim(args),
-    priority: () => runPriority(args),
-    create: () => runCreate(args),
-    update: () => runUpdate(args),
-    delete: () => runDelete(args),
-    log: () => runLog(args),
-    submit: () => runSubmit(args),
-    unassign: () => runUnassign(args),
-    unclaim: () => runUnclaim(args),
-    assign: () => runAssign(args),
+    init: () => initCmd.run(args),
+    register: () => registerCmd.run(args),
+    agents: () => agentsCmd.run(args),
+    whoami: () => whoamiCmd.run(args),
+    status: () => statusCmd.run(args),
+    view: () => viewCmd.run(args),
+    search: () => searchCmd.run(args),
+    list: () => listCmd.run(args),
+    approve: () => approveCmd.run(args),
+    reject: () => rejectCmd.run(args),
+    claim: () => claimCmd.run(args),
+    unclaim: () => unclaimCmd.run(args),
+    priority: () => priorityCmd.run(args),
+    create: () => createCmd.run(args),
+    update: () => updateCmd.run(args),
+    delete: () => deleteCmd.run(args),
+    log: () => logCmd.run(args),
+    submit: () => submitCmd.run(args),
+    assign: () => assignCmd.run(args),
+    unassign: () => unassignCmd.run(args),
   };
 
   const handler = handlers[command];

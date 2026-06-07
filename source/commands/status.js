@@ -8,13 +8,28 @@ import {
   getIssueStats,
   getAllIssues,
 } from '../services/issuesService.js';
-import { hasFlag, renderOutput, reportTrackerNotReady } from '../util.js';
+import { hasFlag, renderOutput, reportTrackerNotReady, wantsHelp } from '../util.js';
+
+export const HELP = `Usage:
+  baton status [--json]
+
+Options:
+  --json                 Output as JSON (for AI agents)
+  -h, --help             Show this help
+
+Examples:
+  baton status
+`;
 
 /**
  * Main function that runs the status command.
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args = []) {
+  if (wantsHelp(args)) {
+    console.log(HELP);
+    return 0;
+  }
   const isJson = hasFlag(args, '--json');
 
   if (!isTrackerReady()) {

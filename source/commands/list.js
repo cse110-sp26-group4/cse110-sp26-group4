@@ -16,14 +16,34 @@ import { listIssues } from '../services/issuesService.js';
 import { resolveAgentId } from '../services/agentsService.js';
 
 import {
-  hasFlag,
-  validateFlags,
-  parseArgs,
-  printIssueTable,
-  printTableHeader,
-  renderOutput,
-  serializeIssue,
+    getFlagValue,
+    getNumericFlag,
+    hasFlag,
+    validateFlags,
+    parseArgs,
+    printIssueTable,
+    printTableHeader,
+    renderOutput,
+    serializeIssue,
+    wantsHelp,
 } from '../util.js';
+
+export const HELP = `Usage:
+    baton list [--status <s>] [--priority <p>] [--limit <n>] [--offset <n>] [--json]
+
+Options:
+    --status <s>          Filter by status: open | in-progress | closed
+    --priority <p>        Filter by priority: low | medium | high
+    --limit <n>           Max results (default: 50)
+    --offset <n>          Skip first n results (default: 0)
+    --json                Output as JSON (for AI agents)
+    -h, --help            Show this help
+
+Examples:
+    baton list
+    baton list --status open --priority high
+    baton list --limit 10 --offset 20
+`;
 
 const ALLOWED_LIST_FIELDS = ['status', 'priority', 'limit', 'offset', 'assigneeId'];
 
@@ -34,6 +54,10 @@ const ALLOWED_LIST_FIELDS = ['status', 'priority', 'limit', 'offset', 'assigneeI
  */
 
 export async function run(args) {
+    if (wantsHelp(args)) {
+        console.log(HELP);
+        return 0;
+    }
     const isJson = hasFlag(args, '--json');
 
     validateFlags(args, ALLOWED_LIST_FIELDS);

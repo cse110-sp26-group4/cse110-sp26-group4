@@ -10,6 +10,18 @@ import { hasFlag, renderOutput } from '../util.js';
 
 const DECIMAL_BASE = 10;
 
+export const HELP = `Usage:
+  baton assign <id> <agent-name> [--json]
+
+Options:
+  --json                 Output as JSON (for AI agents)
+  -h, --help             Show this help
+
+Examples:
+  baton assign 5 claude-dev
+  baton assign 5 claude-dev --json
+`;
+
 /**
  * Runs the assign command to associate an issue with a registered agent.
  * Usage: baton assign <id> <agent-name> [--json]

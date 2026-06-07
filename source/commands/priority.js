@@ -15,7 +15,7 @@ import { Priority } from '../models/issue.js';
 import { setPriority } from '../services/issuesService.js';
 import { hasFlag, renderOutput, serializeIssue, wantsHelp } from '../util.js';
 
-const HELP = `Usage:
+export const HELP = `Usage:
   baton priority <id> <priority>
 
 Options:

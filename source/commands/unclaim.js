@@ -21,9 +21,7 @@ import {
   wantsHelp,
 } from '../util.js';
 
-const HELP = `baton unclaim — Release a claimed issue back to Open
-
-Usage:
+export const HELP = `Usage:
   baton unclaim <id> [--json]
 
 Options:

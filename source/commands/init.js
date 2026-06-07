@@ -6,10 +6,6 @@
 //   --force: force initialization even if the tracker is already initialized
 //   --specs <path>: path to the specs file (default: docs/specs/project-requirements.md)
 //   <specs-path>: optional positional path to specs (same as --specs)
-//
-// examples usage of specs flag:
-//  baton init --specs ./path/to/my-specs.md
-//  baton init --specs C:\full\path\to\specs.md
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -30,12 +26,25 @@ import {
   renderOutput,
   resolvePath,
   serializeIssue,
+  wantsHelp,
 } from '../util.js';
 
-/**
- * Default path to the specs file
- */
 const DEFAULT_SPECS_PATH = join('docs', 'specs', 'project-requirements.md');
+
+export const HELP = `Usage:
+  baton init [--force] [--specs <path>] [<specs-path>]
+
+Options:
+  --force                Re-initialize an existing tracker database
+  --specs <path>         Path to product specs file (overrides default)
+  --json                 Output as JSON (for AI agents)
+  -h, --help             Show this help
+
+Examples:
+  baton init
+  baton init --specs ./my-specs.md
+  baton init --force
+`;
 
 /**
  * Represents the parsed command-line flags for initialization.
@@ -44,11 +53,6 @@ const DEFAULT_SPECS_PATH = join('docs', 'specs', 'project-requirements.md');
  * @property {string | null} specs - The resolved path to the specifications file.
  */
 
-/**
- * Parses the initialization flags.
- * @param {string[]} args
- * @returns {InitFlags}
- */
 function parseInitFlags(args) {
   const specsFromFlag = getFlagValue(args, '--specs');
   const positionalSpecs = getFirstPositionalArg(args, {
@@ -66,77 +70,44 @@ function parseInitFlags(args) {
   };
 }
 
-/**
- * Represents a discrete requirement parsed from the markdown specs.
- * @typedef {Object} Requirement
- * @property {string} title - The title or ID of the requirement (e.g., FR-1).
- * @property {string} description - The detailed breakdown of the requirement.
- * @property {string} priority - The assigned urgency level.
- */
-
-/**
- * Parses the must requirements from the markdown file.
- * Likely to be changed in future iterations when AI implementation is added.
- * @param {string} markdown
- * @returns {Requirement[]}
- */
 function parseMustRequirements(markdown) {
   const issues = [];
   const lines = markdown.split('\n');
 
   for (const line of lines) {
-    if (!line.includes('| Must |')) {
-      continue;
-    }
+    if (!line.includes('| Must |')) continue;
     const cells = line.split('|').map((cell) => cell.trim()).filter(Boolean);
-    if (cells.length < 3) {
-      continue;
-    }
+    if (cells.length < 3) continue;
     const id = cells[0];
     const requirement = cells[2];
-    if (!/^FR-/.test(id) || !requirement) {
-      continue;
-    }
-    issues.push({
-      title: id,
-      description: requirement,
-      priority: Priority.MEDIUM,
-    });
+    if (!/^FR-/.test(id) || !requirement) continue;
+    issues.push({ title: id, description: requirement, priority: Priority.MEDIUM });
   }
 
   return issues;
 }
 
-/**
- * Generates issues from the specs file.
- * @param {string | null} specsPath
- * @returns {Issue[]}
- */
 function generateIssuesFromSpecs(specsPath) {
   const resolvedPath = resolvePath(specsPath, DEFAULT_SPECS_PATH);
 
   if (!existsSync(resolvedPath)) {
-    throw new Error(
-      `Specs file not found at ${resolvedPath}. Pass --specs <path> or provide a positional path.`,
-    );
+    throw new Error(`Specs file not found at ${resolvedPath}. Pass --specs <path> or provide a positional path.`);
   }
 
   const markdown = readFileSync(resolvedPath, 'utf8');
   const requirements = parseMustRequirements(markdown);
 
-  if (requirements.length === 0) {
-    return [];
-  }
+  if (requirements.length === 0) return [];
 
   return requirements.map((req) => createIssue(req));
 }
 
-/**
- * Runs the init command
- * @param {string[]} args - The command line arguments
- * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
- */
 export async function run(args = []) {
+  if (wantsHelp(args)) {
+    console.log(HELP);
+    return 0;
+  }
+
   const isJson = hasFlag(args, '--json');
   let flags;
   try {
@@ -155,9 +126,7 @@ export async function run(args = []) {
 
   initDB();
 
-  if (flags.force) {
-    clearAllIssues();
-  }
+  if (flags.force) clearAllIssues();
 
   // auto-register default deployment human user
   let autoRegisterMessage = '';
