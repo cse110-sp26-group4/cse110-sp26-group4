@@ -1,17 +1,42 @@
-export const Status = Object.freeze({ 
-  OPEN: "Open", 
-  IN_PROGRESS: "In-Progress", 
+/**
+ * Valid issue status values.
+ * Transition order: Open → In-Progress → In-Review → Closed.
+ * @enum {string}
+ */
+export const Status = Object.freeze({
+  OPEN: "Open",
+  IN_PROGRESS: "In-Progress",
   IN_REVIEW: "In-Review",
-  CLOSED: "Closed" 
+  CLOSED: "Closed"
 });
 
+/**
+ * Valid issue priority values.
+ * @enum {string}
+ */
 export const Priority = Object.freeze({
   LOW:    "Low",
   MEDIUM: "Medium",
   HIGH:   "High",
 });
 
+/**
+ * Represents a single issue in the tracker.
+ */
 export class Issue {
+  /**
+   * @param {object} [fields]
+   * @param {string} [fields.title]
+   * @param {string} [fields.status]
+   * @param {string} [fields.priority]
+   * @param {number|null} [fields.tokenLimit]
+   * @param {string|null} [fields.description]
+   * @param {string} [fields.lastUpdated]
+   * @param {number|null} [fields.assigneeId]
+   * @param {number} [fields.id]
+   * @param {string} [fields.createdAt]
+   * @param {number} [fields.attemptNum]
+   */
   constructor({
     // User fields
     title       = "Issue #",

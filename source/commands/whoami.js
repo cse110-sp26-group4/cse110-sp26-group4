@@ -26,6 +26,11 @@ Examples:
 const VALID_FLAGS = ['--json', '-h', '--help'];
 
 
+/**
+ * Serializes the authenticated actor for JSON output.
+ * @param {object} actor
+ * @returns {object}
+ */
 function serializeActor(actor) {
   return {
     id: actor.id,
@@ -34,6 +39,11 @@ function serializeActor(actor) {
   };
 }
 
+/**
+ * Displays the currently authenticated agent or user.
+ * @param {string[]} [args]
+ * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
+ */
 export async function run(args = []) {
   const isJson = hasFlag(args, '--json');
 

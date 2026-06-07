@@ -25,6 +25,10 @@ let sqliteConnection = new Database(dbPath);
 // Using let here so we can reassign it in tests with an in-memory database instance.
 let db = drizzle(sqliteConnection, { schema });
 
+/**
+ * Applies Drizzle migrations and installs the two SQLite triggers required by the schema.
+ * Must be called once at CLI startup before any DB operations.
+ */
 export function initDB() {
   // Apply Migrations dynamically on CLI startup
   // This looks for a folder named "drizzle" in your project root
@@ -63,15 +67,29 @@ export function initDB() {
   `);
 }
 
+/**
+ * Returns the active Drizzle ORM database instance.
+ * @returns {object} Drizzle database instance.
+ */
 export function getDB() {
   return db;
 }
 
+/**
+ * Returns the underlying better-sqlite3 connection.
+ * Needed for raw SQL operations (e.g. trigger setup in tests).
+ * @returns {object} Raw better-sqlite3 Database instance.
+ */
 export function getSQLiteDB() {
   return sqliteConnection;
 }
 
-// function for the test suite mocking
+/**
+ * Replaces the active DB instances with in-memory test doubles.
+ * Call this before importing service modules in test files.
+ * @param {object} testDbInstance - Drizzle database wrapping an in-memory SQLite instance.
+ * @param {object} [testSqliteConnection] - Raw better-sqlite3 in-memory instance.
+ */
 export function setTestDB(testDbInstance, testSqliteConnection) {
   db = testDbInstance;
   if (testSqliteConnection) sqliteConnection = testSqliteConnection;

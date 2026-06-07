@@ -28,7 +28,8 @@ const VALID_FLAGS = ['--json'];
 const COL = { id: 4, name: 14, type: 5 };
 
 /**
- * @param {Agent} agent
+ * Serializes an agent for JSON output.
+ * @param {object} agent
  * @returns {{ id: number, name: string, type: string }}
  */
 function serializeAgent(agent) {
@@ -40,7 +41,9 @@ function serializeAgent(agent) {
 }
 
 /**
- * @param {Agent[]} agents
+ * Prints a formatted table of agents to stdout.
+ * @param {object[]} agents
+ * @returns {void}
  */
 function printAgentsTable(agents) {
   console.log(

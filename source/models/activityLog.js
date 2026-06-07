@@ -1,3 +1,7 @@
+/**
+ * Valid activity action types recorded in the audit log.
+ * @enum {string}
+ */
 export const Action = Object.freeze({
   STATE_CHANGE:    "state_change",
   PRIORITY_CHANGE: "priority_change",
@@ -5,10 +9,22 @@ export const Action = Object.freeze({
   READ:            "read",
   CREATION:        "creation",
   DELETION:        "deletion",
-  REJECT:          "rejection", 
+  REJECT:          "rejection",
 });
 
+/**
+ * Represents a single entry in the issue activity log.
+ */
 export class ActivityLog {
+  /**
+   * @param {object} [fields]
+   * @param {number|null} [fields.logId]
+   * @param {number} fields.issueId
+   * @param {number|null} [fields.actorId]
+   * @param {string} fields.action
+   * @param {string|null} [fields.details]
+   * @param {string} [fields.createdAt]
+   */
   constructor({
     logId     = null,
     issueId,
