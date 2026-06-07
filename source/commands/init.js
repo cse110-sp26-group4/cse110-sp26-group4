@@ -8,8 +8,11 @@
 //   <specs-path>: optional positional path to specs (same as --specs)
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { initDB } from '../db/index.js';
+import os from 'node:os';
+import { registerAgent } from '../services/agentsService.js';
 import { Priority } from '../models/issue.js';
 import {
   createIssue,
@@ -125,7 +128,23 @@ export async function run(args = []) {
 
   if (flags.force) clearAllIssues();
 
-  const templatePath = join('docs', 'BATON_AGENT_RULES.md');
+  // auto-register default deployment human user
+  let autoRegisterMessage = '';
+  try {
+    const activeName = process.env.BATON_AGENT || os.userInfo().username;
+    registerAgent(activeName, 'human');
+    autoRegisterMessage = `Auto-registered default human user: "${activeName}"`;
+  } catch (error){
+    if (!error.message?.includes('UNIQUE constraint failed')) {
+      autoRegisterMessage = `Warning: Could not auto-register default user: ${error.message}`;
+    }
+  }
+
+  if (autoRegisterMessage && !isJson) {
+    console.log(autoRegisterMessage);
+  }
+
+  const templatePath = join(dirname(fileURLToPath(import.meta.url)), '..', 'templates', 'BATON_AGENT_RULES.md');
 
   let rulesContent = '';
   if (existsSync(templatePath)) {
@@ -133,12 +152,9 @@ export async function run(args = []) {
   }
 
   const outputPath = join(process.cwd(), 'BATON_AGENT_RULES.md');
-  if (existsSync(outputPath) && !flags.force) {
-    console.error('Error: BATON_AGENT_RULES.md already exists. Use --force to overwrite.');
-    return 1;
+  if (!existsSync(outputPath) || flags.force) {
+    writeFileSync(outputPath, rulesContent, 'utf8');
   }
-
-  writeFileSync(outputPath, rulesContent, 'utf8');
 
   const resolvedSpecsPath = resolvePath(flags.specs, DEFAULT_SPECS_PATH);
   const createdIssues = generateIssuesFromSpecs(flags.specs);

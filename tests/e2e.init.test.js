@@ -19,18 +19,23 @@ describe('E2E: baton init', () => {
       assert.ok(fs.existsSync(path.join(sb.dir, '.baton', 'baton.db')));
   });
 
-  // TO DO: Edit this assertion once .md creation logic is implemented
-  /*
   it('creates BATON_AGENT_RULES.md', async () => {
     await sb.runBaton(['init', '--specs', sb.specsPath]);
     assert.ok(fs.existsSync(path.join(sb.dir, 'BATON_AGENT_RULES.md')));
   });
-  */
 
   it('creates the correct number of issues', async () => {
     const result = await sb.runBaton(['init', '--specs', sb.specsPath, '--json']);
     const data = sb.parseJSON(result);
     assert.equal(data.count, 2);
+  });
+
+  it('automatically registers the current user', async () => {
+    await sb.runBaton(['init', '--specs', sb.specsPath]);
+    const result = await sb.runBaton(['agents', '--json']);
+    const data = sb.parseJSON(result);
+    const foundUser = data.agents.find(a => a.name === sb.humanName);
+    assert.ok(foundUser, 'The user should be registered automatically during init');
   });
 
   it('returns a valid JSON envelope with --json', async () => {
@@ -46,8 +51,6 @@ describe('E2E: baton init', () => {
 
   it('will not reinit without --force', async () => {
     await sb.runBaton(['init', '--specs', sb.specsPath]);
-    // TODO: remove register step once init auto-registers the user
-    await sb.runBaton(['register', '--name', sb.humanName, '--type', 'human']);
     const result = await sb.runBaton(['init', '--specs', sb.specsPath]);
     assert.notEqual(result.exitCode, 0);
     assert.match(result.stderr, /already initialized/i);
@@ -55,10 +58,14 @@ describe('E2E: baton init', () => {
 
   it('re-inits with --force', async () => {
     await sb.runBaton(['init', '--specs', sb.specsPath]);
-    // TODO: remove register step once init auto-registers the user
-    await sb.runBaton(['register', '--name', sb.humanName, '--type', 'human']);
     const result = await sb.runBaton(['init', '--specs', sb.specsPath, '--force']);
     assert.equal(result.exitCode, 0);
+    assert.ok(fs.existsSync(path.join(sb.dir, 'BATON_AGENT_RULES.md')));
+    // User should only be registered once
+    const listResult = await sb.runBaton(['agents', '--json']);
+    const data = sb.parseJSON(listResult);
+    const matches = data.agents.filter(a => a.name === sb.humanName);
+    assert.equal(matches.length, 1, 'The user should only be registered once');
   });
 
   it('resets issues when run with --force', async () => {

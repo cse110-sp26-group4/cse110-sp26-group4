@@ -1,4 +1,4 @@
-// list.js
+// view.js
 // AI was consulted for some portions of this file.
 // view command which allows user to view all data fields for an issue 
 // Usage: baton view <id> [--json]

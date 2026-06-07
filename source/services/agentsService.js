@@ -66,3 +66,21 @@ export function listAgents() {
   const rows = db.select().from(agentsTable).orderBy(agentsTable.id).all();
   return rows.map((row) => new Agent(row));
 }
+
+/**
+ * Resolves an agent name to their ID (case-insensitive)
+ * @param {string} name
+ * @returns {number} The agent's ID
+ * @throws {Error} If no agent with the given name exists
+ */
+export function resolveAgentId(name) {
+  const agents = listAgents();
+  const target = agents.find(a => a.name.toLowerCase() === name.toLowerCase());
+
+  if (!target) {
+    const names = agents.map(a => `${a.name} (${a.type})`).join(', ');
+    throw new Error(`Agent/User "${name}" is not registered.\nRegistered agents: ${names}`);
+  }
+
+  return target.id;
+}

@@ -25,8 +25,10 @@ import * as priorityCmd from './commands/priority.js';
 import * as logCmd from './commands/log.js';
 import * as registerCmd from './commands/register.js';
 import * as agentsCmd from './commands/agents.js';
+import * as whoamiCmd from './commands/whoami.js';
 import * as submitCmd from './commands/submit.js';
 import * as claimCmd from './commands/claim.js';
+import * as assignCmd from '/commands/assign.js';
 
 import { wantsHelp } from './util.js';
 
@@ -133,6 +135,7 @@ async function main() {
     init: () => initCmd.run(args),
     register: () => registerCmd.run(args),
     agents: () => agentsCmd.run(args),
+    whoami: () => whoamiCmd.run(args),
     status: () => statusCmd.run(args),
     view: () => viewCmd.run(args),
     search: () => searchCmd.run(args),
@@ -146,6 +149,7 @@ async function main() {
     delete: () => deleteCmd.run(args),
     log: () => logCmd.run(args),
     submit: () => submitCmd.run(args),
+    assign: () => assignCmd.run(args),
   };
 
   const handler = handlers[command];

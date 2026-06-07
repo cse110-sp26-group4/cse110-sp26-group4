@@ -44,6 +44,28 @@ export function hasFlag(args, flag) {
 }
 
 /**
+ * Validates that all flags in args are in the valid flags list
+ * @param {string[]} args
+ * @param {string[]} validFields Valid keys from issueSchema 
+ * @param {string} [hint] Optional hint to append to the error message
+ * @throws {Error} If an unknown flag is found
+ */
+export function validateFlags(args, validFields, hint = '') {
+  const validFlags = new Set([
+    ...validFields.map(key => issueSchema[key].flag),
+    '--json',
+  ]);
+
+  for (const arg of args) {
+    if (arg.startsWith('--') && !validFlags.has(arg)) {
+      throw new Error(
+        `Unknown flag: ${arg}\nValid flags: ${[...validFlags].join(', ')}${hint ? `\n${hint}` : ''}`
+      );
+    }
+  }
+}
+
+/**
  * Gets the value of a specific flag in the command line arguments.
  * @param {string[]} args
  * @param {string} flag
@@ -101,34 +123,45 @@ export function getNumericFlag(args, flag) {
 }
 
 /**
- * Represents the options for issue fields entered by the user.
- * @typedef {Object} parsedOptions
- * @property {string} [title] The title of an issue
- * @property {string} [status] The issue's status: open | in-progress | closed
- * @property {string} [priority] The issue's priority: low | medium | high
- * @property {number} [tokenLimit] The token limit for an AI agent
- * @property {string} [description] Description of the issue 
- * @property {string} [assignee] The agent assigned to the issue
+ * Normalizes a field value based on the provided schema/constants.
+ * @param {Object} schema The constant object (Status or Priority).
+ * @param {string} value The input value to normalize.
+ * @returns {string} The normalized value / original if no match found.
  */
+export function normalizeValue(schema, value) {
+  if (!value) return value;
+  
+  const match = Object.values(schema).find(
+    (v) => v.toLowerCase() === value.toLowerCase()
+  );
+  
+  return match ?? value;
+}
+
 /**
  * Parses command line arguments and extracts values for any flags / data fields
  * @param {string[]} args The command line arguemnts
- * @returns {parsedOptions} Object containing the extracted fields 
- */
+ * @returns {Object} Object with relevant keys from issueSchema
+*/
 export function parseArgs(args) {
   const options = {};
   for (const [key, config] of Object.entries(issueSchema)) {
-        if (hasFlag(args, config.flag)) {
-          // Use numericFlag helper if the argument type is a number
-            const value = config.type === 'number' 
-                ? getNumericFlag(args, config.flag) 
-                : getFlagValue(args, config.flag);
-          // Only add value if user used the corresponding flag
-            if (value !== null) {
-                options[key] = value;
-            }
+        if (!hasFlag(args, config.flag)) continue;
+
+      // Use numericFlag helper if the argument type is a number
+        let value = config.type === 'number' 
+            ? getNumericFlag(args, config.flag) 
+            : getFlagValue(args, config.flag);
+      
+        // skip field if no argument was entered
+        if (value === null) continue;
+
+        // normalize enum fields by case-insensitive match
+        if (config.type === 'enum' && config.values) {
+          value = normalizeValue(config.values, value);
         }
-    }
+        options[key] = value;
+  }
   return options;
 }
 /**

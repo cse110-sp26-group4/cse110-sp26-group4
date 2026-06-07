@@ -86,13 +86,6 @@ export function createIssue({
 
   const db = getDB();
 
-  // Normalize priority argument
-  if (priority !== undefined) {
-    const priorityValues = Object.values(Priority);
-    const match = priorityValues.find(v => v.toLowerCase() === priority.trim().toLowerCase());
-    priority = match || priority;
-  }
-  
   // Validate before inserting
   const proposed = new Issue({ title, priority, tokenLimit, description, assigneeId });
   const { isValid, errors } = proposed.validate();
@@ -224,20 +217,8 @@ export function updateIssue(id, oldIssue, { title, description, tokenLimit, stat
   if (description !== undefined) updates.description = description;
   if (tokenLimit !== undefined) updates.tokenLimit = tokenLimit;
   if (assigneeId !== undefined) updates.assigneeId = assigneeId;
-
-  // Normalize status argument
-  if (status !== undefined) {
-    const statusValues = Object.values(Status);
-    const toUpdate = statusValues.find(v => v.trim().toLowerCase() === status.trim().toLowerCase());
-    updates.status = toUpdate || status;
-  }
-
-  // Normalize priority argument
-  if (priority !== undefined) {
-    const priorityValues = Object.values(Priority);
-    const toUpdate = priorityValues.find(v => v.toLowerCase().trim() === priority.trim().toLowerCase());
-    updates.priority = toUpdate || priority;
-  }
+  if (priority !== undefined) updates.priority = priority; 
+  if (status !== undefined) updates.status = status;
 
   // Validate the new data 
   const proposedIssue = new Issue({ ...oldIssue, ...updates });
@@ -273,6 +254,30 @@ export function unassignIssue(issueId){
 
   db.update(issuesTable).set({ status: Status.OPEN, assigneeId: null }).where(eq(issuesTable.id, issueId)).run();
   logActivity(db, issueId, Action.EDIT, `Success: Issue #${issueId} is now unassigned.`);
+  return getIssue(issueId);
+}
+
+/**
+ * Assigns an issue to a specific registered agent or human.
+ * Logs an edit event.
+ * @param {number} issueId 
+ * @param {number} assigneeId 
+ * @returns {Issue} - the issue that matches the ID
+ */
+export function assignIssue(issueId, assigneeId) {
+  const db = getDB();
+  
+  // Verify the issue exists first (will throw if not found)
+  findById(db, issueId);
+  
+  db.update(issuesTable)
+    .set({ assigneeId: assigneeId })
+    .where(eq(issuesTable.id, issueId))
+    .run();
+
+  // Pass actorId directly instead of hacking the global module variable
+  logActivity(db, issueId, Action.EDIT, `Issue #${issueId} was assigned.`);
+  
   return getIssue(issueId);
 }
 

@@ -18,22 +18,17 @@
 //  baton update 7 --status closed --priority medium
 
 import { updateIssue, getIssue } from "../services/issuesService.js";
-import { hasFlag, parseArgs, renderOutput, serializeIssue, wantsHelp } from "../util.js";
+import { hasFlag, validateFlags, parseArgs, renderOutput, serializeIssue, wantsHelp } from "../util.js";
 import { issueSchema } from "../models/schema.js";
 import { input, select, confirm, editor } from "@inquirer/prompts";
 import { spawnSync } from "child_process";
 import { writeFileSync, readFileSync, unlinkSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
-import { listAgents, getAgentByName } from '../services/agentsService.js';
+import { listAgents, resolveAgentId } from '../services/agentsService.js';
 
 const ALLOWED_UPDATE_FIELDS = ['title', 'status', 'priority', 'tokenLimit', 'description', 'assigneeId'];
 
-const VALID_FLAGS = new Set([
-  ...ALLOWED_UPDATE_FIELDS.map(key => issueSchema[key].flag),
-  "--json",
-]);
-const FLAGS_HINT = [...VALID_FLAGS].join(", ");
 export const HELP = `Usage:
   baton update <id> [options]
 
@@ -245,7 +240,7 @@ export async function run(args) {
 
   if (cmdArgs.length === 0 || cmdArgs === "") {
     throw new Error(
-      `Invalid input: No arguments entered.\n${USAGE}\nOptions: ${FLAGS_HINT}`,
+      `Invalid input: No arguments entered.\n${USAGE}`
     );
   }
 
@@ -254,16 +249,12 @@ export async function run(args) {
 
   if (isNaN(id)) {
     throw new Error(
-      `Invalid input: No ID entered.\n${USAGE}\nOptions: ${FLAGS_HINT}`,
+      `Invalid input: No ID entered.\n${USAGE}\n`
     );
   }
 
   // Check if user misspelled a flag
-  for (const arg of cmdArgs) {
-    if (arg.startsWith("--") && !VALID_FLAGS.has(arg)) {
-      throw new Error(`Unknown flag: ${arg}\nValid flags: ${FLAGS_HINT}`);
-    }
-  }
+  validateFlags(cmdArgs.slice(1), ALLOWED_UPDATE_FIELDS);
 
   try {
     const oldIssue = await getIssue(id);
@@ -278,14 +269,8 @@ export async function run(args) {
       : parseArgs(cmdArgs.slice(1));
 
     // Getting agent name from ID
-    if (options.assigneeId) {
-      const target = getAgentByName(options.assigneeId);
-      if (!target) {
-        const agents = listAgents();
-        const names = agents.map(agent => `${agent.name} (${agent.type})`).join(', ');
-        throw new Error(`Agent/User "${options.assigneeId}" is not registered.\nRegistered agents: ${names}`);
-      }
-      options.assigneeId = target.id;
+    if (!isInteractive && options.assigneeId) {
+      options.assigneeId = resolveAgentId(options.assigneeId);
     }
 
     const newIssue = await updateIssue(id, oldIssue, options);

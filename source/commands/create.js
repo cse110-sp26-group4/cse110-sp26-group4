@@ -18,21 +18,16 @@
 //   -h, --help             Show this help
 
 import { createIssue } from "../services/issuesService.js";
-import { hasFlag, parseArgs, renderOutput, serializeIssue, wantsHelp } from "../util.js";
+import { hasFlag, validateFlags, parseArgs, renderOutput, serializeIssue, wantsHelp } from "../util.js";
 import { issueSchema } from "../models/schema.js";
 import { input, select, confirm, editor } from "@inquirer/prompts";
 import { spawnSync } from "child_process";
 import { writeFileSync, readFileSync, unlinkSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
-import { listAgents, getAgentByName } from '../services/agentsService.js';
+import { listAgents, resolveAgentId } from '../services/agentsService.js';
 
 const ALLOWED_CREATE_FIELDS = ['title', 'priority', 'tokenLimit', 'description', 'assigneeId'];
-
-const VALID_FLAGS = new Set([
-  ...ALLOWED_CREATE_FIELDS.map(key => issueSchema[key].flag),
-  "--json",
-]);
 
 // Build select choices from issueSchema.priority.values so the list stays in
 // sync with the Priority enum without any duplication.
@@ -180,7 +175,7 @@ async function runInteractiveMode() {
   const agents = listAgents();
   const assigneeChoices = [
     { name: '(none)', value: null },
-    ...agents.map(a => ({ name: `${a.name} (${a.type})`, value: a.id }))
+    ...agents.map(agent => ({ name: `${agent.name} (${agent.type})`, value: agent.id }))
   ];
 
   const assigneeId = await select({
@@ -230,19 +225,9 @@ export async function run(args) {
   }
 
   const isJson = hasFlag(args, "--json");
-
-  // Flag validation -- VALID_FLAGS is derived from issueSchema, so this stays
-  // current automatically when fields are added or renamed there
   const providedFlags = args.filter((a) => a.startsWith("--"));
-  for (const flag of providedFlags) {
-    if (!VALID_FLAGS.has(flag)) {
-      const knownFlags = [...VALID_FLAGS].join(", ");
-      throw new Error(
-        `Unknown flag: ${flag}\nValid flags: ${knownFlags}\n` +
-          `Tip: run \`baton create\` with no flags to use interactive mode.`,
-      );
-    }
-  }
+  
+  validateFlags(args, ALLOWED_CREATE_FIELDS, 'Tip: run `baton create` with no flags to use interactive mode.');
 
   try {
     // Interactive mode: no flags provided (human at a keyboard)
@@ -255,14 +240,8 @@ export async function run(args) {
       : parseArgs(args);
 
     // Getting agent name from ID
-    if (options.assigneeId) {
-      const target = getAgentByName(options.assigneeId);
-      if (!target) {
-        const agents = listAgents();
-        const names = agents.map(agent => `${agent.name} (${agent.type})`).join(', ');
-        throw new Error(`Agent/User "${options.assigneeId}" is not registered.\nRegistered agents: ${names}`);
-      }
-      options.assigneeId = target.id;
+    if (!isInteractive && options.assigneeId) {
+      options.assigneeId = resolveAgentId(options.assigneeId);
     }
 
     const issue = await createIssue(options);
