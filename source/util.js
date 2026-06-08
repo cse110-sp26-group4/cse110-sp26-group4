@@ -60,7 +60,7 @@ export function validateFlags(args, validFields, hint = '', allowPositional = fa
     const arg = args[i];
 
     if (arg.startsWith('--')) {
-      if (!validFlags.has(arg)) throw new Error(`Unknown flag: ${arg}`);
+      if (!validFlags.has(arg)) throw new Error(`Unknown flag: ${arg}\nValid flags: ${[...validFlags].join(', ')}${hint ? `\n${hint}` : ''}`);
       
       // If this flag requires a value, skip the next index
       const config = Object.values(issueSchema).find(c => c.flag === arg);
