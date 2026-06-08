@@ -35,7 +35,7 @@ export async function run(args = []) {
 
   // Guard Clause: Ensure both the issue ID and the agent name were provided
   if (!issueIdStr || !agentName) {
-    console.error('Usage Error: Missing arguments.\n${HELP}\n');
+    console.error(`Usage Error: Missing arguments.\n${HELP}\n`);
     return 1;
   }
 
