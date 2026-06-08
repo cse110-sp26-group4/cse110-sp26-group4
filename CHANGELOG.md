@@ -1,3 +1,10 @@
+## [1.14.5](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.14.4...v1.14.5) (2026-06-08)
+
+
+### Bug Fixes
+
+* fix baton approve bug and --priority flag bug ([#237](https://github.com/cse110-sp26-group4/cse110-sp26-group4/issues/237)) ([370aa6e](https://github.com/cse110-sp26-group4/cse110-sp26-group4/commit/370aa6e5469c624ecdbfb92e3ae76485afe23a35))
+
 ## [1.14.4](https://github.com/cse110-sp26-group4/cse110-sp26-group4/compare/v1.14.3...v1.14.4) (2026-06-07)
 
 
