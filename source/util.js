@@ -50,7 +50,7 @@ export function hasFlag(args, flag) {
  * @param {string} [hint] Optional hint to append to the error message
  * @throws {Error} If an unknown flag is found
  */
-export function validateFlags(args, validFields, hint = '', allowPositional = false) {
+export function validateFlags(args, validFields, hint = '', { allowPositional = false } = {}) {
   const validFlags = new Set([
     ...validFields.map(key => issueSchema[key].flag),
     '--json',
