@@ -240,16 +240,16 @@ export async function run(args) {
 
   if (cmdArgs.length === 0 || cmdArgs === "") {
     throw new Error(
-      `Invalid input: No arguments entered.\n${USAGE}`
+      `Invalid input: No arguments entered.\n${USAGE}\n`
     );
   }
 
   // Convert id argument from string to base-10 integer
-  const id = parseInt(cmdArgs[0], 10);
+  const id = Number(cmdArgs[0]);
 
-  if (isNaN(id)) {
+  if (!Number.isInteger(id) || id <= 0) {
     throw new Error(
-      `Invalid input: No ID entered.\n${USAGE}\n`
+      `Error: Invalid issue ID "${cmdArgs[0]}". Must be a positive integer.\n${USAGE}\n`
     );
   }
 

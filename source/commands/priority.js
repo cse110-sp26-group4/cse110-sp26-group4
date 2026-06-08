@@ -53,28 +53,28 @@ export async function run(args) {
 
   if (cmdArgs.length < 2) {
     throw new Error(
-      'Invalid input: Missing issue ID or priority.\nUsage: baton priority <id> <priority>'
+      `Invalid input: Missing issue ID or priority.\n${HELP}\n`
     );
   }
 
   if (cmdArgs.length > 2) {
     throw new Error(
-      'Invalid input: Too many arguments.\nUsage: baton priority <id> <priority>'
+      `Invalid input: Too many arguments.\n${HELP}\n`
     );
   }
 
   for (const arg of cmdArgs) {
     if (arg.startsWith('--')) {
       throw new Error(
-        'Unknown flag provided.\nUsage: baton priority <id> <priority>\nPriority: low | medium | high'
+        `Unknown flag provided.\n${HELP}\n`
       );
     }
   }
 
-  const id = parseInt(cmdArgs[0], 10);
-  if (Number.isNaN(id)) {
+  const id = Number(cmdArgs[0]);
+  if (!Number.isInteger(id) || id <= 0) {
     throw new Error(
-      'Invalid input: ID must be a number.\nUsage: baton priority <id> <priority>'
+      `Error: Invalid issue ID "${cmdArgs[0]}". Must be an integer.\n${HELP}\n`
     );
   }
 

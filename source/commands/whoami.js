@@ -9,7 +9,7 @@
 // Examples:
 //   baton whoami
 
-import { getCurrentActor } from '../services/authService.js';
+import { getCurrentActor } from '../services/context.js';
 import { hasFlag, renderOutput, renderError, wantsHelp, validateFlags } from '../util.js';
 
 
