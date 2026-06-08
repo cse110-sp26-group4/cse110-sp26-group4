@@ -1,9 +1,23 @@
+/**
+ * Valid agent type values.
+ * @enum {string}
+ */
 export const AgentType = Object.freeze({
   AGENT: "agent",
   HUMAN: "human"
 });
 
+/**
+ * Represents a registered agent or human user.
+ */
 export class Agent {
+  /**
+   * @param {object} [fields]
+   * @param {string} [fields.name]
+   * @param {string} [fields.type]
+   * @param {number} [fields.id]
+   * @param {string} [fields.createdAt]
+   */
   constructor({
     // User fields
     name      = "Unnamed",

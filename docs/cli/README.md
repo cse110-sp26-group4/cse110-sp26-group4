@@ -84,8 +84,6 @@ Error messages are printed to **stderr** and include a suggested corrective acti
 | `init` | Implemented | Initialize storage and seed issues |
 | `register` | Implemented | Register a new AI agent or human user |
 | `status` | Implemented | Show issue counts and progress |
-| `next` | Implemented | Work on the next highest-priority issue |
-| `loop` | Implemented | Run autonomous agent steps |
 | `create` | Implemented | Create a new issue |
 | `list` | Implemented | List issues with filters |
 | `view` | Implemented | View all fields for a single issue |

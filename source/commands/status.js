@@ -22,7 +22,8 @@ Examples:
 `;
 
 /**
- * Main function that runs the status command.
+ * Displays issue counts and overall completion progress.
+ * @param {string[]} [args]
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args = []) {

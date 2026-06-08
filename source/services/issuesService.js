@@ -412,8 +412,13 @@ export function getActivityLog(issueId) {
 }
 
 /**
+ * @typedef {Object} RecentActivityOptions
+ * @property {number} [limit=20] - Maximum number of activity entries to return.
+ */
+
+/**
  * Get the most recent activity across all issues.
- * @param {RecentActivityOptions} options - Options for retrieving recent activity.
+ * @param {RecentActivityOptions} [options]
  * @returns {ActivityLog[]}
  */
 export function getRecentActivity({ limit = 20 } = {}) {
