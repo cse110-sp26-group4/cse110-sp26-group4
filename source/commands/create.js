@@ -19,7 +19,7 @@
 
 import { Priority } from "../models/issue.js";
 import { createIssue } from "../services/issuesService.js";
-import { hasFlag, validateFlags, parseArgs, renderOutput, serializeIssue, wantsHelp, COMMON_FLAGS } from "../util.js";
+import { hasFlag, validateFlags, parseAndValidateArgs, parseArgs, renderOutput, renderError, serializeIssue, wantsHelp, COMMON_FLAGS } from "../util.js";
 import { issueSchema } from "../models/schema.js";
 import { input, select, confirm, editor } from "@inquirer/prompts";
 import { spawnSync } from "child_process";

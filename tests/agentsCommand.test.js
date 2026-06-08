@@ -112,10 +112,9 @@ describe('Agents Command', () => {
     assert.deepEqual(output.agents, []);
   });
 
-  it('should throw on unknown flags', async () => {
-    await assert.rejects(
-      () => agentsCommand(['--foo']),
-      (err) => err.message.includes('Unknown flag: --foo'),
-    );
+  it('should return error code 1 on unknown flags', async () => {
+    const exitCode = await agentsCommand(['--foo']);
+    assert.equal(exitCode, 1);
+    assert.ok(capture.errors.some((line) => line.includes('Unknown flag: --foo')));
   });
 });

@@ -8,7 +8,7 @@ import {
   getIssueStats,
   getAllIssues,
 } from '../services/issuesService.js';
-import { COMMON_FLAGS, renderOutput, reportTrackerNotReady, parseAndValidateArgs } from '../util.js';
+import { COMMON_FLAGS, renderOutput, renderError, reportTrackerNotReady, parseAndValidateArgs } from '../util.js';
 
 export const HELP = `Usage:
   baton status [--json]
@@ -29,7 +29,16 @@ export const SPEC = { positionals: { min: 0, max: 0 }, flags: { ...COMMON_FLAGS 
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args = []) {
-  const { flags } = parseAndValidateArgs(args, SPEC);
+  let positionals, flags;
+  try {
+    const result = parseAndValidateArgs(args, SPEC);
+    positionals = result.positionals;
+    flags = result.flags;
+  } catch (error) {
+    const isJson = args.includes('--json');
+    renderError(isJson, error.message);
+    return 1;
+  }
   if (flags['--help']) {
     console.log(HELP);
     return 0;

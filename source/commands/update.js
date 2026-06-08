@@ -18,7 +18,7 @@
 //  baton update 7 --status closed --priority medium
 
 import { updateIssue, getIssue } from "../services/issuesService.js";
-import { hasFlag, validateFlags, parseArgs, renderOutput, serializeIssue, wantsHelp, COMMON_FLAGS } from "../util.js";
+import { hasFlag, validateFlags, parseAndValidateArgs, parseArgs, renderOutput, renderError, serializeIssue, wantsHelp, COMMON_FLAGS } from "../util.js";
 import { issueSchema } from "../models/schema.js";
 import { Status, Priority } from "../models/issue.js";
 import { input, select, confirm, editor } from "@inquirer/prompts";
@@ -244,7 +244,16 @@ async function runInteractiveMode(issue) {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args) {
-  const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+  let positionals, flags;
+  try {
+    const result = parseAndValidateArgs(args, SPEC);
+    positionals = result.positionals;
+    flags = result.flags;
+  } catch (error) {
+    const isJson = args.includes('--json');
+    renderError(isJson, error.message);
+    return 1;
+  }
   if (flags['--help']) {
     console.log(HELP);
     return 0;

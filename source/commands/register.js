@@ -15,6 +15,8 @@ import {
     getFlagValue,
     hasFlag,
     renderOutput,
+    renderError,
+    parseAndValidateArgs,
     wantsHelp,
     COMMON_FLAGS,
 } from '../util.js';
@@ -43,7 +45,16 @@ export const SPEC = {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error
  */
 export async function run(args) {
-    const { flags } = parseAndValidateArgs(args, SPEC);
+    let positionals, flags;
+    try {
+        const result = parseAndValidateArgs(args, SPEC);
+        positionals = result.positionals;
+        flags = result.flags;
+    } catch (error) {
+        const isJson = args.includes('--json');
+        renderError(isJson, error.message);
+        return 1;
+    }
     if (flags['--help']) {
         console.log(HELP);
         return 0;

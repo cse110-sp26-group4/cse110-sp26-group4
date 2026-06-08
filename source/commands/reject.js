@@ -41,7 +41,16 @@ export const SPEC = {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args) {
-    const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+    let positionals, flags;
+    try {
+        const result = parseAndValidateArgs(args, SPEC);
+        positionals = result.positionals;
+        flags = result.flags;
+    } catch (error) {
+        const isJson = args.includes('--json');
+        renderError(isJson, error.message);
+        return 1;
+    }
     if (flags['--help']) {
         console.log(HELP);
         return 0;
@@ -56,7 +65,7 @@ export async function run(args) {
     }
 
     if (!reasonText || reasonText.trim() === "") {
-        renderError(isJson, "Reason for rejection cannot be empty.", 'EMPTY_REASON');
+        renderError(isJson, "Missing reason for reject.");
         return 1;
     }
     

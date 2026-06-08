@@ -21,10 +21,12 @@ import {
     getNumericFlag,
     hasFlag,
     validateFlags,
+    parseAndValidateArgs,
     parseArgs,
     printIssueTable,
     printTableHeader,
     renderOutput,
+    renderError,
     serializeIssue,
     wantsHelp,
     COMMON_FLAGS,
@@ -68,7 +70,16 @@ const ALLOWED_LIST_FIELDS = ['status', 'priority', 'limit', 'offset', 'assigneeI
  */
 
 export async function run(args) {
-    const { flags } = parseAndValidateArgs(args, SPEC);
+    let positionals, flags;
+    try {
+        const result = parseAndValidateArgs(args, SPEC);
+        positionals = result.positionals;
+        flags = result.flags;
+    } catch (error) {
+        const isJson = args.includes('--json');
+        renderError(isJson, error.message);
+        return 1;
+    }
     if (flags['--help']) {
         console.log(HELP);
         return 0;
