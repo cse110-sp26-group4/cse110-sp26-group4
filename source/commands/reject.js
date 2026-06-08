@@ -15,7 +15,7 @@
 
 import { rejectIssue, getIssue } from '../services/issuesService.js';
 import { Status } from '../models/issue.js';
-import { hasFlag, getFlagValue, wantsHelp, renderOutput, renderError, serializeIssue } from '../util.js';
+import { hasFlag, getFlagValue, wantsHelp, renderOutput, renderError, serializeIssue, COMMON_FLAGS, parseAndValidateArgs } from '../util.js';
 
 export const HELP = `Usage:
     baton reject <id> [options]
@@ -29,6 +29,11 @@ Examples:
     baton reject 5 --reason "Needs more detail"
 `;
 
+export const SPEC = {
+  positionals: { min: 1, max: 1 },
+  flags: { '--reason': { type: 'string' }, ...COMMON_FLAGS }
+};
+
 /**
  * Rejects an issue for a specified ID.
  * 
@@ -36,37 +41,17 @@ Examples:
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args) {
-    const isJson = hasFlag(args, '--json');
-
-    // (0) Help check
-    if (wantsHelp(args)) {
+    const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+    if (flags['--help']) {
         console.log(HELP);
         return 0;
     }
+    const isJson = flags['--json'] ?? false;
+    const id = Number(positionals[0]);
+    const reasonText = flags['--reason'];
 
-    // (1) Parse arguments
-    const idArgs = args.filter(arg => !arg.startsWith('-'));
-    if (idArgs.length === 0) {
-        renderError(isJson, `No ID provided.\n${HELP}`, 'MISSING_ID');
-        return 1;
-    }
-
-    const id = Number(idArgs[0]);
     if (!Number.isInteger(id)) {
-        renderError(isJson, `Invalid ID "${idArgs[0]}". ID must be an integer.`, 'INVALID_ID');
-        return 1;
-    }
-
-    if (!hasFlag(args, "--reason")) {
-        renderError(isJson, `Missing reason for reject.\n${HELP}`, 'MISSING_REASON');
-        return 1;
-    }
-
-    let reasonText;
-    try {
-        reasonText = getFlagValue(args, "--reason");
-    } catch (error) {
-        renderError(isJson, error.message, 'INVALID_REASON');
+        renderError(isJson, `Invalid ID "${positionals[0]}". ID must be an integer.`, 'INVALID_ID');
         return 1;
     }
 

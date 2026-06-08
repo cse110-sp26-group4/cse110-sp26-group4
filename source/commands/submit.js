@@ -13,11 +13,11 @@
 import { getIssue, submitForReview } from '../services/issuesService.js';
 import { Status } from '../models/issue.js';
 import {
-  hasFlag,
+  COMMON_FLAGS,
+  parseAndValidateArgs,
   renderOutput,
   renderError,
   serializeIssue,
-  wantsHelp,
 } from '../util.js';
 
 export const HELP = `Usage:
@@ -31,27 +31,24 @@ Examples:
   baton submit 14
 `;
 
+export const SPEC = { positionals: { min: 1, max: 1 }, flags: { ...COMMON_FLAGS } };
+
 /**
  * Submits an in-progress issue for human review.
  * @param {string[]} args - The command line arguments
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error
  */
 export async function run(args) {
-  if (wantsHelp(args)) {
+  const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+  if (flags['--help']) {
     console.log(HELP);
     return 0;
   }
-  const isJson = hasFlag(args, '--json');
+  const isJson = flags['--json'];
+  const id = Number(positionals[0]);
 
-  const idArgs = args.filter((arg) => arg !== '--json');
-  if (idArgs.length === 0) {
-    renderError(isJson, 'Missing issue ID.\nUsage: baton submit <id>', 'MISSING_ID');
-    return 1;
-  }
-
-  const id = Number(idArgs[0]);
   if (!Number.isInteger(id)) {
-    renderError(isJson, `Invalid ID "${idArgs[0]}". ID must be an integer.`, 'INVALID_ID');
+    renderError(isJson, `Invalid ID "${positionals[0]}". ID must be an integer.`, 'INVALID_ID');
     return 1;
   }
 

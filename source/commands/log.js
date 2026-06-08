@@ -11,7 +11,7 @@
 //   baton log 5
 
 import { getActivityLog } from '../services/issuesService.js';
-import { formatTimestamp, hasFlag, wantsHelp } from '../util.js';
+import { COMMON_FLAGS, formatTimestamp, hasFlag, parseAndValidateArgs } from '../util.js';
 
 export const HELP = `Usage:
   baton log <id> [--json]
@@ -23,6 +23,8 @@ Options:
 Examples:
   baton log 5
 `;
+
+export const SPEC = { positionals: { min: 1, max: 1 }, flags: { ...COMMON_FLAGS } };
 
 /**
  * Serializes an activity log entry for JSON output.
@@ -46,18 +48,13 @@ function serializeLogEntry(entry) {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args) {
-  if (wantsHelp(args)) {
+  const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+  if (flags['--help']) {
     console.log(HELP);
     return 0;
   }
-  const isJson = hasFlag(args, '--json');
-  const idArgs = args.filter((arg) => arg !== '--json');
-
-  if (idArgs.length === 0) {
-    throw new Error('Invalid input: Missing Issue ID.\nUsage: baton log <id>');
-  }
-
-  const id = idArgs.join(' ');
+  const isJson = flags['--json'];
+  const id = positionals[0];
 
   if (isNaN(id)) {
     throw new Error('Invalid input: ID must be a number.\nUsage: baton log <id>');

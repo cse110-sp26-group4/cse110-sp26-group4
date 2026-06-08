@@ -27,6 +27,8 @@ import {
   resolvePath,
   serializeIssue,
   wantsHelp,
+  COMMON_FLAGS,
+  parseAndValidateArgs,
 } from '../util.js';
 
 const DEFAULT_SPECS_PATH = join('docs', 'specs', 'project-requirements.md');
@@ -46,6 +48,11 @@ Examples:
   baton init --specs ./my-specs.md
   baton init --force
 `;
+
+export const SPEC = {
+  positionals: { min: 0, max: 1 },
+  flags: { '--force': { type: 'boolean' }, '--specs': { type: 'string' }, ...COMMON_FLAGS }
+};
 
 /**
  * Represents the parsed command-line flags for initialization.
@@ -124,22 +131,23 @@ function generateIssuesFromSpecs(specsPath) {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args = []) {
-  if (wantsHelp(args)) {
+  const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+  if (flags['--help']) {
     console.log(HELP);
     return 0;
   }
+  const isJson = flags['--json'] ?? false;
+  const force = flags['--force'] ?? false;
+  const specsFlag = flags['--specs'];
+  const specsPositional = positionals[0];
 
-  const isJson = hasFlag(args, '--json');
-  let flags;
-  try {
-    flags = parseInitFlags(args);
-  } catch (error) {
-    console.error(`Error: ${error.message}`);
-    console.error('Usage: baton init [--force] [--specs <path>] [<specs-path>]');
-    return 1;
+  if (specsFlag && specsPositional) {
+    throw new Error('Pass specs path with either --specs <path> or a positional path, not both.');
   }
 
-  if (isTrackerReady() && !flags.force) {
+  const specsPath = specsFlag ?? specsPositional;
+
+  if (isTrackerReady() && !force) {
     console.error('Error: Tracker already initialized in this directory.');
     console.error('Run `baton init --force` to re-initialize.');
     return 1;
@@ -147,7 +155,7 @@ export async function run(args = []) {
 
   initDB();
 
-  if (flags.force) clearAllIssues();
+  if (force) clearAllIssues();
 
   // auto-register default deployment human user
   let autoRegisterMessage = '';

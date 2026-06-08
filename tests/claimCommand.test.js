@@ -93,7 +93,7 @@ describe('Claim Command', () => {
     const exitCode = await claimCommand([]);
 
     assert.equal(exitCode, 1);
-    assert.ok(capture.errors.some((line) => line.includes('Missing issue ID')));
+    assert.ok(capture.errors.some((line) => line.includes('Expected at least 1 positional argument.')));
   });
 
   it('should fail when the issue ID is not an integer', async () => {

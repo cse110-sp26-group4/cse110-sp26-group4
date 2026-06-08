@@ -6,7 +6,7 @@
 import { getAgentByName } from '../services/agentsService.js';
 import { assignIssue } from '../services/issuesService.js';
 import { getCurrentActor } from '../services/authService.js';
-import { hasFlag, renderOutput } from '../util.js';
+import { COMMON_FLAGS, renderOutput, parseAndValidateArgs } from '../util.js';
 
 const DECIMAL_BASE = 10;
 
@@ -22,6 +22,8 @@ Examples:
   baton assign 5 claude-dev --json
 `;
 
+export const SPEC = { positionals: { min: 2, max: 2 }, flags: { ...COMMON_FLAGS } };
+
 /**
  * Runs the assign command to associate an issue with a registered agent.
  * Usage: baton assign <id> <agent-name> [--json]
@@ -29,21 +31,15 @@ Examples:
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args = []) {
-  // Check if the user requested JSON output formatting via the --json flag
-  const isJson = hasFlag(args, '--json');
-  
-  // Strip out any flags starting with '-' to isolate the raw [issueIdStr, agentName] positional arguments
-  const [issueIdStr, agentName] = args.filter(arg => !arg.startsWith('-'));
-
-  // Guard Clause: Ensure both the issue ID and the agent name were provided
-  if (!issueIdStr || !agentName) {
-    console.error('Usage Error: Missing arguments.\nUsage: baton assign <id> <agent-name> [--json]');
-    return 1;
+  const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+  if (flags['--help']) {
+    console.log(HELP);
+    return 0;
   }
-
-  // Convert the extracted issue ID string into a safe decimal integer
-  const issueId = parseInt(issueIdStr, DECIMAL_BASE);
+  const isJson = flags['--json'] ?? false;
+  const [issueIdStr, agentName] = positionals;
   
+  const issueId = parseInt(issueIdStr, DECIMAL_BASE);
   // Guard Clause: If parsing failed (e.g., the user typed letters instead of an ID), reject it
   if (isNaN(issueId)) {
     console.error(`Error: Invalid issue ID "${issueIdStr}". Must be an integer.`);

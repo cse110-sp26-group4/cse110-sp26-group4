@@ -7,6 +7,11 @@ import { isAbsolute, resolve } from 'node:path';
 import { issueSchema } from '../source/models/schema.js';
 import { getAgentById } from '../source/services/agentsService.js';
 
+export const COMMON_FLAGS = {
+  '--json': { type: 'boolean' },
+  '--help': { type: 'boolean', alias: '-h' },
+}
+
 /**
  * Formats a timestamp as `HH:MM:SS YYYY-MM-DD`.
  * @param {Date | string | number | null | undefined} value
@@ -124,14 +129,15 @@ export function getNumericFlag(args, flag) {
 
 /**
  * Normalizes a field value based on the provided schema/constants.
- * @param {Object} schema The constant object (Status or Priority).
+ * @param {Object | string[]} schema The constant object (Status or Priority) or an array of valid values.
  * @param {string} value The input value to normalize.
  * @returns {string} The normalized value / original if no match found.
  */
 export function normalizeValue(schema, value) {
   if (!value) return value;
   
-  const match = Object.values(schema).find(
+  const values = Array.isArray(schema) ? schema : Object.values(schema);
+  const match = values.find(
     (v) => v.toLowerCase() === value.toLowerCase()
   );
   
@@ -364,4 +370,89 @@ export function printIssueTable(issue) {
   const assigneeVal = truncate(assignee?.name ?? null, WIDTHS.assignee).padEnd(WIDTHS.assignee);
 
   console.log(`${idVal} │ ${titleVal} │ ${statusVal} │ ${priorityVal} │ ${assigneeVal} │ ${descVal}`);
+}
+
+/**
+ * Robustly parses and validates command line arguments based on a provided specification.
+ * Flags and flag arguments are always fully validated.
+ * The number of positional arguments is validated, but the type of positional arguments is NOT VALIDATED.
+ * Positional arguments are returned as an array of strings. Further validation (e.g. make sure it's a Number)
+ * may be required.
+ * @param {string[]} args - The raw command line arguments.
+ * @param {Object} spec - The specification for the command.
+ * @param {Object} spec.positionals - Bounds for positional arguments.
+ * @param {number} spec.positionals.min - Minimum number of positional arguments.
+ * @param {number} spec.positionals.max - Maximum number of positional arguments.
+ * @param {Object} spec.flags - Allowed flags and their configurations.
+ * @returns {Object} An object containing { positionals: string[], flags: Object }.
+ * @throws {Error} If arguments are invalid according to the spec.
+ */
+export function parseAndValidateArgs(args, spec) {
+  const result = {
+    positionals: [],
+    flags: {},
+  };
+
+  const aliasMap = {};
+  for (const [fullName, config] of Object.entries(spec.flags)) {
+    if (config.alias) {
+      aliasMap[config.alias] = fullName;
+    }
+  }
+
+  const skipIndices = new Set();
+
+  for (let i = 0; i < args.length; i++) {
+    if (skipIndices.has(i)) continue;
+    const arg = args[i];
+
+    if (arg.startsWith('-')) {
+      const fullName = arg.startsWith('--') ? arg : aliasMap[arg];
+
+      if (!fullName || !spec.flags[fullName]) {
+        throw new Error(`Unknown flag: ${arg}`);
+      }
+
+      const config = spec.flags[fullName];
+      if (config.type === 'boolean') {
+        result.flags[fullName] = true;
+      } else {
+        const val = args[i + 1];
+        if (val === undefined || val.startsWith('-')) {
+          throw new Error(`Missing value for ${arg}.`);
+        }
+        skipIndices.add(i + 1);
+
+        if (config.type === 'number') {
+          const num = Number(val);
+          if (Number.isNaN(num)) {
+            throw new Error(`Invalid value for ${arg}: expected a number, got "${val}".`);
+          }
+          result.flags[fullName] = num;
+        } else if (config.type === 'enum') {
+          const normalized = normalizeValue(config.values, val);
+          if (!config.values.includes(normalized)) {
+            throw new Error(`Invalid value for ${arg}: expected one of [${config.values.join(', ')}], got "${val}".`);
+          }
+          result.flags[fullName] = normalized;
+        } else {
+          result.flags[fullName] = val;
+        }
+      }
+    } else {
+      result.positionals.push(arg);
+    }
+  }
+
+  const { min, max } = spec.positionals || { min: 0, max: Infinity };
+  if (!result.flags['--help']) {
+    if (result.positionals.length < min) {
+      throw new Error(`Expected at least ${min} positional argument${min === 1 ? '' : 's'}.`);
+    }
+    if (result.positionals.length > max) {
+      throw new Error(`Expected at most ${max} positional argument${max === 1 ? '' : 's'}.`);
+    }
+  }
+
+  return result;
 }

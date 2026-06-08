@@ -10,11 +10,13 @@
 //  -h, --help        Show this help
 
 import { registerAgent } from '../services/agentsService.js';
+import { AgentType } from '../models/agents.js';
 import {
     getFlagValue,
     hasFlag,
     renderOutput,
     wantsHelp,
+    COMMON_FLAGS,
 } from '../util.js';
 
 export const HELP = `Usage:
@@ -30,38 +32,30 @@ Examples:
     baton register --name claude-dev --type agent
 `;
 
+export const SPEC = {
+  positionals: { min: 0, max: 0 },
+  flags: { '--name': { type: 'string' }, '--type': { type: 'enum', values: Object.values(AgentType) }, ...COMMON_FLAGS }
+};
+
 /**
  * Registers a new agent or human user
  * @param {string[]} args - The command line arguments
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error
  */
 export async function run(args) {
-    if (wantsHelp(args)) {
+    const { flags } = parseAndValidateArgs(args, SPEC);
+    if (flags['--help']) {
         console.log(HELP);
         return 0;
     }
-    const isJson = hasFlag(args, '--json');
-    const validFlags = ['--name', '--type', '--json'];
-    
-    // Check if user misspelled a flag
-    for (const arg of args) {
-        if (arg.startsWith('--')) {
-            if (!validFlags.includes(arg)) {
-                throw new Error(`Unknown flag provided: ${arg}. \nFlags: --name <n>, --type <t>, --json`);
-            }
-        }
-    }
+    const isJson = flags['--json'] ?? false;
 
     try {
-        const name = getFlagValue(args, '--name');
-        const type = getFlagValue(args, '--type') || 'agent';
+        const name = flags['--name'];
+        const type = flags['--type'] || 'agent';
 
         if (!name) {
             throw new Error("Missing required flag: --name <name>");
-        }
-
-        if (type !== 'agent' && type !== 'human') {
-            throw new Error(`Invalid type "${type}". Must be 'agent' or 'human'.`);
         }
 
         const agent = registerAgent(name, type);
@@ -74,7 +68,7 @@ export async function run(args) {
         return 0;
     } catch (error) {
         if (error.message.includes('UNIQUE constraint failed')) {
-            console.error(`Error: An agent or user with the name "${getFlagValue(args, '--name')}" is already registered.`);
+            console.error(`Error: An agent or user with the name "${flags['--name']}" is already registered.`);
         } else if (error.message.includes('Missing required') || error.message.includes('Invalid type')) {
             console.error(`Usage Error: ${error.message}`);
         } else {

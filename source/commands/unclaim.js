@@ -14,11 +14,11 @@ import { getIssue, unclaimIssue } from '../services/issuesService.js';
 import { getCurrentActor } from '../services/context.js';
 import { AgentType } from '../models/agents.js';
 import {
-  hasFlag,
+  COMMON_FLAGS,
+  parseAndValidateArgs,
   renderOutput,
   renderError,
   serializeIssue,
-  wantsHelp,
 } from '../util.js';
 
 export const HELP = `Usage:
@@ -33,28 +33,24 @@ Examples:
   > Success: Issue #14 released by agent "claude-dev" and returned to Open.
 `;
 
+export const SPEC = { positionals: { min: 1, max: 1 }, flags: { ...COMMON_FLAGS } };
+
 /**
  * Releases an issue back to Open status, clearing the assignee.
  * @param {string[]} args - The command line arguments
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error
  */
 export async function run(args) {
-  if (wantsHelp(args)) {
+  const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+  if (flags['--help']) {
     console.log(HELP);
     return 0;
   }
+  const isJson = flags['--json'];
+  const id = Number(positionals[0]);
 
-  const isJson = hasFlag(args, '--json');
-
-  const idArgs = args.filter((arg) => !arg.startsWith('-'));
-  if (idArgs.length === 0) {
-    renderError(isJson, 'Missing issue ID.\nUsage: baton unclaim <id>', 'MISSING_ID');
-    return 1;
-  }
-
-  const id = Number(idArgs[0]);
   if (!Number.isInteger(id) || id <= 0) {
-    renderError(isJson, `Invalid ID "${idArgs[0]}". ID must be a positive integer.`, 'INVALID_ID');
+    renderError(isJson, `Invalid ID "${positionals[0]}". ID must be a positive integer.`, 'INVALID_ID');
     return 1;
   }
 

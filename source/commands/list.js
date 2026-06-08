@@ -14,6 +14,7 @@
 
 import { listIssues } from '../services/issuesService.js';
 import { resolveAgentId } from '../services/agentsService.js';
+import { Status, Priority } from '../models/issue.js';
 
 import {
     getFlagValue,
@@ -26,6 +27,7 @@ import {
     renderOutput,
     serializeIssue,
     wantsHelp,
+    COMMON_FLAGS,
 } from '../util.js';
 
 export const HELP = `Usage:
@@ -45,6 +47,18 @@ Examples:
     baton list --limit 10 --offset 20
 `;
 
+export const SPEC = {
+  positionals: { min: 0, max: 0 },
+  flags: {
+    '--status': { type: 'enum', values: Object.values(Status) },
+    '--priority': { type: 'enum', values: Object.values(Priority) },
+    '--limit': { type: 'number' },
+    '--offset': { type: 'number' },
+    '--assignee': { type: 'string' },
+    ...COMMON_FLAGS
+  }
+};
+
 const ALLOWED_LIST_FIELDS = ['status', 'priority', 'limit', 'offset', 'assigneeId'];
 
 /**
@@ -54,11 +68,12 @@ const ALLOWED_LIST_FIELDS = ['status', 'priority', 'limit', 'offset', 'assigneeI
  */
 
 export async function run(args) {
-    if (wantsHelp(args)) {
+    const { flags } = parseAndValidateArgs(args, SPEC);
+    if (flags['--help']) {
         console.log(HELP);
         return 0;
     }
-    const isJson = hasFlag(args, '--json');
+    const isJson = flags['--json'] ?? false;
 
     validateFlags(args, ALLOWED_LIST_FIELDS);
 

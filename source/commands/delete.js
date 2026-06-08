@@ -16,7 +16,7 @@
 //   baton delete 4 --yes
 
 import { deleteIssue, getIssue } from '../services/issuesService.js';
-import { hasFlag, wantsHelp, renderOutput, renderError } from '../util.js';
+import { COMMON_FLAGS, parseAndValidateArgs, renderOutput, renderError } from '../util.js';
 import { confirm } from '@inquirer/prompts';
 
 export const HELP = `Usage:
@@ -32,6 +32,11 @@ Examples:
     baton delete 4 --yes
 `;
 
+export const SPEC = {
+  positionals: { min: 1, max: 1 },
+  flags: { '--yes': { type: 'boolean' }, ...COMMON_FLAGS }
+};
+
 /**
  * Deletes an issue for a specified ID.
  * 
@@ -39,28 +44,19 @@ Examples:
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args) {
-    const isJson = hasFlag(args, '--json');
-
-    // (0) Help check
-    if (wantsHelp(args)) {
+    const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+    if (flags['--help']) {
         console.log(HELP);
         return 0;
     }
+    const isJson = flags['--json'];
+    const skipConfirm = flags['--yes'];
+    const id = Number(positionals[0]);
 
-    // (1) Parse arguments
-    const idArgs = args.filter(arg => !arg.startsWith('-'));
-    if (idArgs.length === 0) {
-        renderError(isJson, `No ID provided.\n${HELP}`, 'MISSING_ID');
-        return 1;
-    }
-
-    const id = Number(idArgs[0]);
     if (!Number.isInteger(id)) {
-        renderError(isJson, `Invalid ID "${idArgs[0]}". ID must be an integer.`, 'INVALID_ID');
+        renderError(isJson, `Invalid ID "${positionals[0]}". ID must be an integer.`, 'INVALID_ID');
         return 1;
     }
-
-    const isYes = hasFlag(args, "--yes");
 
     try {
         // (2) Check if issue exists before confirming
@@ -76,7 +72,7 @@ export async function run(args) {
         }
 
         // (3) Confirmation prompt
-        let confirmed = isYes;
+        let confirmed = skipConfirm;
         if (!confirmed && !isJson) { // Only prompt if not JSON and not --yes
             try {
                 confirmed = await confirm({ message: `Are you sure you want to delete issue #${id}?`, default: false });

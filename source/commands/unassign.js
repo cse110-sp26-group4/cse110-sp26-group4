@@ -13,7 +13,7 @@
 import { getIssue, unassignIssue } from "../services/issuesService.js";
 import { getCurrentActor } from "../services/context.js";
 import { AgentType } from "../models/agents.js";
-import { hasFlag, renderOutput, renderError, serializeIssue } from "../util.js";
+import { COMMON_FLAGS, parseAndValidateArgs, renderOutput, renderError, serializeIssue } from "../util.js";
 
 export const HELP = `Usage:
   baton unassign <id> [--json]
@@ -27,7 +27,7 @@ Examples:
   baton unassign 12 --json
 `;
 
-const VALID_FLAGS = new Set(["--json"]);
+export const SPEC = { positionals: { min: 1, max: 1 }, flags: { ...COMMON_FLAGS } };
 
 /**
  * Removes the current assignee from an issue.
@@ -35,23 +35,18 @@ const VALID_FLAGS = new Set(["--json"]);
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error
  */
 export async function run(args) {
-  const isJson = hasFlag(args, "--json");
-
-  // Validate flags
-  const providedFlags = args.filter((a) => a.startsWith("--"));
-  for (const flag of providedFlags) {
-    if (!VALID_FLAGS.has(flag)) {
-      throw new Error(`Unknown flag: ${flag}`);
-    }
+  const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+  if (flags['--help']) {
+    console.log(HELP);
+    return 0;
   }
-
-  const idArg = args.find((a) => !a.startsWith("-"));
-  const issueId = Number(idArg);
+  const isJson = flags['--json'];
+  const issueId = Number(positionals[0]);
 
   if (!Number.isInteger(issueId) || issueId <= 0) {
     renderError(
       isJson,
-      `Invalid ID "${idArg}". ID must be a positive integer.`,
+      `Invalid ID "${positionals[0]}". ID must be a positive integer.`,
       "INVALID_ID",
     );
     return 1;

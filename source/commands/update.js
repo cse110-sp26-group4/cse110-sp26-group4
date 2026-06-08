@@ -18,8 +18,9 @@
 //  baton update 7 --status closed --priority medium
 
 import { updateIssue, getIssue } from "../services/issuesService.js";
-import { hasFlag, validateFlags, parseArgs, renderOutput, serializeIssue, wantsHelp } from "../util.js";
+import { hasFlag, validateFlags, parseArgs, renderOutput, serializeIssue, wantsHelp, COMMON_FLAGS } from "../util.js";
 import { issueSchema } from "../models/schema.js";
+import { Status, Priority } from "../models/issue.js";
 import { input, select, confirm, editor } from "@inquirer/prompts";
 import { spawnSync } from "child_process";
 import { writeFileSync, readFileSync, unlinkSync } from "fs";
@@ -46,6 +47,19 @@ Examples:
   baton update 3 --title "Revised title"
   baton update 7 --status closed --priority medium
 `;
+
+export const SPEC = {
+  positionals: { min: 1, max: 1 },
+  flags: {
+    '--title': { type: 'string' },
+    '--description': { type: 'string' },
+    '--token-limit': { type: 'number' },
+    '--status': { type: 'enum', values: Object.values(Status) },
+    '--priority': { type: 'enum', values: Object.values(Priority) },
+    '--assignee': { type: 'string' },
+    ...COMMON_FLAGS
+  }
+};
 const USAGE = 'Usage: baton update <id> [options]';
 
 // Build select choices from issueSchema enums so they stay in sync automatically.
@@ -230,43 +244,34 @@ async function runInteractiveMode(issue) {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args) {
-  if (wantsHelp(args)) {
+  const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+  if (flags['--help']) {
     console.log(HELP);
     return 0;
   }
-
-  const isJson = hasFlag(args, "--json");
-  const cmdArgs = args.filter((arg) => arg !== "--json");
-
-  if (cmdArgs.length === 0 || cmdArgs === "") {
-    throw new Error(
-      `Invalid input: No arguments entered.\n${USAGE}`
-    );
-  }
-
-  // Convert id argument from string to base-10 integer
-  const id = parseInt(cmdArgs[0], 10);
+  const isJson = flags['--json'] ?? false;
+  const idStr = positionals[0];
+  const id = parseInt(idStr, 10);
 
   if (isNaN(id)) {
-    throw new Error(
-      `Invalid input: No ID entered.\n${USAGE}\n`
-    );
+    throw new Error(`Invalid input: ID "${idStr}" must be a number.`);
   }
 
   // Check if user misspelled a flag
-  validateFlags(cmdArgs.slice(1), ALLOWED_UPDATE_FIELDS);
+  validateFlags(args, ALLOWED_UPDATE_FIELDS);
 
   try {
     const oldIssue = await getIssue(id);
 
-    // Interactive mode: only the ID was passed, no field flags.
-    // Flag mode:        at least one flag follows the ID.
-    const providedFlags = cmdArgs.slice(1).filter((a) => a.startsWith("--"));
-    const isInteractive = providedFlags.length === 0;
+    // Interactive mode: only the ID was passed, no field flags (other than --json/--help).
+    const optionsForCheck = { ...flags };
+    delete optionsForCheck['--json'];
+    delete optionsForCheck['--help'];
+    const isInteractive = Object.keys(optionsForCheck).length === 0;
 
     const options = isInteractive
       ? await runInteractiveMode(oldIssue)
-      : parseArgs(cmdArgs.slice(1));
+      : parseArgs(args); // Keep parseArgs for now
 
     // Getting agent name from ID
     if (!isInteractive && options.assigneeId) {

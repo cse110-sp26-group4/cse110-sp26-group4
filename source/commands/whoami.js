@@ -10,7 +10,7 @@
 //   baton whoami
 
 import { getCurrentActor } from '../services/authService.js';
-import { hasFlag, renderOutput, renderError, wantsHelp } from '../util.js';
+import { COMMON_FLAGS, hasFlag, renderOutput, renderError, wantsHelp, parseAndValidateArgs } from '../util.js';
 
 
 export const HELP = `Usage:
@@ -23,6 +23,8 @@ Options:
 Examples:
     baton whoami
 `;
+
+export const SPEC = { positionals: { min: 0, max: 0 }, flags: { ...COMMON_FLAGS } };
 const VALID_FLAGS = ['--json', '-h', '--help'];
 
 
@@ -45,20 +47,12 @@ function serializeActor(actor) {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args = []) {
-  const isJson = hasFlag(args, '--json');
-
-  if (wantsHelp(args)) {
-    console.log(
-      `Usage: baton whoami [--json]\n\nOptions:\n  --json                 Output as JSON (for AI agents)\n  -h, --help             Show this help\n\nExamples:\n  baton whoami`,
-    );
+  const { flags } = parseAndValidateArgs(args, SPEC);
+  if (flags['--help']) {
+    console.log(HELP);
     return 0;
   }
-
-  for (const arg of args) {
-    if (arg.startsWith('-') && !VALID_FLAGS.includes(arg)) {
-      throw new Error(`Unknown flag provided: ${arg}.\nFlags: --json, -h, --help`);
-    }
-  }
+  const isJson = flags['--json'] ?? false;
 
   const actor = getCurrentActor();
   if (!actor) {

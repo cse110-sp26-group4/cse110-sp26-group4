@@ -127,6 +127,6 @@ describe('Delete Command', () => {
     const exitCode = await deleteCommand(['--yes']);
 
     assert.equal(exitCode, 1);
-    assert.ok(capture.errors[0].includes('No ID provided'));
+    assert.ok(capture.errors[0].includes('Expected at least 1 positional argument.'));
   });
 });

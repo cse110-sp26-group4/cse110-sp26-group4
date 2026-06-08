@@ -5,13 +5,13 @@
 import { isTrackerReady, claimIssue } from '../services/issuesService.js';
 import { getCurrentActor } from '../services/context.js';
 import {
+  COMMON_FLAGS,
   hasFlag,
+  parseAndValidateArgs,
   renderOutput,
   renderError,
-  getFirstPositionalArg,
   serializeIssue,
   reportTrackerNotReady,
-  wantsHelp,
 } from '../util.js';
 
 export const HELP = `Usage:
@@ -25,34 +25,24 @@ Examples:
     baton claim 5
 `;
 
+export const SPEC = { positionals: { min: 1, max: 1 }, flags: { ...COMMON_FLAGS } };
+
 /**
  * Claims an issue for the authenticated agent.
  * @param {string[]} args - The command line arguments
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error
  */
 export async function run(args) {
-  if (wantsHelp(args)) {
+  const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+  if (flags['--help']) {
       console.log(HELP);
       return 0;
   }
+  const isJson = flags['--json'];
+  const id = positionals[0];
 
-  const isJson = hasFlag(args, '--json');
-
-  if (hasFlag(args, '-h') || hasFlag(args, '--help')) {
-    console.log(`Usage: baton claim <id> [--json]\n\nOptions:\n  --json                 Output as JSON (for AI agents)\n  -h, --help             Show this help\n\nExamples:\n  baton claim 14`);
-    return 0;
-  }
-
-  const idArg = getFirstPositionalArg(args, { ignoreFlags: ['--json'] });
-
-  if (!idArg) {
-    renderError(isJson, 'Missing issue ID.\nUsage: baton claim <id>', 'MISSING_ID');
-    return 1;
-  }
-
-  const id = Number(idArg);
-  if (!Number.isInteger(id)) {
-    renderError(isJson, `Invalid ID "${idArg}". ID must be an integer.`, 'INVALID_ID');
+  if (isNaN(id)) {
+    renderError(isJson, `Invalid ID "${id}". ID must be a number.`, 'INVALID_ID');
     return 1;
   }
 

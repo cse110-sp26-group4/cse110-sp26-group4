@@ -8,7 +8,7 @@ import {
   getIssueStats,
   getAllIssues,
 } from '../services/issuesService.js';
-import { hasFlag, renderOutput, reportTrackerNotReady, wantsHelp } from '../util.js';
+import { COMMON_FLAGS, renderOutput, reportTrackerNotReady, parseAndValidateArgs } from '../util.js';
 
 export const HELP = `Usage:
   baton status [--json]
@@ -21,17 +21,20 @@ Examples:
   baton status
 `;
 
+export const SPEC = { positionals: { min: 0, max: 0 }, flags: { ...COMMON_FLAGS } };
+
 /**
  * Displays issue counts and overall completion progress.
  * @param {string[]} [args]
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args = []) {
-  if (wantsHelp(args)) {
+  const { flags } = parseAndValidateArgs(args, SPEC);
+  if (flags['--help']) {
     console.log(HELP);
     return 0;
   }
-  const isJson = hasFlag(args, '--json');
+  const isJson = flags['--json'] ?? false;
 
   if (!isTrackerReady()) {
     reportTrackerNotReady();

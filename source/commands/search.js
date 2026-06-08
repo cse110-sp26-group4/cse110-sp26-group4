@@ -11,6 +11,7 @@ import {
     renderOutput,
     serializeIssue,
     wantsHelp,
+    COMMON_FLAGS,
 } from '../util.js';
 
 export const HELP = `Usage:
@@ -24,25 +25,23 @@ Examples:
     baton search system
 `;
 
+export const SPEC = { positionals: { min: 1, max: 1 }, flags: { ...COMMON_FLAGS } };
+
 /**
  * Searches for a title or description matching the command line argument
  * @param {string[]} args - The command line arguments
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args) {
-    if (wantsHelp(args)) {
+    const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+    if (flags['--help']) {
         console.log(HELP);
         return 0;
     }
-    const isJson = hasFlag(args, '--json');
-    const queryArgs = args.filter((arg) => arg !== '--json');
-
-    if (queryArgs.length === 0 || queryArgs === '') {
-        throw new Error("Invalid input: No search term entered.\nUsage: baton search <query>");
-    }
+    const isJson = flags['--json'] ?? false;
+    const query = positionals[0];
 
     try {
-        const query = queryArgs.join(' ');
         const result = await searchIssues(query);
         const issues = result.map(serializeIssue);
         const envelope = { status: 'success', count: issues.length, issues };

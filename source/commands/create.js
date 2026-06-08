@@ -17,8 +17,9 @@
 //   --assignee <name>      Agent assigned to this issue
 //   -h, --help             Show this help
 
+import { Priority } from "../models/issue.js";
 import { createIssue } from "../services/issuesService.js";
-import { hasFlag, validateFlags, parseArgs, renderOutput, serializeIssue, wantsHelp } from "../util.js";
+import { hasFlag, validateFlags, parseArgs, renderOutput, serializeIssue, wantsHelp, COMMON_FLAGS } from "../util.js";
 import { issueSchema } from "../models/schema.js";
 import { input, select, confirm, editor } from "@inquirer/prompts";
 import { spawnSync } from "child_process";
@@ -69,6 +70,18 @@ Examples:
   baton create --title "Refactor auth" --description "Clean up JWT logic" --token-limit 4000
   baton create
 `;
+
+export const SPEC = {
+  positionals: { min: 0, max: 0 },
+  flags: {
+    '--title': { type: 'string' },
+    '--description': { type: 'string' },
+    '--priority': { type: 'enum', values: Object.values(Priority) },
+    '--token-limit': { type: 'number' },
+    '--assignee': { type: 'string' },
+    ...COMMON_FLAGS
+  }
+};
 
 /**
  * Opens the user's $EDITOR with an optional seed template and returns the
@@ -219,21 +232,22 @@ async function runInteractiveMode() {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error
  */
 export async function run(args) {
-  if (wantsHelp(args)) {
+  const { flags } = parseAndValidateArgs(args, SPEC);
+  if (flags['--help']) {
     console.log(HELP);
     return 0;
   }
-
-  const isJson = hasFlag(args, "--json");
-  const providedFlags = args.filter((a) => a.startsWith("--"));
+  const isJson = flags['--json'] ?? false;
   
   validateFlags(args, ALLOWED_CREATE_FIELDS, 'Tip: run `baton create` with no flags to use interactive mode.');
 
   try {
-    // Interactive mode: no flags provided (human at a keyboard)
-    // Flag mode:        at least one flag present (scripts, CI, power users)
-    const nonJsonFlags = providedFlags.filter((f) => f !== "--json");
-    const isInteractive = nonJsonFlags.length === 0;
+    // Interactive mode: only --json or no flags provided (human at a keyboard)
+    // Flag mode:        at least one non-json/non-help flag present (scripts, CI, power users)
+    const optionsForCheck = { ...flags };
+    delete optionsForCheck['--json'];
+    delete optionsForCheck['--help'];
+    const isInteractive = Object.keys(optionsForCheck).length === 0;
 
     const options = isInteractive
       ? await runInteractiveMode()

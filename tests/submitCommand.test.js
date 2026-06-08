@@ -121,7 +121,7 @@ describe('Submit Command', () => {
     const exitCode = await submitCommand([]);
 
     assert.equal(exitCode, 1);
-    assert.ok(capture.errors[0].includes('Missing issue ID'));
+    assert.ok(capture.errors[0].includes('Expected at least 1 positional argument.'));
   });
 
   it('should fail if the ID is not an integer', async () => {

@@ -13,7 +13,7 @@
 
 import { Priority } from '../models/issue.js';
 import { setPriority } from '../services/issuesService.js';
-import { hasFlag, renderOutput, serializeIssue, wantsHelp } from '../util.js';
+import { COMMON_FLAGS, renderOutput, serializeIssue, parseAndValidateArgs } from '../util.js';
 
 export const HELP = `Usage:
   baton priority <id> <priority>
@@ -27,15 +27,7 @@ Examples:
   baton priority 3 low
 `;
 
-/**
- * Normalize CLI priority input to a canonical Priority enum value.
- * @param {string} input
- * @returns {string | null}
- */
-function normalizePriority(input) {
-  const values = Object.values(Priority);
-  return values.find((v) => v.toLowerCase() === input.trim().toLowerCase()) ?? null;
-}
+export const SPEC = { positionals: { min: 2, max: 2 }, flags: { ...COMMON_FLAGS } };
 
 /**
  * Sets the priority of an issue.
@@ -43,45 +35,25 @@ function normalizePriority(input) {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args) {
-  if (wantsHelp(args)) {
+  const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+  if (flags['--help']) {
     console.log(HELP);
     return 0;
   }
+  const isJson = flags['--json'] ?? false;
+  const [idStr, priorityRaw] = positionals;
 
-  const isJson = hasFlag(args, '--json');
-  const cmdArgs = args.filter((arg) => arg !== '--json');
-
-  if (cmdArgs.length < 2) {
-    throw new Error(
-      'Invalid input: Missing issue ID or priority.\nUsage: baton priority <id> <priority>'
-    );
-  }
-
-  if (cmdArgs.length > 2) {
-    throw new Error(
-      'Invalid input: Too many arguments.\nUsage: baton priority <id> <priority>'
-    );
-  }
-
-  for (const arg of cmdArgs) {
-    if (arg.startsWith('--')) {
-      throw new Error(
-        'Unknown flag provided.\nUsage: baton priority <id> <priority>\nPriority: low | medium | high'
-      );
-    }
-  }
-
-  const id = parseInt(cmdArgs[0], 10);
+  const id = parseInt(idStr, 10);
   if (Number.isNaN(id)) {
-    throw new Error(
-      'Invalid input: ID must be a number.\nUsage: baton priority <id> <priority>'
-    );
+    throw new Error(`Invalid input: ID "${idStr}" must be a number.`);
   }
 
-  const priority = normalizePriority(cmdArgs[1]);
+  const values = Object.values(Priority);
+  const priority = values.find((v) => v.toLowerCase() === priorityRaw.trim().toLowerCase());
+  
   if (!priority) {
     throw new Error(
-      `Invalid priority "${cmdArgs[1]}". Must be one of: low, medium, high.\nUsage: baton priority <id> <priority>`
+      `Invalid priority "${priorityRaw}". Must be one of: ${values.join(', ')}.`
     );
   }
 

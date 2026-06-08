@@ -115,7 +115,7 @@ describe('Agents Command', () => {
   it('should throw on unknown flags', async () => {
     await assert.rejects(
       () => agentsCommand(['--foo']),
-      (err) => err.message.includes('Unknown flag provided: --foo'),
+      (err) => err.message.includes('Unknown flag: --foo'),
     );
   });
 });

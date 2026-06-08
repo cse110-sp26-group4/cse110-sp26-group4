@@ -4,7 +4,7 @@
 // Usage: baton approve <id>
 
 import { approveIssue } from '../services/issuesService.js';
-import { hasFlag, renderOutput, serializeIssue, wantsHelp } from '../util.js';
+import { COMMON_FLAGS, hasFlag, parseAndValidateArgs, renderOutput, serializeIssue, wantsHelp } from '../util.js';
 
 export const HELP = `Usage:
     baton approve <id> [--json]
@@ -17,36 +17,30 @@ Examples:
     baton approve 5
 `;
 
+export const SPEC = { positionals: { min: 1, max: 1 }, flags: { ...COMMON_FLAGS } };
+
 /**
  * Approves an issue and moves it to the closed state.
  * @param {string[]} args - the command line arguments.
  * @returns {Promise<number>} the exit code: 0 is success, 1 is error
  */
 export async function run(args) {
-    if (wantsHelp(args)) {
+    const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+    if (flags['--help']) {
         console.log(HELP);
         return 0;
     }
-    const isJson = hasFlag(args, '--json');
-    const idArgs = args.filter((arg) => arg !== '--json');
+    const isJson = flags['--json'];
+    const id = positionals[0];
 
-    //check if id argument is empty
-    if (idArgs.length == 0) {
-        throw new Error(
-            'Invalid input: Missing issue ID.\nUsage: baton approve <id>'
-        );
-    }
-
-    const id = idArgs.join(' ');
-
-    //check if ID argument isn't a number
+    // check if ID argument isn't a number
     if (isNaN(id)) {
         throw new Error(
             'Invalid input: ID must be a number.\nUsage: baton approve <id>'
         );
     }
 
-  //try to approve the issue
+    // try to approve the issue
     try {
         const issue = await approveIssue(id);
         const envelope = { status: 'success', issue: serializeIssue(issue) };

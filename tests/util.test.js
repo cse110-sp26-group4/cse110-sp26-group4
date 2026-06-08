@@ -6,6 +6,7 @@ import {
   serializeIssue,
   renderOutput,
   renderError,
+  parseAndValidateArgs,
 } from '../source/util.js';
 
 function captureConsole() {
@@ -118,5 +119,92 @@ describe('renderError', () => {
 describe('hasFlag', () => {
   it('detects --json', () => {
     assert.equal(hasFlag(['--status', 'open', '--json'], '--json'), true);
+  });
+});
+
+describe('parseAndValidateArgs', () => {
+  const spec = {
+    positionals: { min: 1, max: 2 },
+    flags: {
+      '--json': { type: 'boolean' },
+      '--help': { type: 'boolean', alias: '-h' },
+      '--priority': { type: 'string', alias: '-p' },
+      '--limit': { type: 'number', alias: '-l' },
+    },
+  };
+
+  it('parses basic flags and positionals', () => {
+    const args = ['5', '--priority', 'high', '--json'];
+    const result = parseAndValidateArgs(args, spec);
+
+    assert.deepEqual(result.positionals, ['5']);
+    assert.equal(result.flags['--priority'], 'high');
+    assert.equal(result.flags['--json'], true);
+  });
+
+  it('resolves aliases', () => {
+    const args = ['10', '-p', 'medium', '-l', '100'];
+    const result = parseAndValidateArgs(args, spec);
+
+    assert.equal(result.flags['--priority'], 'medium');
+    assert.equal(result.flags['--limit'], 100);
+  });
+
+  it('handles multiple positionals', () => {
+    const args = ['5', 'Closed due to inactivity'];
+    const result = parseAndValidateArgs(args, spec);
+
+    assert.deepEqual(result.positionals, ['5', 'Closed due to inactivity']);
+  });
+
+  it('throws error for unknown flag', () => {
+    const args = ['5', '--unknown'];
+    assert.throws(() => parseAndValidateArgs(args, spec), {
+      message: /Unknown flag: --unknown/,
+    });
+  });
+
+  it('throws error for missing flag value', () => {
+    const args = ['5', '--priority'];
+    assert.throws(() => parseAndValidateArgs(args, spec), {
+      message: /Missing value for --priority/,
+    });
+  });
+
+  it('throws error for flag value that looks like another flag', () => {
+    const args = ['5', '--priority', '--json'];
+    assert.throws(() => parseAndValidateArgs(args, spec), {
+      message: /Missing value for --priority/,
+    });
+  });
+
+  it('throws error for invalid numeric value', () => {
+    const args = ['5', '--limit', 'abc'];
+    assert.throws(() => parseAndValidateArgs(args, spec), {
+      message: /Invalid value for --limit: expected a number, got "abc"/,
+    });
+  });
+
+  it('throws error for too few positionals', () => {
+    const args = ['--json'];
+    assert.throws(() => parseAndValidateArgs(args, spec), {
+      message: /Expected at least 1 positional argument/,
+    });
+  });
+
+  it('throws error for too many positionals', () => {
+    const args = ['1', '2', '3'];
+    assert.throws(() => parseAndValidateArgs(args, spec), {
+      message: /Expected at most 2 positional arguments/,
+    });
+  });
+
+  it('handles mixed order of flags and positionals', () => {
+    const args = ['--json', '5', '--priority', 'low', 'Re-opening'];
+    const result = parseAndValidateArgs(args, spec);
+
+    assert.deepEqual(result.positionals, ['5', 'Re-opening']);
+    assert.equal(result.flags['--json'], true);
+    assert.equal(result.flags['--priority'], 'low');
   });
 });

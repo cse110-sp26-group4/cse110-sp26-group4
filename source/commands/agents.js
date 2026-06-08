@@ -10,7 +10,7 @@
 //   baton agents
 
 import { listAgents } from '../services/agentsService.js';
-import { hasFlag, renderOutput, wantsHelp } from '../util.js';
+import { COMMON_FLAGS, hasFlag, parseAndValidateArgs, renderOutput, wantsHelp } from '../util.js';
 
 export const HELP = `Usage:
   baton agents [--json]
@@ -22,6 +22,8 @@ Options:
 Examples:
   baton agents
 `;
+
+export const SPEC = { positionals: { min: 0, max: 0 }, flags: { ...COMMON_FLAGS } };
 
 const VALID_FLAGS = ['--json'];
 
@@ -62,17 +64,12 @@ function printAgentsTable(agents) {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error
  */
 export async function run(args = []) {
-  if (wantsHelp(args)) {
+  const { flags } = parseAndValidateArgs(args, SPEC);
+  if (flags['--help']) {
     console.log(HELP);
     return 0;
   }
-  const isJson = hasFlag(args, '--json');
-
-  for (const arg of args) {
-    if (arg.startsWith('--') && !VALID_FLAGS.includes(arg)) {
-      throw new Error(`Unknown flag provided: ${arg}.\nFlags: --json`);
-    }
-  }
+  const isJson = flags['--json'] ?? false;
 
   try {
     const agents = listAgents();
