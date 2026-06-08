@@ -227,7 +227,7 @@ export async function run(args) {
   const isJson = hasFlag(args, "--json");
   const providedFlags = args.filter((a) => a.startsWith("--"));
   
-  validateFlags(args, ALLOWED_CREATE_FIELDS, 'Tip: run `baton create` with no flags to use interactive mode.');
+  validateFlags(args, ALLOWED_CREATE_FIELDS, 'Tip: run `baton create` with no flags to use interactive mode.', { allowPositional: true });
 
   try {
     // Interactive mode: no flags provided (human at a keyboard)

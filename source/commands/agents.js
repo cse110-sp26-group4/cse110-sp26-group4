@@ -10,7 +10,7 @@
 //   baton agents
 
 import { listAgents } from '../services/agentsService.js';
-import { hasFlag, renderOutput, wantsHelp } from '../util.js';
+import { hasFlag, renderOutput, wantsHelp, validateFlags } from '../util.js';
 
 export const HELP = `Usage:
   baton agents [--json]
@@ -65,11 +65,7 @@ export async function run(args = []) {
   }
   const isJson = hasFlag(args, '--json');
 
-  for (const arg of args) {
-    if (arg.startsWith('--') && !VALID_FLAGS.includes(arg)) {
-      throw new Error(`Unknown flag provided: ${arg}.\nFlags: --json`);
-    }
-  }
+  validateFlags(args, [], { allowPositional: false });
 
   try {
     const agents = listAgents();
