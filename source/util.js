@@ -48,19 +48,34 @@ export function hasFlag(args, flag) {
  * @param {string[]} args
  * @param {string[]} validFields Valid keys from issueSchema 
  * @param {string} [hint] Optional hint to append to the error message
+ * @param {Boolean} allowPositional True if command allows positional arguments, false otherwise
  * @throws {Error} If an unknown flag is found
  */
-export function validateFlags(args, validFields, hint = '') {
+export function validateFlags(args, validFields, hint = '', { allowPositional = false } = {}) {
   const validFlags = new Set([
     ...validFields.map(key => issueSchema[key].flag),
     '--json',
   ]);
 
-  for (const arg of args) {
-    if (arg.startsWith('--') && !validFlags.has(arg)) {
-      throw new Error(
-        `Unknown flag: ${arg}\nValid flags: ${[...validFlags].join(', ')}${hint ? `\n${hint}` : ''}`
-      );
+ for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+
+    if (arg.startsWith('--')) {
+      if (!validFlags.has(arg)) throw new Error(`Unknown flag: ${arg}\nValid flags: ${[...validFlags].join(', ')}${hint ? `\n${hint}` : ''}`);
+      
+      // If this flag requires a value, skip the next index
+      const config = Object.values(issueSchema).find(c => c.flag === arg);
+      if (config && config.type !== 'boolean') {
+        i++; // "Consume" the value so it doesn't trigger the positional error
+      }
+      continue;
+    }
+
+    // Identify Negative Numbers
+    if (/^-\d+/.test(arg)) continue;
+
+    if (!allowPositional) {
+      throw new Error(`Unexpected argument: ${arg}`);
     }
   }
 }
