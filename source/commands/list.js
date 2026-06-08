@@ -16,8 +16,6 @@ import { listIssues } from '../services/issuesService.js';
 import { resolveAgentId } from '../services/agentsService.js';
 
 import {
-    getFlagValue,
-    getNumericFlag,
     hasFlag,
     validateFlags,
     parseArgs,

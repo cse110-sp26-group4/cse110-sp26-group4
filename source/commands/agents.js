@@ -23,8 +23,6 @@ Examples:
   baton agents
 `;
 
-const VALID_FLAGS = ['--json'];
-
 const COL = { id: 4, name: 14, type: 5 };
 
 /**
@@ -65,7 +63,7 @@ export async function run(args = []) {
   }
   const isJson = hasFlag(args, '--json');
 
-  validateFlags(args, [], { allowPositional: false });
+  validateFlags(args, []);
 
   try {
     const agents = listAgents();

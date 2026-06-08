@@ -8,7 +8,7 @@ import {
   getIssueStats,
   getAllIssues,
 } from '../services/issuesService.js';
-import { hasFlag, renderOutput, reportTrackerNotReady, wantsHelp } from '../util.js';
+import { hasFlag, renderOutput, reportTrackerNotReady, wantsHelp, validateFlags } from '../util.js';
 
 export const HELP = `Usage:
   baton status [--json]
@@ -30,6 +30,9 @@ export async function run(args = []) {
     console.log(HELP);
     return 0;
   }
+
+  validateFlags(args, [], '', { allowPositional: false });
+
   const isJson = hasFlag(args, '--json');
 
   if (!isTrackerReady()) {
