@@ -48,6 +48,7 @@ export function hasFlag(args, flag) {
  * @param {string[]} args
  * @param {string[]} validFields Valid keys from issueSchema 
  * @param {string} [hint] Optional hint to append to the error message
+ * @param {Boolean} allowPositional True if command allows positional arguments, false otherwise
  * @throws {Error} If an unknown flag is found
  */
 export function validateFlags(args, validFields, hint = '', { allowPositional = false } = {}) {

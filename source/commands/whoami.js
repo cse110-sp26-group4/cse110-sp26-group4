@@ -10,7 +10,7 @@
 //   baton whoami
 
 import { getCurrentActor } from '../services/authService.js';
-import { hasFlag, renderOutput, renderError, wantsHelp } from '../util.js';
+import { hasFlag, renderOutput, renderError, wantsHelp, validateFlags } from '../util.js';
 
 
 export const HELP = `Usage:
@@ -23,8 +23,6 @@ Options:
 Examples:
     baton whoami
 `;
-const VALID_FLAGS = ['--json', '-h', '--help'];
-
 
 function serializeActor(actor) {
   return {
@@ -44,11 +42,7 @@ export async function run(args = []) {
     return 0;
   }
 
-  for (const arg of args) {
-    if (arg.startsWith('-') && !VALID_FLAGS.includes(arg)) {
-      throw new Error(`Unknown flag provided: ${arg}.\nFlags: --json, -h, --help`);
-    }
-  }
+  validateFlags(args, []);
 
   const actor = getCurrentActor();
   if (!actor) {
