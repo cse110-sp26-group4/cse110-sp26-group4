@@ -5,7 +5,7 @@
 
 import { getAgentByName } from '../services/agentsService.js';
 import { assignIssue } from '../services/issuesService.js';
-import { getCurrentActor } from '../services/authService.js';
+import { getCurrentActor } from '../services/context.js';
 import { hasFlag, renderOutput } from '../util.js';
 
 export const HELP = `Usage:

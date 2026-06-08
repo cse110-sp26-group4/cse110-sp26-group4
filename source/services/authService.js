@@ -1,10 +1,8 @@
 import os from 'os';
 import { getAgentByName } from './agentsService.js';
-import { setCurrentActor, getCurrentActor } from './context.js';
+import { setCurrentActor } from './context.js';
 import { isTrackerReady } from './issuesService.js';
 import { authorizeAction } from './agentRestrictions.js';
-
-export { getCurrentActor };
 
 /**
  * Authenticates the current execution context.
