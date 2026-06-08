@@ -72,7 +72,12 @@ export function validateFlags(args, validFields, hint = '', { allowPositional = 
     }
 
     // Identify Negative Numbers
-    if (/^-\d+/.test(arg)) continue;
+    if (/^-\d+/.test(arg)) {
+      const prev = args[i - 1];
+      // skip this value if the previous value was a flag, throw an error otherwise
+      if (prev && prev.startsWith('--')) continue;
+      throw new Error(`Unexpected argument: ${arg}`);
+    }
 
     if (!allowPositional) {
       throw new Error(`Unexpected argument: ${arg}`);
