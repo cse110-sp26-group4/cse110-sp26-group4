@@ -44,45 +44,34 @@ export const SPEC = {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args) {
-    const { positionals, flags } = parseAndValidateArgs(args, SPEC);
-    if (flags['--help']) {
-        console.log(HELP);
-        return 0;
-    }
-    const isJson = flags['--json'];
-    const skipConfirm = flags['--yes'];
-    const id = Number(positionals[0]);
-
-    if (!Number.isInteger(id)) {
-        renderError(isJson, `Invalid ID "${positionals[0]}". ID must be an integer.`, 'INVALID_ID');
-        return 1;
-    }
-
     try {
-        // (2) Check if issue exists before confirming
-        try {
-            await getIssue(id);
-        } catch (error) {
-            if (error.message.includes("not found")) {
-                renderError(isJson, error.message, 'NOT_FOUND');
-            } else {
-                renderError(isJson, error.message);
-            }
-            return 1;
+        const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+        if (flags['--help']) {
+            console.log(HELP);
+            return 0;
+        }
+        const isJson = flags['--json'];
+        const skipConfirm = flags['--yes'];
+        const idStr = positionals[0];
+        const id = Number(idStr);
+
+        if (!Number.isInteger(id) || id <= 0) {
+            const err = new Error(`Invalid ID "${idStr}". ID must be a positive integer.`);
+            err.code = 'INVALID_ID';
+            throw err;
         }
 
-        // (3) Confirmation prompt
+        await getIssue(id);
+
         let confirmed = skipConfirm;
-        if (!confirmed && !isJson) { // Only prompt if not JSON and not --yes
+        if (!confirmed && !isJson) {
             try {
                 confirmed = await confirm({ message: `Are you sure you want to delete issue #${id}?`, default: false });
             } catch {
                 return 1;
             }
         } else if (!confirmed && isJson) {
-            // In JSON mode, do not prompt. If --yes is missing, we fail or assume no.
-            renderError(isJson, "Confirmation required. Use --yes to confirm deletion in JSON mode.", 'CONFIRMATION_REQUIRED');
-            return 1;
+            throw new Error("Confirmation required. Use --yes to confirm deletion in JSON mode.");
         }
 
         if (!confirmed) {
@@ -90,7 +79,6 @@ export async function run(args) {
             return 0;
         }
 
-        // (4) Execution
         await deleteIssue(id);
         
         const envelope = { status: 'success', id: id, message: `Issue #${id} deleted successfully.` };
@@ -100,7 +88,14 @@ export async function run(args) {
         
         return 0;
     } catch (error) {
-        renderError(isJson, error.message);
+        const isJson = args.includes('--json');
+        let code = 'ERROR';
+        if (error.message.includes('Confirmation required')) {
+            code = 'CONFIRMATION_REQUIRED';
+        } else if (error.message.includes('not found')) {
+            code = 'NOT_FOUND';
+        }
+        renderError(isJson, error.message, code);
         return 1;
     }
 }

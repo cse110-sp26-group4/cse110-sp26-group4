@@ -19,7 +19,7 @@
 
 import { Priority } from "../models/issue.js";
 import { createIssue } from "../services/issuesService.js";
-import { hasFlag, validateFlags, parseAndValidateArgs, parseArgs, renderOutput, renderError, serializeIssue, wantsHelp, COMMON_FLAGS } from "../util.js";
+import { validateFlags, parseAndValidateArgs, parseArgs, renderOutput, renderError, serializeIssue, COMMON_FLAGS } from "../util.js";
 import { issueSchema } from "../models/schema.js";
 import { input, select, confirm, editor } from "@inquirer/prompts";
 import { spawnSync } from "child_process";
@@ -232,16 +232,16 @@ async function runInteractiveMode() {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error
  */
 export async function run(args) {
-  const { flags } = parseAndValidateArgs(args, SPEC);
-  if (flags['--help']) {
-    console.log(HELP);
-    return 0;
-  }
-  const isJson = flags['--json'] ?? false;
-  
-  validateFlags(args, ALLOWED_CREATE_FIELDS, 'Tip: run `baton create` with no flags to use interactive mode.');
-
   try {
+    const { flags } = parseAndValidateArgs(args, SPEC);
+    if (flags['--help']) {
+      console.log(HELP);
+      return 0;
+    }
+    const isJson = flags['--json'] ?? false;
+    
+    validateFlags(args, ALLOWED_CREATE_FIELDS, 'Tip: run `baton create` with no flags to use interactive mode.');
+
     // Interactive mode: only --json or no flags provided (human at a keyboard)
     // Flag mode:        at least one non-json/non-help flag present (scripts, CI, power users)
     const optionsForCheck = { ...flags };
@@ -267,12 +267,16 @@ export async function run(args) {
 
     return 0;
   } catch (error) {
-    // when user hits Ctrl+C
     if (error.name === "ExitPromptError") {
       console.log("\nAborted.");
       return 0;
     }
-    console.error(`Failed to create issue: ${error.message}`);
+    const isJson = args.includes('--json');
+    let code = 'ERROR';
+    if (error.message.includes('Validation failed')) {
+      code = 'VALIDATION_FAILED';
+    }
+    renderError(isJson, error.message, code);
     return 1;
   }
 }

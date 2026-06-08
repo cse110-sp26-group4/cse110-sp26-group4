@@ -18,7 +18,7 @@
 //  baton update 7 --status closed --priority medium
 
 import { updateIssue, getIssue } from "../services/issuesService.js";
-import { hasFlag, validateFlags, parseAndValidateArgs, parseArgs, renderOutput, renderError, serializeIssue, wantsHelp, COMMON_FLAGS } from "../util.js";
+import { validateFlags, parseAndValidateArgs, parseArgs, renderOutput, renderError, serializeIssue, COMMON_FLAGS } from "../util.js";
 import { issueSchema } from "../models/schema.js";
 import { Status, Priority } from "../models/issue.js";
 import { input, select, confirm, editor } from "@inquirer/prompts";
@@ -60,7 +60,6 @@ export const SPEC = {
     ...COMMON_FLAGS
   }
 };
-const USAGE = 'Usage: baton update <id> [options]';
 
 // Build select choices from issueSchema enums so they stay in sync automatically.
 const PRIORITY_HINTS = {
@@ -243,33 +242,24 @@ async function runInteractiveMode(issue) {
  * @param {string[]} args - The command line arguments
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
-export async function run(args) {
-  let positionals, flags;
+export async function run(args = []) {
   try {
-    const result = parseAndValidateArgs(args, SPEC);
-    positionals = result.positionals;
-    flags = result.flags;
-  } catch (error) {
-    const isJson = args.includes('--json');
-    renderError(isJson, error.message);
-    return 1;
-  }
-  if (flags['--help']) {
-    console.log(HELP);
-    return 0;
-  }
-  const isJson = flags['--json'] ?? false;
-  const idStr = positionals[0];
-  const id = parseInt(idStr, 10);
+    const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+    if (flags['--help']) {
+      console.log(HELP);
+      return 0;
+    }
+    const isJson = flags['--json'] ?? false;
+    const idStr = positionals[0];
+    const id = Number(idStr);
 
-  if (isNaN(id)) {
-    throw new Error(`Invalid input: ID "${idStr}" must be a number.`);
-  }
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new Error(`Invalid ID "${idStr}". ID must be a positive integer.`);
+    }
 
-  // Check if user misspelled a flag
-  validateFlags(args, ALLOWED_UPDATE_FIELDS);
+    // Check if user misspelled a flag
+    validateFlags(args, ALLOWED_UPDATE_FIELDS);
 
-  try {
     const oldIssue = await getIssue(id);
 
     // Interactive mode: only the ID was passed, no field flags (other than --json/--help).
@@ -309,7 +299,14 @@ export async function run(args) {
       console.log("\nAborted.");
       return 0;
     }
-    console.error(`Failed to update issue: ${error.message}`);
+    const isJson = args.includes('--json');
+    let code = 'ERROR';
+    if (error.message.includes('not found')) {
+      code = 'NOT_FOUND';
+    } else if (error.message.includes('Validation failed')) {
+      code = 'VALIDATION_FAILED';
+    }
+    renderError(isJson, error.message, code);
     return 1;
   }
 }

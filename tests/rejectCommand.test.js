@@ -98,28 +98,28 @@ describe('Reject Command', () => {
     const exitCode = await rejectCommand([String(issue.id), '--reason', 'Test Reason']);
 
     assert.equal(exitCode, 1);
-    assert.ok(capture.errors[0].includes('Only issues in "In-Review" status can be rejected'));
+    assert.ok(capture.errors.some(line => line.includes('Only issues in "In-Review" status can be rejected')));
   });
 
   it('should fail if the issue does not exist', async () => {
     const exitCode = await rejectCommand(['999', '--reason', 'Test Reason']);
 
     assert.equal(exitCode, 1);
-    assert.ok(capture.errors[0].includes('Issue #999 not found'));
+    assert.ok(capture.errors.some(line => line.includes('Issue #999 not found')));
   });
 
   it('should fail if --reason is missing', async () => {
     const exitCode = await rejectCommand(['1']);
 
     assert.equal(exitCode, 1);
-    assert.ok(capture.errors[0].includes('Missing reason for reject'));
+    assert.ok(capture.errors.some(line => line.includes('Missing reason for reject')));
   });
 
   it('should fail if --reason is empty', async () => {
     const exitCode = await rejectCommand(['1', '--reason', '']);
 
     assert.equal(exitCode, 1);
-    assert.ok(capture.errors[0].includes('Reason for rejection cannot be empty'));
+    assert.ok(capture.errors.some(line => line.includes('Reason for rejection cannot be empty')));
   });
 
   it('should support --json output on success', async () => {
@@ -144,14 +144,14 @@ describe('Reject Command', () => {
     assert.equal(output.code, 'NOT_FOUND');
   });
 
-  it('should handle multi-word reasons without quotes', async () => {
+  it('should fail on multi-word reasons without quotes', async () => {
     const issue = createIssue({ title: 'Test Issue' });
     prepareInReviewIssue(issue.id);
 
-    // Baton's getFlagValue handles multi-word if they are subsequent args
+    // Multi-word reasons without quotes are now treated as extra positionals and fail
     const exitCode = await rejectCommand([String(issue.id), '--reason', 'This', 'is', 'a', 'long', 'reason']);
 
-    assert.equal(exitCode, 0);
-    assert.ok(capture.logs[0].includes(`Issue #${issue.id} rejected successfully`));
+    assert.equal(exitCode, 1);
+    assert.ok(capture.errors.some(line => line.includes('Expected at most 1 positional argument')));
   });
 });

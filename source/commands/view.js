@@ -24,42 +24,30 @@ export const SPEC = { positionals: { min: 1, max: 1 }, flags: { ...COMMON_FLAGS 
  * @param {string[]} args - The issue ID #
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
-export async function run(args) {
-    let positionals, flags;
+export async function run(args = []) {
     try {
-        const result = parseAndValidateArgs(args, SPEC);
-        positionals = result.positionals;
-        flags = result.flags;
-    } catch (error) {
-        const isJson = args.includes('--json');
-        renderError(isJson, error.message);
-        return 1;
-    }
-    if (flags['--help']) {
-        console.log(HELP);
-        return 0;
-    }
-    const isJson = flags['--json'];
-    const id = positionals[0];
+        const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+        if (flags['--help']) {
+            console.log(HELP);
+            return 0;
+        }
+        const isJson = flags['--json'] ?? false;
+        const id = positionals[0];
 
-    // checks if ID # argument isn't a number
-    if (isNaN(id)) {
-        throw new Error(`Invalid input: ID must be a number.\nUsage: baton view <id>`);
-    }
+        // checks if ID # argument isn't a number
+        if (isNaN(id)) {
+            const err = new Error(`Invalid input: ID must be a number.\nUsage: baton view <id>`);
+            err.code = 'INVALID_ID';
+            throw err;
+        }
 
-    try {
         const issue = await getIssue(id);
         const envelope = {
             status: 'success',
-            issue: issue ? serializeIssue(issue) : null,
+            issue: serializeIssue(issue),
         };
 
         renderOutput(isJson, envelope, () => {
-            if (!issue) {
-                console.log(`No issue with ID #"${issue}" was found.`);
-                return;
-            }
-
             console.log('');
             Object.entries(issue).forEach(([key, value]) => {
                 if (key === 'createdAt' || key === 'lastUpdated') {
@@ -73,8 +61,12 @@ export async function run(args) {
 
         return 0;
     } catch (error) {
-        console.error("Error: Failed to retrieve data.");
-        console.error(error.message);
+        const isJson = args.includes('--json');
+        let code = error.code || 'ERROR';
+        if (error.message.includes('not found')) {
+            code = 'NOT_FOUND';
+        }
+        renderError(isJson, error.message, code);
         return 1;
     }
 }

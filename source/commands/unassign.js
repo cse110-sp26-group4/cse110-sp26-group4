@@ -34,63 +34,32 @@ export const SPEC = { positionals: { min: 1, max: 1 }, flags: { ...COMMON_FLAGS 
  * @param {string[]} args - The command-line arguments
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error
  */
-export async function run(args) {
-  let positionals, flags;
+export async function run(args = []) {
   try {
-    const result = parseAndValidateArgs(args, SPEC);
-    positionals = result.positionals;
-    flags = result.flags;
-  } catch (error) {
-    const isJson = args.includes('--json');
-    renderError(isJson, error.message);
-    return 1;
-  }
-  if (flags['--help']) {
-    console.log(HELP);
-    return 0;
-  }
-  const isJson = flags['--json'];
-  const issueId = Number(positionals[0]);
-
-  if (!Number.isInteger(issueId) || issueId <= 0) {
-    renderError(
-      isJson,
-      `Invalid ID "${positionals[0]}". ID must be a positive integer.`,
-      "INVALID_ID",
-    );
-    return 1;
-  }
-
-  const actor = getCurrentActor();
-
-  if (!actor || actor.type !== AgentType.HUMAN) {
-    renderError(isJson, "Only human users can unassign issues.", "FORBIDDEN");
-    return 1;
-  }
-  
-  let issue;
-
-  try {
-    issue = getIssue(issueId);
-  } catch (error) {
-    if (error.message.includes("not found")) {
-      renderError(isJson, error.message, "NOT_FOUND");
-    } else {
-      renderError(isJson, error.message);
+    const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+    if (flags['--help']) {
+      console.log(HELP);
+      return 0;
     }
-    return 1;
-  }
+    const isJson = flags['--json'] ?? false;
+    const issueId = Number(positionals[0]);
 
-  if (!issue.assigneeId) {
-    renderError(
-      isJson,
-      `Issue #${issueId} is not assigned.`,
-      "INVALID_STATE"
-    );
-    return 1;
-  }
+    if (!Number.isInteger(issueId) || issueId <= 0) {
+      throw new Error(`Invalid ID "${positionals[0]}". ID must be a positive integer.`);
+    }
 
-  try {
+    const actor = getCurrentActor();
+
+    if (!actor || actor.type !== AgentType.HUMAN) {
+      throw new Error("Only human users can unassign issues.");
+    }
+    
+    const issue = getIssue(issueId);
+
+    if (!issue.assigneeId) {
+      throw new Error(`Issue #${issueId} is not assigned.`);
+    }
+
     // Use unassignIssue from issuesService.js
     const updatedIssue = unassignIssue(issueId);
 
@@ -105,7 +74,16 @@ export async function run(args) {
 
     return 0;
   } catch (error) {
-    renderError(isJson, error.message);
+    const isJson = args.includes('--json');
+    let code = 'ERROR';
+    if (error.message.includes('not found')) {
+      code = 'NOT_FOUND';
+    } else if (error.message.includes('Only human users')) {
+      code = 'FORBIDDEN';
+    } else if (error.message.includes('not assigned')) {
+      code = 'INVALID_STATE';
+    }
+    renderError(isJson, error.message, code);
     return 1;
   }
 }

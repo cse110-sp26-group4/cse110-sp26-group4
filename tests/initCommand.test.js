@@ -190,14 +190,13 @@ describe('Init Command', () => {
     const exitCode = await initCommand(['--specs', filePath, filePath]);
 
     assert.equal(exitCode, 1);
-    assert.ok(capture.errors[0].includes('not both'));
+    assert.ok(capture.errors.some((line) => line.includes('not both')));
   });
 
   it('should fail when the specs file does not exist', async () => {
-    await assert.rejects(
-      () => initCommand(['--force', '--specs', path.join(os.tmpdir(), 'missing-specs.md')]),
-      (err) => err.message.includes('Specs file not found'),
-    );
+    const exitCode = await initCommand(['--force', '--specs', path.join(os.tmpdir(), 'missing-specs.md')]);
+    assert.equal(exitCode, 1);
+    assert.ok(capture.errors[0].includes('Specs file not found'));
   });
 
   it('should succeed with zero issues when specs contain no Must requirements', async () => {

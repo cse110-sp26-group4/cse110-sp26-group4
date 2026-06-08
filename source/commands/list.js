@@ -17,9 +17,6 @@ import { resolveAgentId } from '../services/agentsService.js';
 import { Status, Priority } from '../models/issue.js';
 
 import {
-    getFlagValue,
-    getNumericFlag,
-    hasFlag,
     validateFlags,
     parseAndValidateArgs,
     parseArgs,
@@ -28,7 +25,6 @@ import {
     renderOutput,
     renderError,
     serializeIssue,
-    wantsHelp,
     COMMON_FLAGS,
 } from '../util.js';
 
@@ -70,25 +66,16 @@ const ALLOWED_LIST_FIELDS = ['status', 'priority', 'limit', 'offset', 'assigneeI
  */
 
 export async function run(args) {
-    let positionals, flags;
     try {
-        const result = parseAndValidateArgs(args, SPEC);
-        positionals = result.positionals;
-        flags = result.flags;
-    } catch (error) {
-        const isJson = args.includes('--json');
-        renderError(isJson, error.message);
-        return 1;
-    }
-    if (flags['--help']) {
-        console.log(HELP);
-        return 0;
-    }
-    const isJson = flags['--json'] ?? false;
+        const { flags } = parseAndValidateArgs(args, SPEC);
+        if (flags['--help']) {
+            console.log(HELP);
+            return 0;
+        }
+        const isJson = flags['--json'] ?? false;
 
-    validateFlags(args, ALLOWED_LIST_FIELDS);
+        validateFlags(args, ALLOWED_LIST_FIELDS);
 
-    try {
         const options = parseArgs(args);
 
         // Getting agent name from ID
@@ -121,13 +108,8 @@ export async function run(args) {
 
         return 0;
     } catch (error) {
-        // Separate error message for missing value
-        if (error.message.includes('Missing value') || error.message.includes('is not registered')) {
-            console.error(`Usage Error: ${error.message}`);
-        } else {
-            console.error("Error: Failed to retrieve data.");
-            console.error(error.message);
-        }
+        const isJson = args.includes('--json');
+        renderError(isJson, error.message);
         return 1;
     }
 }

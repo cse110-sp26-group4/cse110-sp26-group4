@@ -40,58 +40,32 @@ export const SPEC = { positionals: { min: 1, max: 1 }, flags: { ...COMMON_FLAGS 
  * @param {string[]} args - The command line arguments
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error
  */
-export async function run(args) {
-  let positionals, flags;
+export async function run(args = []) {
   try {
-    const result = parseAndValidateArgs(args, SPEC);
-    positionals = result.positionals;
-    flags = result.flags;
-  } catch (error) {
-    const isJson = args.includes('--json');
-    renderError(isJson, error.message);
-    return 1;
-  }
-  if (flags['--help']) {
-    console.log(HELP);
-    return 0;
-  }
-  const isJson = flags['--json'];
-  const id = Number(positionals[0]);
-
-  if (!Number.isInteger(id) || id <= 0) {
-    renderError(isJson, `Invalid ID "${positionals[0]}". ID must be a positive integer.`, 'INVALID_ID');
-    return 1;
-  }
-
-  const actor = getCurrentActor();
-
-  if (!actor || actor.type !== AgentType.AGENT) {
-    renderError(isJson, 'Only agents can unclaim issues.', 'FORBIDDEN');
-    return 1;
-  }
-
-  let issue;
-  try {
-    issue = getIssue(id);
-  } catch (error) {
-    if (error.message.includes('not found')) {
-      renderError(isJson, error.message, 'NOT_FOUND');
-    } else {
-      renderError(isJson, error.message);
+    const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+    if (flags['--help']) {
+      console.log(HELP);
+      return 0;
     }
-    return 1;
-  }
+    const isJson = flags['--json'] ?? false;
+    const id = Number(positionals[0]);
 
-  if (issue.assigneeId !== actor.id) {
-    renderError(
-      isJson,
-      `Issue #${id} is not assigned to you. Only the current assignee can unclaim an issue.`,
-      'FORBIDDEN',
-    );
-    return 1;
-  }
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new Error(`Invalid ID "${positionals[0]}". ID must be a positive integer.`);
+    }
 
-  try {
+    const actor = getCurrentActor();
+
+    if (!actor || actor.type !== AgentType.AGENT) {
+      throw new Error('Only agents can unclaim issues.');
+    }
+
+    const issue = getIssue(id);
+
+    if (issue.assigneeId !== actor.id) {
+      throw new Error(`Issue #${id} is not assigned to you. Only the current assignee can unclaim an issue.`);
+    }
+
     const updatedIssue = unclaimIssue(id);
     const envelope = { status: 'success', issue: serializeIssue(updatedIssue) };
 
@@ -101,7 +75,17 @@ export async function run(args) {
 
     return 0;
   } catch (error) {
-    renderError(isJson, error.message);
+    const isJson = args.includes('--json');
+    let code = 'ERROR';
+    if (error.message.includes('not found')) {
+      code = 'NOT_FOUND';
+    } else if (
+      error.message.includes('not assigned to you') ||
+      error.message.includes('Only agents can unclaim issues')
+    ) {
+      code = 'FORBIDDEN';
+    }
+    renderError(isJson, error.message, code);
     return 1;
   }
 }

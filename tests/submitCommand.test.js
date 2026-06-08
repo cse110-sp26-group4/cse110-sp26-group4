@@ -130,7 +130,7 @@ describe('Submit Command', () => {
     const exitCode = await submitCommand(['abc']);
 
     assert.equal(exitCode, 1);
-    assert.ok(capture.errors[0].includes('ID must be an integer'));
+    assert.ok(capture.errors[0].includes('ID must be a positive integer'));
   });
 
   it('should support --json output on success', async () => {

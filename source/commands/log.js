@@ -11,7 +11,7 @@
 //   baton log 5
 
 import { getActivityLog } from '../services/issuesService.js';
-import { COMMON_FLAGS, formatTimestamp, hasFlag, parseAndValidateArgs, renderError } from '../util.js';
+import { COMMON_FLAGS, formatTimestamp, parseAndValidateArgs, renderError, renderOutput } from '../util.js';
 
 export const HELP = `Usage:
   baton log <id> [--json]
@@ -48,29 +48,23 @@ function serializeLogEntry(entry) {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args) {
-  let positionals, flags;
   try {
-    const result = parseAndValidateArgs(args, SPEC);
-    positionals = result.positionals;
-    flags = result.flags;
-  } catch (error) {
-    const isJson = args.includes('--json');
-    renderError(isJson, error.message);
-    return 1;
-  }
-  if (flags['--help']) {
-    console.log(HELP);
-    return 0;
-  }
-  const isJson = flags['--json'];
-  const id = positionals[0];
+    const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+    if (flags['--help']) {
+      console.log(HELP);
+      return 0;
+    }
+    const isJson = flags['--json'];
+    const idStr = positionals[0];
+    const id = Number(idStr);
 
-  if (isNaN(id)) {
-    throw new Error('Invalid input: ID must be a number.\nUsage: baton log <id>');
-  }
+    if (!Number.isInteger(id) || id <= 0) {
+      const err = new Error(`Invalid ID "${idStr}". ID must be a positive integer.`);
+      err.code = 'INVALID_ID';
+      throw err;
+    }
 
-  try {
-    const logs = getActivityLog(Number(id));
+    const logs = getActivityLog(id);
     const entries = logs.map(serializeLogEntry);
     const envelope = {
       status: 'success',
@@ -79,29 +73,30 @@ export async function run(args) {
       entries,
     };
 
-    if (isJson) {
-      console.log(JSON.stringify(envelope, null, 2));
-      return 0;
-    }
+    renderOutput(isJson, envelope, () => {
+      if (entries.length === 0) {
+        console.log(`No activity history for issue #${id}.`);
+        return;
+      }
 
-    if (entries.length === 0) {
-      console.log(`No activity history for issue #${id}.`);
-      return 0;
-    }
-
-    console.log(`Activity log for issue #${id}`);
-    console.log('──────────────────────────────────────────');
-    for (const entry of entries) {
-      const timestamp = formatTimestamp(entry.created_at);
-      const details = entry.details ?? '';
-      console.log(`${timestamp}  ${entry.action}  ${details}`);
-    }
-    console.log('');
+      console.log(`Activity log for issue #${id}`);
+      console.log('──────────────────────────────────────────');
+      for (const entry of entries) {
+        const timestamp = formatTimestamp(entry.created_at);
+        const details = entry.details ?? '';
+        console.log(`${timestamp}  ${entry.action}  ${details}`);
+      }
+      console.log('');
+    });
 
     return 0;
   } catch (error) {
-    console.error('Error: Failed to retrieve activity log.');
-    console.error(error.message);
+    const isJson = args.includes('--json');
+    let code = error.code || 'ERROR';
+    if (error.message.includes('not found')) {
+      code = 'NOT_FOUND';
+    }
+    renderError(isJson, error.message, code);
     return 1;
   }
 }

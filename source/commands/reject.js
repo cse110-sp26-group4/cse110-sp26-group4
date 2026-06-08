@@ -15,7 +15,7 @@
 
 import { rejectIssue, getIssue } from '../services/issuesService.js';
 import { Status } from '../models/issue.js';
-import { hasFlag, getFlagValue, wantsHelp, renderOutput, renderError, serializeIssue, COMMON_FLAGS, parseAndValidateArgs } from '../util.js';
+import { renderOutput, renderError, serializeIssue, COMMON_FLAGS, parseAndValidateArgs } from '../util.js';
 
 export const HELP = `Usage:
     baton reject <id> [options]
@@ -41,53 +41,46 @@ export const SPEC = {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args) {
-    let positionals, flags;
     try {
-        const result = parseAndValidateArgs(args, SPEC);
-        positionals = result.positionals;
-        flags = result.flags;
-    } catch (error) {
-        const isJson = args.includes('--json');
-        renderError(isJson, error.message);
-        return 1;
-    }
-    if (flags['--help']) {
-        console.log(HELP);
-        return 0;
-    }
-    const isJson = flags['--json'] ?? false;
-    const id = Number(positionals[0]);
-    const reasonText = flags['--reason'];
-
-    if (!Number.isInteger(id)) {
-        renderError(isJson, `Invalid ID "${positionals[0]}". ID must be an integer.`, 'INVALID_ID');
-        return 1;
-    }
-
-    if (!reasonText || reasonText.trim() === "") {
-        renderError(isJson, "Missing reason for reject.");
-        return 1;
-    }
-    
-    let issue;
-    try {
-        issue = await getIssue(id);
-    } catch (error) {
-        if (error.message.includes("not found")) {
-            renderError(isJson, error.message, 'NOT_FOUND');
-        } else {
-            renderError(isJson, error.message);
+        const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+        if (flags['--help']) {
+            console.log(HELP);
+            return 0;
         }
-        return 1;
-    }
+        const isJson = flags['--json'] ?? false;
+        const idStr = positionals[0];
+        const id = Number(idStr);
+        const reasonText = flags['--reason'];
 
-    if (issue.status !== Status.IN_REVIEW) {
-        renderError(isJson, `Issue #${id} is currently "${issue.status}". Only issues in "${Status.IN_REVIEW}" status can be rejected.`, 'INVALID_STATE');
-        return 1;
-    }
+        if (!Number.isInteger(id) || id <= 0) {
+            const err = new Error(`Invalid ID "${idStr}". ID must be a positive integer.`);
+            err.code = 'INVALID_ID';
+            throw err;
+        }
 
-    try {
-        // (3) Perform rejection
+        if (reasonText === undefined) {
+            throw new Error("Missing reason for reject.");
+        }
+        
+        if (reasonText.trim() === "") {
+            throw new Error("Reason for rejection cannot be empty.");
+        }
+        
+        let issue;
+        try {
+            issue = await getIssue(id);
+        } catch (e) {
+            const err = new Error(e.message);
+            err.code = 'NOT_FOUND';
+            throw err;
+        }
+
+        if (issue.status !== Status.IN_REVIEW) {
+            const err = new Error(`Issue #${id} is currently "${issue.status}". Only issues in "${Status.IN_REVIEW}" status can be rejected.`);
+            err.code = 'INVALID_STATE';
+            throw err;
+        }
+
         const updatedIssue = await rejectIssue(id, reasonText);
         const envelope = { status: 'success', issue: serializeIssue(updatedIssue) };
 
@@ -97,7 +90,8 @@ export async function run(args) {
 
         return 0;
     } catch (error) {
-        renderError(isJson, error.message);
+        const isJson = args.includes('--json');
+        renderError(isJson, error.message, error.code || 'ERROR');
         return 1;
     }
 }

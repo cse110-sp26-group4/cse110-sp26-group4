@@ -6,6 +6,7 @@
 //
 // Options:
 //   --json                 Output as JSON (for AI agents)
+//   -h, --help             Show this help
 //
 // Examples:
 //   baton submit 14
@@ -38,51 +39,38 @@ export const SPEC = { positionals: { min: 1, max: 1 }, flags: { ...COMMON_FLAGS 
  * @param {string[]} args - The command line arguments
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error
  */
-export async function run(args) {
-  let positionals, flags;
+export async function run(args = []) {
   try {
-    const result = parseAndValidateArgs(args, SPEC);
-    positionals = result.positionals;
-    flags = result.flags;
-  } catch (error) {
-    const isJson = args.includes('--json');
-    renderError(isJson, error.message);
-    return 1;
-  }
-  if (flags['--help']) {
-    console.log(HELP);
-    return 0;
-  }
-  const isJson = flags['--json'];
-  const id = Number(positionals[0]);
-
-  if (!Number.isInteger(id)) {
-    renderError(isJson, `Invalid ID "${positionals[0]}". ID must be an integer.`, 'INVALID_ID');
-    return 1;
-  }
-
-  let issue;
-  try {
-    issue = getIssue(id);
-  } catch (error) {
-    if (error.message.includes('not found')) {
-      renderError(isJson, error.message, 'NOT_FOUND');
-    } else {
-      renderError(isJson, error.message);
+    const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+    if (flags['--help']) {
+      console.log(HELP);
+      return 0;
     }
-    return 1;
-  }
+    const isJson = flags['--json'] ?? false;
+    const idStr = positionals[0];
+    const id = Number(idStr);
 
-  if (issue.status !== Status.IN_PROGRESS) {
-    renderError(
-      isJson,
-      `Issue #${id} is currently "${issue.status}". Only issues in "${Status.IN_PROGRESS}" can be submitted for review.`,
-      'INVALID_STATE',
-    );
-    return 1;
-  }
+    if (!Number.isInteger(id) || id <= 0) {
+      const err = new Error(`Invalid ID "${idStr}". ID must be a positive integer.`);
+      err.code = 'INVALID_ID';
+      throw err;
+    }
 
-  try {
+    let issue;
+    try {
+      issue = getIssue(id);
+    } catch (e) {
+      const err = new Error(e.message);
+      err.code = 'NOT_FOUND';
+      throw err;
+    }
+
+    if (issue.status !== Status.IN_PROGRESS) {
+      const err = new Error(`Issue #${id} is currently "${issue.status}". Only issues in "${Status.IN_PROGRESS}" can be submitted for review.`);
+      err.code = 'INVALID_STATE';
+      throw err;
+    }
+
     const updatedIssue = submitForReview(id);
     const envelope = { status: 'success', issue: serializeIssue(updatedIssue) };
 
@@ -92,7 +80,8 @@ export async function run(args) {
 
     return 0;
   } catch (error) {
-    renderError(isJson, error.message);
+    const isJson = args.includes('--json');
+    renderError(isJson, error.message, error.code || 'ERROR');
     return 1;
   }
 }

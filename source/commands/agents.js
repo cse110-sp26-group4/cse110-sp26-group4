@@ -10,7 +10,7 @@
 //   baton agents
 
 import { listAgents } from '../services/agentsService.js';
-import { COMMON_FLAGS, hasFlag, parseAndValidateArgs, renderOutput, wantsHelp } from '../util.js';
+import { COMMON_FLAGS, parseAndValidateArgs, renderOutput, renderError } from '../util.js';
 
 export const HELP = `Usage:
   baton agents [--json]
@@ -24,8 +24,6 @@ Examples:
 `;
 
 export const SPEC = { positionals: { min: 0, max: 0 }, flags: { ...COMMON_FLAGS } };
-
-const VALID_FLAGS = ['--json'];
 
 const COL = { id: 4, name: 14, type: 5 };
 
@@ -64,14 +62,14 @@ function printAgentsTable(agents) {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error
  */
 export async function run(args = []) {
-  const { flags } = parseAndValidateArgs(args, SPEC);
-  if (flags['--help']) {
-    console.log(HELP);
-    return 0;
-  }
-  const isJson = flags['--json'] ?? false;
-
   try {
+    const { flags } = parseAndValidateArgs(args, SPEC);
+    if (flags['--help']) {
+      console.log(HELP);
+      return 0;
+    }
+    const isJson = flags['--json'] ?? false;
+
     const agents = listAgents();
     const records = agents.map(serializeAgent);
     const envelope = { status: 'success', count: records.length, agents: records };
@@ -86,8 +84,8 @@ export async function run(args = []) {
 
     return 0;
   } catch (error) {
-    console.error('Error: Failed to list agents.');
-    console.error(error.message);
+    const isJson = args.includes('--json');
+    renderError(isJson, error.message);
     return 1;
   }
 }

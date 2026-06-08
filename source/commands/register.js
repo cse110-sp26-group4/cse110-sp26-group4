@@ -12,12 +12,9 @@
 import { registerAgent } from '../services/agentsService.js';
 import { AgentType } from '../models/agents.js';
 import {
-    getFlagValue,
-    hasFlag,
     renderOutput,
     renderError,
     parseAndValidateArgs,
-    wantsHelp,
     COMMON_FLAGS,
 } from '../util.js';
 
@@ -44,24 +41,15 @@ export const SPEC = {
  * @param {string[]} args - The command line arguments
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error
  */
-export async function run(args) {
-    let positionals, flags;
+export async function run(args = []) {
     try {
-        const result = parseAndValidateArgs(args, SPEC);
-        positionals = result.positionals;
-        flags = result.flags;
-    } catch (error) {
-        const isJson = args.includes('--json');
-        renderError(isJson, error.message);
-        return 1;
-    }
-    if (flags['--help']) {
-        console.log(HELP);
-        return 0;
-    }
-    const isJson = flags['--json'] ?? false;
+        const { flags } = parseAndValidateArgs(args, SPEC);
+        if (flags['--help']) {
+            console.log(HELP);
+            return 0;
+        }
+        const isJson = flags['--json'] ?? false;
 
-    try {
         const name = flags['--name'];
         const type = flags['--type'] || 'agent';
 
@@ -77,15 +65,13 @@ export async function run(args) {
         });
 
         return 0;
-    } catch (error) {
+        } catch (error) {
+        const isJson = args.includes('--json');
+        let code = 'ERROR';
         if (error.message.includes('UNIQUE constraint failed')) {
-            console.error(`Error: An agent or user with the name "${flags['--name']}" is already registered.`);
-        } else if (error.message.includes('Missing required') || error.message.includes('Invalid type')) {
-            console.error(`Usage Error: ${error.message}`);
-        } else {
-            console.error("Error: Failed to register agent.");
-            console.error(error.message);
+          code = 'ALREADY_EXISTS';
         }
+        renderError(isJson, error.message, code);
         return 1;
-    }
-}
+        }
+        }

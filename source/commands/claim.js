@@ -6,7 +6,6 @@ import { isTrackerReady, claimIssue } from '../services/issuesService.js';
 import { getCurrentActor } from '../services/context.js';
 import {
   COMMON_FLAGS,
-  hasFlag,
   parseAndValidateArgs,
   renderOutput,
   renderError,
@@ -33,36 +32,40 @@ export const SPEC = { positionals: { min: 1, max: 1 }, flags: { ...COMMON_FLAGS 
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error
  */
 export async function run(args) {
-  const { positionals, flags } = parseAndValidateArgs(args, SPEC);
-  if (flags['--help']) {
-      console.log(HELP);
-      return 0;
-  }
-  const isJson = flags['--json'];
-  const id = positionals[0];
-
-  if (isNaN(id)) {
-    renderError(isJson, `Invalid ID "${id}". ID must be a number.`, 'INVALID_ID');
-    return 1;
-  }
-
-  if (!isTrackerReady()) {
-    reportTrackerNotReady();
-    return 1;
-  }
-
-  const actor = getCurrentActor();
-  if (!actor) {
-    renderError(isJson, 'No authenticated actor found. Please sign in with a registered agent.', 'UNAUTHORIZED');
-    return 1;
-  }
-
-  if (actor.type !== 'agent') {
-    renderError(isJson, 'Only an agent may claim an issue.', 'UNAUTHORIZED');
-    return 1;
-  }
-
   try {
+    const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+    if (flags['--help']) {
+        console.log(HELP);
+        return 0;
+    }
+    const isJson = flags['--json'];
+    const idStr = positionals[0];
+    const id = Number(idStr);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      const err = new Error(`Invalid ID "${idStr}". ID must be a positive integer.`);
+      err.code = 'INVALID_ID';
+      throw err;
+    }
+
+    if (!isTrackerReady()) {
+      reportTrackerNotReady();
+      return 1;
+    }
+
+    const actor = getCurrentActor();
+    if (!actor) {
+      const err = new Error('No authenticated actor found. Please sign in with a registered agent.');
+      err.code = 'UNAUTHENTICATED';
+      throw err;
+    }
+
+    if (actor.type !== 'agent') {
+      const err = new Error('Only an agent may claim an issue.');
+      err.code = 'FORBIDDEN';
+      throw err;
+    }
+
     const updatedIssue = claimIssue(id);
     const envelope = { status: 'success', issue: serializeIssue(updatedIssue) };
 
@@ -72,7 +75,14 @@ export async function run(args) {
 
     return 0;
   } catch (error) {
-    renderError(isJson, error.message);
+    const isJson = args.includes('--json');
+    let code = error.code || 'ERROR';
+    if (error.message.includes('not found')) {
+      code = 'NOT_FOUND';
+    } else if (error.message.includes('closed')) {
+      code = 'INVALID_STATE';
+    }
+    renderError(isJson, error.message, code);
     return 1;
   }
 }

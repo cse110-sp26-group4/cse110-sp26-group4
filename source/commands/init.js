@@ -20,13 +20,10 @@ import {
   clearAllIssues,
 } from '../services/issuesService.js';
 import {
-  getFlagValue,
-  getFirstPositionalArg,
-  hasFlag,
   renderOutput,
+  renderError,
   resolvePath,
   serializeIssue,
-  wantsHelp,
   COMMON_FLAGS,
   parseAndValidateArgs,
 } from '../util.js';
@@ -53,35 +50,6 @@ export const SPEC = {
   positionals: { min: 0, max: 1 },
   flags: { '--force': { type: 'boolean' }, '--specs': { type: 'string' }, ...COMMON_FLAGS }
 };
-
-/**
- * Represents the parsed command-line flags for initialization.
- * @typedef {Object} InitFlags
- * @property {boolean} force - Whether to force initialization even if already initialized.
- * @property {string | null} specs - The resolved path to the specifications file.
- */
-
-/**
- * Parses init-specific flags from raw CLI arguments.
- * @param {string[]} args
- * @returns {InitFlags}
- */
-function parseInitFlags(args) {
-  const specsFromFlag = getFlagValue(args, '--specs');
-  const positionalSpecs = getFirstPositionalArg(args, {
-    valueFlags: ['--specs'],
-    ignoreFlags: ['--force', '--json'],
-  });
-
-  if (specsFromFlag && positionalSpecs) {
-    throw new Error('Pass specs path with either --specs <path> or a positional path, not both.');
-  }
-
-  return {
-    force: hasFlag(args, '--force'),
-    specs: specsFromFlag ?? positionalSpecs,
-  };
-}
 
 /**
  * Extracts "Must" functional requirements from a markdown spec table.
@@ -131,82 +99,90 @@ function generateIssuesFromSpecs(specsPath) {
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
 export async function run(args = []) {
-  const { positionals, flags } = parseAndValidateArgs(args, SPEC);
-  if (flags['--help']) {
-    console.log(HELP);
-    return 0;
-  }
-  const isJson = flags['--json'] ?? false;
-  const force = flags['--force'] ?? false;
-  const specsFlag = flags['--specs'];
-  const specsPositional = positionals[0];
-
-  if (specsFlag && specsPositional) {
-    throw new Error('Pass specs path with either --specs <path> or a positional path, not both.');
-  }
-
-  const specsPath = specsFlag ?? specsPositional;
-
-  if (isTrackerReady() && !force) {
-    console.error('Error: Tracker already initialized in this directory.');
-    console.error('Run `baton init --force` to re-initialize.');
-    return 1;
-  }
-
-  initDB();
-
-  if (force) clearAllIssues();
-
-  // auto-register default deployment human user
-  let autoRegisterMessage = '';
   try {
-    const activeName = process.env.BATON_AGENT || os.userInfo().username;
-    registerAgent(activeName, 'human');
-    autoRegisterMessage = `Auto-registered default human user: "${activeName}"`;
-  } catch (error){
-    if (!error.message?.includes('UNIQUE constraint failed')) {
-      autoRegisterMessage = `Warning: Could not auto-register default user: ${error.message}`;
+    const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+    if (flags['--help']) {
+      console.log(HELP);
+      return 0;
     }
-  }
+    const isJson = flags['--json'] ?? false;
+    const force = flags['--force'] ?? false;
+    const specsFlag = flags['--specs'];
+    const specsPositional = positionals[0];
 
-  if (autoRegisterMessage && !isJson) {
-    console.log(autoRegisterMessage);
-  }
+    if (specsFlag && specsPositional) {
+      throw new Error('Pass specs path with either --specs <path> or a positional path, not both.');
+    }
 
-  const templatePath = join(dirname(fileURLToPath(import.meta.url)), '..', 'templates', 'BATON_AGENT_RULES.md');
+    const specsPath = specsFlag ?? specsPositional;
 
-  let rulesContent = '';
-  if (existsSync(templatePath)) {
-    rulesContent = readFileSync(templatePath, 'utf8');
-  }
+    if (isTrackerReady() && !force) {
+      throw new Error('Tracker already initialized in this directory. Run `baton init --force` to re-initialize.');
+    }
 
-  const outputPath = join(process.cwd(), 'BATON_AGENT_RULES.md');
-  if (!existsSync(outputPath) || flags.force) {
-    writeFileSync(outputPath, rulesContent, 'utf8');
-  }
+    initDB();
 
-  const resolvedSpecsPath = resolvePath(flags.specs, DEFAULT_SPECS_PATH);
-  const createdIssues = generateIssuesFromSpecs(flags.specs);
-  const envelope = {
-    status: 'success',
-    db_path: DB_PATH,
-    specs_path: resolvedSpecsPath,
-    count: createdIssues.length,
-    issues: createdIssues.map(serializeIssue),
-  };
+    if (force) clearAllIssues();
 
-  renderOutput(isJson, envelope, () => {
-    console.log(`Tracker initialized at ${DB_PATH}`);
-    console.log(`Specs: ${resolvedSpecsPath}`);
-    console.log(`Created ${createdIssues.length} issue(s) from product specs.`);
-    if (createdIssues.length > 0) {
-      console.log('Issues:');
-      for (const issue of createdIssues) {
-        console.log(`  #${issue.id} [${issue.priority}] ${issue.title}`);
+    // auto-register default deployment human user
+    let autoRegisterMessage = '';
+    try {
+      const activeName = process.env.BATON_AGENT || os.userInfo().username;
+      registerAgent(activeName, 'human');
+      autoRegisterMessage = `Auto-registered default human user: "${activeName}"`;
+    } catch (error) {
+      if (!error.message?.includes('UNIQUE constraint failed')) {
+        autoRegisterMessage = `Warning: Could not auto-register default user: ${error.message}`;
       }
     }
-    console.log('Run `baton status` to review progress.');
-  });
 
-  return 0;
+    if (autoRegisterMessage && !isJson) {
+      console.log(autoRegisterMessage);
+    }
+
+    const templatePath = join(dirname(fileURLToPath(import.meta.url)), '..', 'templates', 'BATON_AGENT_RULES.md');
+
+    let rulesContent = '';
+    if (existsSync(templatePath)) {
+      rulesContent = readFileSync(templatePath, 'utf8');
+    }
+
+    const outputPath = join(process.cwd(), 'BATON_AGENT_RULES.md');
+    if (!existsSync(outputPath) || force) {
+      writeFileSync(outputPath, rulesContent, 'utf8');
+    }
+
+    const resolvedSpecsPath = resolvePath(specsPath, DEFAULT_SPECS_PATH);
+    const createdIssues = generateIssuesFromSpecs(specsPath);
+    const envelope = {
+      status: 'success',
+      db_path: DB_PATH,
+      specs_path: resolvedSpecsPath,
+      count: createdIssues.length,
+      issues: createdIssues.map(serializeIssue),
+    };
+
+    renderOutput(isJson, envelope, () => {
+      console.log(`Tracker initialized at ${DB_PATH}`);
+      console.log(`Specs: ${resolvedSpecsPath}`);
+      console.log(`Created ${createdIssues.length} issue(s) from product specs.`);
+      if (createdIssues.length > 0) {
+        console.log('Issues:');
+        for (const issue of createdIssues) {
+          console.log(`  #${issue.id} [${issue.priority}] ${issue.title}`);
+        }
+      }
+      console.log('Run `baton status` to review progress.');
+    });
+
+    return 0;
+  } catch (error) {
+    const isJson = args.includes('--json');
+    let code = 'ERROR';
+    if (error.message.includes('already initialized')) {
+      code = 'ALREADY_INITIALIZED';
+    }
+    renderError(isJson, error.message, code);
+    return 1;
+  }
 }

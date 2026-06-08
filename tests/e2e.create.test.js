@@ -137,9 +137,9 @@ describe('E2E: baton create', () => {
   });
 
   // Invalid input tests
-  it('exits 2 if flag is invalid', async () => {
+  it('exits 1 if flag is invalid', async () => {
     const result = await sb.runBaton(['create', '--unknown-flag', '--json']);
-    assert.equal(result.exitCode, 2);
+    assert.equal(result.exitCode, 1);
   });
 
   it('exits 1 if priority value is invalid', async () => {

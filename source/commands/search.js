@@ -5,14 +5,12 @@
 
 import { searchIssues } from "../services/issuesService.js";
 import {
-    hasFlag,
     parseAndValidateArgs,
     printIssueTable,
     printTableHeader,
     renderOutput,
     renderError,
     serializeIssue,
-    wantsHelp,
     COMMON_FLAGS,
 } from '../util.js';
 
@@ -34,25 +32,16 @@ export const SPEC = { positionals: { min: 1, max: 1 }, flags: { ...COMMON_FLAGS 
  * @param {string[]} args - The command line arguments
  * @returns {Promise<number>} The exit code: 0 is success, 1 is error.
  */
-export async function run(args) {
-    let positionals, flags;
+export async function run(args = []) {
     try {
-        const result = parseAndValidateArgs(args, SPEC);
-        positionals = result.positionals;
-        flags = result.flags;
-    } catch (error) {
-        const isJson = args.includes('--json');
-        renderError(isJson, error.message);
-        return 1;
-    }
-    if (flags['--help']) {
-        console.log(HELP);
-        return 0;
-    }
-    const isJson = flags['--json'] ?? false;
-    const query = positionals[0];
+        const { positionals, flags } = parseAndValidateArgs(args, SPEC);
+        if (flags['--help']) {
+            console.log(HELP);
+            return 0;
+        }
+        const isJson = flags['--json'] ?? false;
+        const query = positionals[0];
 
-    try {
         const result = await searchIssues(query);
         const issues = result.map(serializeIssue);
         const envelope = { status: 'success', count: issues.length, issues };
@@ -71,9 +60,8 @@ export async function run(args) {
 
         return 0;
     } catch (error) {
-        // Failed to query database
-        console.error("Error: Failed to retrieve data.");
-        console.error(error.message);
+        const isJson = args.includes('--json');
+        renderError(isJson, error.message);
         return 1;
     }
 } 
