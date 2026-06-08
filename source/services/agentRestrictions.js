@@ -1,7 +1,7 @@
 // agentRestrictions.js 
 
 const AGENT_RESTRICTED_COMMANDS = new Set(['init', 'approve', 'reject', 'delete', 'priority']);
-const AGENT_RESTRICTED_FLAGS = new Set(['--status', '--token-limit', '--assignee']);
+const AGENT_RESTRICTED_FLAGS = new Set(['--status', '--token-limit', '--assignee', '--priority']);
 
 /**
  * Validates whether an actor has permission to execute a given command and arguments.
