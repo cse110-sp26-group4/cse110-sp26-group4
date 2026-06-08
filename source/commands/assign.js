@@ -8,8 +8,6 @@ import { assignIssue } from '../services/issuesService.js';
 import { getCurrentActor } from '../services/authService.js';
 import { hasFlag, renderOutput } from '../util.js';
 
-const DECIMAL_BASE = 10;
-
 export const HELP = `Usage:
   baton assign <id> <agent-name> [--json]
 
@@ -37,16 +35,16 @@ export async function run(args = []) {
 
   // Guard Clause: Ensure both the issue ID and the agent name were provided
   if (!issueIdStr || !agentName) {
-    console.error('Usage Error: Missing arguments.\nUsage: baton assign <id> <agent-name> [--json]');
+    console.error('Usage Error: Missing arguments.\n${HELP}\n');
     return 1;
   }
 
   // Convert the extracted issue ID string into a safe decimal integer
-  const issueId = parseInt(issueIdStr, DECIMAL_BASE);
+  const issueId = Number(issueIdStr);
   
   // Guard Clause: If parsing failed (e.g., the user typed letters instead of an ID), reject it
-  if (isNaN(issueId)) {
-    console.error(`Error: Invalid issue ID "${issueIdStr}". Must be an integer.`);
+  if (!Number.isInteger(issueId) || issueId <= 0) {
+    console.error(`Error: Invalid issue ID "${issueIdStr}". Must be a positive integer.\n${HELP}\n`);
     return 1;
   }
 
