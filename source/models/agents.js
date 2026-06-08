@@ -10,8 +10,7 @@ export class Agent {
     type      = AgentType.AGENT,
     // Auto-generated fields
     id        = 0,
-    createdAt = new Date().toISOString(),
-  } = {}) {
+    } = {}) {
     this.name      = name;
     this.type      = type;
     this.id        = id;

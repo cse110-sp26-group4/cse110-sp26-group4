@@ -439,7 +439,7 @@ export function isTrackerReady() {
         WHERE type = 'table' AND name IN ('issues', 'activity', 'agents')
       `);
     return (row?.table_count ?? 0) === 3;
-  } catch (error) {
+  } catch {
     return false;
   }
 }
