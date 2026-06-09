@@ -63,7 +63,6 @@ Baton is extensively documented to help both humans and agents get the most out 
 
 ### **Guides**
 *   [**CLI Reference**](./docs/cli/README.md): Detailed documentation for every command and flag.
-*   [**Commands Reference**](./docs/cli/commands-reference.md): Comprehensive reference for all CLI commands, flags, and JSON outputs.
 *   [**User Guide**](./docs/USER_GUIDE.md): How to initialize and manage the agent work-loop.
 *   [**Contributing**](./docs/CONTRIBUTING.md): Guidelines for developing and extending Baton.
 
