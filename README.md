@@ -63,9 +63,8 @@ Baton is extensively documented to help both humans and agents get the most out 
 
 ### **Guides**
 *   [**CLI Reference**](./docs/cli/README.md): Detailed documentation for every command and flag.
-*   [**Setup & Workflow**](./docs/cli/setup-commands.md): How to initialize and manage the agent work-loop.
-*   [**Issue Management**](./docs/cli/issue-commands.md): Deep dive into ticket CRUD and review processes.
-*   [**Contributing**](./CONTRIBUTING.md): Guidelines for developing and extending Baton.
+*   [**User Guide**](./docs/USER_GUIDE.md): How to initialize and manage the agent work-loop.
+*   [**Contributing**](./docs/CONTRIBUTING.md): Guidelines for developing and extending Baton.
 
 ### **Specifications**
 *   [**Product Requirements**](./docs/specs/project-requirements.md): The functional goals of the project.
@@ -81,7 +80,10 @@ Meet the team on our [**Team Page**](./admin/team.md).
 ---
 
 ## Final Video
+
 [Final 10-Minute Video](https://youtu.be/XlevNQD0ZiI)
+
+[Final 3-Minute Video](https://www.youtube.com/watch?v=3VNz-wI29zQ)
 
 ---
 

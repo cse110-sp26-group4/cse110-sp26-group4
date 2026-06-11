@@ -25,7 +25,7 @@ This document provides guidelines and instructions to help you get started.
 
 ## Code of Conduct
 
-We value clear communication, accountability, respect, and support. Please refer to our [Team Contract](admin/misc/rules.md) for more details on our values and conflict resolution strategies.
+We value clear communication, accountability, respect, and support. Please refer to our [Team Contract](../admin/misc/rules.md) for more details on our values and conflict resolution strategies.
 
 ## Getting Started
 
